@@ -102,12 +102,12 @@ Transparent/dark header with optional CSS sort arrows on [data-sortable] th
   .table > thead > tr > th {
     font-size: $font-size-sm;
     font-weight: $font-weight-semibold;
-    text-transform: uppercase;
-    letter-spacing: 0.03em;
     color: var(--bs-secondary-color);
-    background-color: transparent;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
     padding-top: 0.65rem;
     padding-bottom: 0.65rem;
+    background-color: transparent;
     white-space: nowrap;
     vertical-align: middle;
     user-select: none;
@@ -118,37 +118,37 @@ Transparent/dark header with optional CSS sort arrows on [data-sortable] th
 
     // Sortable columns — add data-sortable attr in HTML to activate
     &[data-sortable] {
-      cursor: pointer;
       position: relative;
+      cursor: pointer;
       padding-right: 1.6rem;
 
       // Default: both arrows (unsorted)
       &::after { // down arrow
-        content: '';
         position: absolute;
+        top: 50%;
         right: 0.45rem;
-        top: calc(50% + 1.5px);
         display: inline-block;
         width: 0;
         height: 0;
-        border-left: 4px solid transparent;
+        content: '';
+        border-top: 4px solid currentcolor;
         border-right: 4px solid transparent;
-        border-top: 4px solid currentColor;
+        border-left: 4px solid transparent;
         opacity: 0.3;
         transition: opacity 0.15s ease;
       }
 
       &::before { // up arrow
-        content: '';
         position: absolute;
         right: 0.45rem;
-        bottom: calc(50% + 1.5px);
+        bottom: 50%;
         display: inline-block;
         width: 0;
         height: 0;
-        border-left: 4px solid transparent;
+        content: '';
         border-right: 4px solid transparent;
-        border-bottom: 4px solid currentColor;
+        border-bottom: 4px solid currentcolor;
+        border-left: 4px solid transparent;
         opacity: 0.3;
         transition: opacity 0.15s ease;
       }
