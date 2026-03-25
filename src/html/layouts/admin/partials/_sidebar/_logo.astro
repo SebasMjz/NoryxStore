@@ -1,0 +1,14 @@
+---
+// Logo component for the sidebar
+import { getAssetPrefix, getPathPrefix } from '../../../../../utils/path.js'
+---
+
+<a href={getPathPrefix('/dashboard')} class="sidebar-brand">
+  <img
+    src={getAssetPrefix('/assets/img/noryx/NoryxStoreLogo.jpeg')}
+    alt="Noryx Store Logo"
+    class="me-2"
+    style="width: 30px; height: 30px;"
+  />
+  <span class="mb-0 opacity-80">Noryx Store</span>
+</a>

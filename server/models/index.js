@@ -1,0 +1,8 @@
+export { User } from './user.model.js'
+export { Client } from './client.model.js'
+export { Category } from './category.model.js'
+export { Product } from './product.model.js'
+export { Sale } from './sale.model.js'
+export { SaleDetail } from './sale-detail.model.js'
+export { InventoryMovement } from './inventory-movement.model.js'
+export { Setting } from './setting.model.js'

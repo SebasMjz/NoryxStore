@@ -1,0 +1,736 @@
+---
+import { getPathPrefix } from '../../utils/path.js'
+import AdminLayout from '../layouts/admin/admin-layout.astro'
+import PageHeader from '../components/common/page-header.astro'
+
+const pageHeaderProps = {
+  title: 'Clientes',
+  breadcrumbs: [
+    { label: 'Dashboard', href: getPathPrefix('/dashboard') },
+    { label: 'Clientes', class: 'active' }
+  ]
+}
+---
+
+<style is:global>
+  /* ── Client History Modal ── */
+  .ch-header {
+    background: linear-gradient(135deg, rgba(111,66,193,0.12) 0%, rgba(111,66,193,0.03) 100%);
+    border-bottom: 1px solid rgba(111,66,193,0.18);
+  }
+  .ch-avatar {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: var(--bs-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #fff;
+    flex-shrink: 0;
+    letter-spacing: .5px;
+  }
+  .ch-stat-box {
+    padding: .9rem 1rem;
+    text-align: center;
+  }
+  .ch-stat-box .ch-stat-val {
+    font-size: 1.2rem;
+    font-weight: 700;
+    line-height: 1.1;
+  }
+  .ch-stat-box .ch-stat-lbl {
+    font-size: .7rem;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    opacity: .6;
+    margin-top: 2px;
+  }
+  .sale-card {
+    border-radius: 10px;
+    border: 1px solid rgba(0,0,0,.08);
+    overflow: hidden;
+    transition: transform .15s;
+  }
+  .sale-card:hover { transform: translateY(-1px); }
+  [data-bs-theme="dark"] .sale-card {
+    border-color: rgba(255,255,255,.08);
+  }
+  .sale-card-accent {
+    width: 4px;
+    flex-shrink: 0;
+    border-radius: 4px 0 0 4px;
+  }
+  .sale-card-accent.activa { background: #198754; }
+  .sale-card-accent.anulada { background: #dc3545; }
+  .sale-item-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: .3rem .1rem;
+    font-size: .82rem;
+    border-bottom: 1px dashed rgba(0,0,0,.06);
+  }
+  [data-bs-theme="dark"] .sale-item-row {
+    border-bottom-color: rgba(255,255,255,.06);
+  }
+  .sale-item-row:last-child { border-bottom: none; }
+  .ch-empty {
+    text-align: center;
+    padding: 3rem 1rem;
+    opacity: .5;
+  }
+  .badge-payment {
+    font-size: .68rem;
+    font-weight: 500;
+    padding: .25em .6em;
+    border-radius: 20px;
+    background: rgba(111,66,193,.15);
+    color: var(--bs-primary);
+    border: 1px solid rgba(111,66,193,.2);
+  }
+  [data-bs-theme="dark"] .badge-payment {
+    background: rgba(111,66,193,.25);
+    color: #c4a4ff;
+    border-color: rgba(111,66,193,.35);
+  }
+</style>
+
+<AdminLayout title="Clientes" description="Gestión de clientes" currentPath="clients">
+  <PageHeader {...pageHeaderProps} />
+
+  <div class="card">
+    <div class="card-body">
+      <div class="astero-table">
+
+        <!-- Status Filter Tabs -->
+        <nav class="navbar navbar-expand overflow-auto p-0 mb-4" aria-label="Filtros de clientes">
+          <div class="navbar-nav gap-3">
+            <a href="javascript:void(0)" class="nav-link fw-medium px-1 cl-filter active border-bottom border-2 border-dark d-flex align-items-start" data-filter="all" aria-current="page">
+              <i class="ri-apps-2-line me-1" aria-hidden="true"></i>Todos
+              <span id="clCountAll" class="badge bg-primary-subtle text-primary ms-1" aria-label="Total clientes">0</span>
+            </a>
+            <a href="javascript:void(0)" class="nav-link fw-medium px-1 cl-filter d-flex align-items-start" data-filter="con-compras">
+              <i class="ri-check-double-line me-1" aria-hidden="true"></i>Con compras
+              <span id="clCountActive" class="badge bg-success-subtle text-success ms-1">0</span>
+            </a>
+            <a href="javascript:void(0)" class="nav-link fw-medium px-1 cl-filter d-flex align-items-start" data-filter="sin-compras">
+              <i class="ri-user-unfollow-line me-1" aria-hidden="true"></i>Sin compras
+              <span id="clCountInactive" class="badge bg-secondary-subtle text-secondary ms-1">0</span>
+            </a>
+          </div>
+        </nav>
+
+        <!-- Search & Actions -->
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
+          <div class="search-wrapper">
+            <i class="ri-search-2-line search-icon" aria-hidden="true"></i>
+            <input type="text" id="clientSearch" class="form-control search-input"
+              placeholder="Buscar por nombre o celular..." autocomplete="off" aria-label="Buscar clientes" />
+            <button type="button" id="clientSearchClear" class="btn-clear search-clear" style="display:none;" aria-label="Limpiar búsqueda">
+              <i class="ri-close-line"></i>
+            </button>
+          </div>
+          <div class="d-flex gap-2 align-items-center">
+            <button class="btn btn-primary gap-1" id="newClientBtn">
+              <i class="ri-add-line me-1" aria-hidden="true"></i> Nuevo cliente
+            </button>
+
+            <!-- Bulk Actions -->
+            <div class="bulk-actions-div d-none" id="clBulkActions">
+              <span class="selected-count me-2" aria-live="polite">
+                <span id="clSelectedCount">0</span> seleccionados</span>
+              <button
+                class="btn btn-light-danger shadow-none align-items-center gap-2"
+                id="clBulkDeleteBtn"
+                aria-label="Eliminar seleccionados"
+              >
+                <i class="ri-delete-bin-2-line me-1" aria-hidden="true"></i> Eliminar
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Table -->
+        <div class="table-container">
+          <div class="table-responsive border-0">
+            <table class="table table-hover table-row-dashed mb-0" aria-label="Tabla de clientes">
+              <thead>
+                <tr>
+                  <th class="checkbox-column fs-6" style="width: 20px;" scope="col">
+                    <div class="form-check">
+                      <input
+                        class="form-check-input"
+                        type="checkbox"
+                        id="clSelectAll"
+                        aria-label="Seleccionar todos los clientes"
+                      />
+                    </div>
+                  </th>
+                  <th scope="col" data-sortable data-sort-key="nombre"><i class="ri-user-3-line me-1" aria-hidden="true"></i>NOMBRE</th>
+                  <th scope="col" data-sortable data-sort-key="celular"><i class="ri-phone-line me-1" aria-hidden="true"></i>CELULAR</th>
+                  <th class="text-center" scope="col" data-sortable data-sort-key="count"><i class="ri-shopping-bag-line me-1" aria-hidden="true"></i>COMPRAS</th>
+                  <th class="text-end" scope="col" data-sortable data-sort-key="total"><i class="ri-money-dollar-circle-line me-1" aria-hidden="true"></i>TOTAL GASTADO</th>
+                  <th class="text-end pe-3 no-sort" scope="col"><i class="ri-settings-3-line me-1" aria-hidden="true"></i>ACCIONES</th>
+                </tr>
+              </thead>
+              <tbody id="clientsTableBody">
+                <tr>
+                  <td colspan="6" class="text-center text-muted py-5">
+                    <i class="ri-loader-4-line ri-spin"></i> Cargando clientes...
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+    </div>
+    <div class="card-footer border-0 p-0" id="clientPgFooter"></div>
+  </div>
+</AdminLayout>
+
+<!-- Create / Edit modal -->
+<div class="modal fade" id="clientModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-sm">
+    <div class="modal-content">
+      <div class="modal-header py-2">
+        <h5 class="modal-title" id="clientModalTitle">Nuevo Cliente</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="clientForm">
+          <input type="hidden" id="clientEditId" />
+          <div class="mb-3">
+            <label class="form-label small">Nombre <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" id="clientNombre" required placeholder="Nombre completo" />
+          </div>
+          <div class="mb-3">
+            <label class="form-label small">Celular</label>
+            <input type="text" class="form-control" id="clientCelular" placeholder="Ej: 0991234567" />
+          </div>
+          <div class="d-flex justify-content-end gap-2">
+            <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancelar</button>
+            <button type="submit" class="btn btn-primary btn-sm" id="clientSubmitBtn">Crear</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Purchase history modal -->
+<div class="modal fade" id="clientHistoryModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-content" style="max-height:90vh;">
+
+      <!-- Dynamic header (filled by JS) -->
+      <div id="chHeader" class="ch-header p-4 pb-0">
+        <div class="d-flex align-items-center gap-3 mb-3">
+          <div class="ch-avatar" id="chAvatar">?</div>
+          <div class="flex-grow-1">
+            <h5 class="mb-0 fw-bold" id="chName">—</h5>
+            <div class="text-muted small" id="chSub">Cargando...</div>
+          </div>
+          <button type="button" class="btn-close align-self-start" data-bs-dismiss="modal"></button>
+        </div>
+
+        <!-- Stat boxes -->
+        <div id="chStatsRow" class="row g-0 border-top" style="display:none!important;">
+          <div class="col ch-stat-box border-end">
+            <div class="ch-stat-val text-primary" id="chStatTotal">—</div>
+            <div class="ch-stat-lbl">Total gastado</div>
+          </div>
+          <div class="col ch-stat-box border-end">
+            <div class="ch-stat-val" id="chStatCount">—</div>
+            <div class="ch-stat-lbl">Compras</div>
+          </div>
+          <div class="col ch-stat-box border-end">
+            <div class="ch-stat-val" id="chStatAvg">—</div>
+            <div class="ch-stat-lbl">Promedio</div>
+          </div>
+          <div class="col ch-stat-box">
+            <div class="ch-stat-val text-success" id="chStatMax">—</div>
+            <div class="ch-stat-lbl">Compra máx.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sales list -->
+      <div class="modal-body p-3" id="chBody">
+        <div class="text-center py-5 text-muted">
+          <i class="ri-loader-4-line ri-spin fs-2"></i>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index:9999;">
+  <div id="clientToast" class="toast align-items-center border-0" role="alert" aria-live="assertive">
+    <div class="d-flex">
+      <div class="toast-body fw-semibold" id="clientToastMsg"></div>
+      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+    </div>
+  </div>
+</div>
+
+<script is:inline>
+(function () {
+  const API =
+    window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+      ? 'http://localhost:4000'
+      : ''
+
+  const fmt = (n) => '$' + Number(n || 0).toFixed(2)
+  const esc = (s) =>
+    String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')
+  const fmtDate = (v) =>
+    v ? new Date(v).toLocaleString('es-MX', { dateStyle: 'medium', timeStyle: 'short' }) : '—'
+  const initials = (name) =>
+    (name || '?').split(' ').slice(0, 2).map((w) => w[0]).join('').toUpperCase()
+  const avatarColor = (name) => {
+    const colors = ['#6f42c1','#0d6efd','#0dcaf0','#198754','#fd7e14','#d63384']
+    let h = 0
+    for (let i = 0; i < (name || '').length; i++) h = (h * 31 + name.charCodeAt(i)) % colors.length
+    return colors[Math.abs(h)]
+  }
+
+  let allClients = []
+  let clientSalesCache = {}
+  let currentFilter = 'all'
+  let currentPage = 1
+  let pageSize = 25
+  let sortKey = null
+  let sortDir = 'asc'
+
+  document.addEventListener('DOMContentLoaded', () => {
+    loadClients()
+    const searchEl = document.getElementById('clientSearch')
+    const clearEl  = document.getElementById('clientSearchClear')
+    searchEl.addEventListener('input', () => {
+      currentPage = 1
+      clearEl.style.display = searchEl.value ? '' : 'none'
+      renderTable()
+    })
+    clearEl.addEventListener('click', () => {
+      searchEl.value = ''; clearEl.style.display = 'none'; currentPage = 1; renderTable()
+    })
+    document.getElementById('newClientBtn').addEventListener('click', openCreate)
+    document.getElementById('clientForm').addEventListener('submit', handleSubmit)
+
+    // Select all checkbox
+    document.getElementById('clSelectAll').addEventListener('change', function () {
+      const checked = this.checked
+      document.querySelectorAll('.cl-row-cb').forEach((cb) => { cb.checked = checked })
+      updateClBulkUI()
+    })
+
+    // Status filter tabs
+    document.querySelectorAll('.cl-filter').forEach((btn) => {
+      btn.addEventListener('click', function () {
+        document.querySelectorAll('.cl-filter').forEach((b) => {
+          b.classList.remove('active', 'border-bottom', 'border-2', 'border-dark')
+        })
+        this.classList.add('active', 'border-bottom', 'border-2', 'border-dark')
+        currentFilter = this.dataset.filter
+        currentPage = 1
+        renderTable()
+      })
+    })
+
+    // Sortable headers
+    document.querySelectorAll('table[aria-label="Tabla de clientes"] thead th[data-sortable]').forEach((th) => {
+      th.style.cursor = 'pointer'
+      th.addEventListener('click', () => {
+        const key = th.dataset.sortKey
+        if (sortKey === key) {
+          sortDir = sortDir === 'asc' ? 'desc' : 'asc'
+        } else {
+          sortKey = key
+          sortDir = 'asc'
+        }
+        document.querySelectorAll('table[aria-label="Tabla de clientes"] thead th[data-sortable]').forEach((h) => {
+          h.classList.remove('sort-asc', 'sort-desc')
+        })
+        th.classList.add(sortDir === 'asc' ? 'sort-asc' : 'sort-desc')
+        currentPage = 1
+        renderTable()
+      })
+    })
+  })
+
+  async function loadClients() {
+    try {
+      const [clientsRes, statsRes] = await Promise.all([
+        fetch(API + '/api/clients'),
+        fetch(API + '/api/clients/stats')
+      ])
+      allClients = await clientsRes.json()
+      clientSalesCache = statsRes.ok ? await statsRes.json() : {}
+      updateClCounts()
+      renderTable()
+      document.getElementById('clSelectAll').checked = false
+      updateClBulkUI()
+    } catch {
+      document.getElementById('clientsTableBody').innerHTML =
+        '<tr><td colspan="6" class="text-center text-danger py-4">Error al cargar clientes</td></tr>'
+    }
+  }
+
+  function updateClCounts() {
+    const withPurchases = allClients.filter((c) => {
+      const stats = clientSalesCache[String(c._id)] || { count: 0 }
+      return stats.count > 0
+    })
+    document.getElementById('clCountAll').textContent = String(allClients.length)
+    document.getElementById('clCountActive').textContent = String(withPurchases.length)
+    document.getElementById('clCountInactive').textContent = String(allClients.length - withPurchases.length)
+  }
+
+  function getFilteredClients() {
+    const q = (document.getElementById('clientSearch')?.value || '').toLowerCase().trim()
+    let source = allClients.filter((c) => {
+      const stats = clientSalesCache[String(c._id)] || { count: 0 }
+      if (currentFilter === 'con-compras' && stats.count === 0) return false
+      if (currentFilter === 'sin-compras' && stats.count > 0) return false
+      return !q || (c.nombre||'').toLowerCase().includes(q) || (c.celular||'').toLowerCase().includes(q)
+    })
+    if (sortKey) {
+      source.sort((a, b) => {
+        const sa = clientSalesCache[String(a._id)] || { count: 0, total: 0 }
+        const sb = clientSalesCache[String(b._id)] || { count: 0, total: 0 }
+        let av, bv
+        if (sortKey === 'count') { av = sa.count; bv = sb.count }
+        else if (sortKey === 'total') { av = sa.total; bv = sb.total }
+        else { av = String(a[sortKey] ?? '').toLowerCase(); bv = String(b[sortKey] ?? '').toLowerCase() }
+        if (av < bv) return sortDir === 'asc' ? -1 : 1
+        if (av > bv) return sortDir === 'asc' ? 1 : -1
+        return 0
+      })
+    }
+    return source
+  }
+
+  function renderTable() {
+    const filtered = getFilteredClients()
+    const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize))
+    currentPage = Math.min(currentPage, totalPages)
+    const start = (currentPage - 1) * pageSize
+    const paginated = filtered.slice(start, start + pageSize)
+
+    const tbody = document.getElementById('clientsTableBody')
+    if (!filtered.length) {
+      tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-5">Sin resultados</td></tr>'
+      renderClientPagination(0, 1)
+      return
+    }
+
+    tbody.innerHTML = paginated.map((c) => {
+      const stats = clientSalesCache[String(c._id)] || { total: 0, count: 0 }
+      return `
+        <tr>
+          <td class="checkbox-column align-middle">
+            <div class="form-check">
+              <input class="form-check-input cl-row-cb" type="checkbox" data-id="${c._id}" aria-label="Seleccionar cliente" />
+            </div>
+          </td>
+          <td class="ps-3 align-middle">
+            <div class="d-flex align-items-center gap-2">
+              <div style="width:32px;height:32px;border-radius:50%;background:${avatarColor(c.nombre)};display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700;color:#fff;flex-shrink:0;">${esc(initials(c.nombre))}</div>
+              <span class="fw-semibold">${esc(c.nombre)}</span>
+            </div>
+          </td>
+          <td class="align-middle text-muted">${esc(c.celular || '—')}</td>
+          <td class="text-center align-middle">
+            <span class="badge rounded-pill ${stats.count > 0 ? 'text-bg-primary' : 'bg-secondary bg-opacity-25 text-muted'}">${stats.count}</span>
+          </td>
+          <td class="text-end align-middle fw-semibold ${stats.total > 0 ? 'text-success' : 'text-muted'}">${fmt(stats.total)}</td>
+          <td class="text-end pe-3 align-middle">
+            <button class="btn btn-sm btn-icon history-btn" data-id="${c._id}" data-nombre="${esc(c.nombre)}" title="Historial de compras">
+              <i class="ri-file-list-3-line"></i>
+            </button>
+            <button class="btn btn-sm btn-icon edit-btn" data-id="${c._id}" title="Editar">
+              <i class="ri-pencil-line"></i>
+            </button>
+            <button class="btn btn-sm btn-icon text-danger delete-btn" data-id="${c._id}" title="Eliminar">
+              <i class="ri-delete-bin-line"></i>
+            </button>
+          </td>
+        </tr>`
+    }).join('')
+
+    tbody.querySelectorAll('.history-btn').forEach((btn) =>
+      btn.addEventListener('click', () => openHistory(btn.dataset.id, btn.dataset.nombre))
+    )
+    tbody.querySelectorAll('.edit-btn').forEach((btn) =>
+      btn.addEventListener('click', () => openEdit(btn.dataset.id))
+    )
+    tbody.querySelectorAll('.delete-btn').forEach((btn) =>
+      btn.addEventListener('click', () => deleteClient(btn.dataset.id))
+    )
+    tbody.querySelectorAll('.cl-row-cb').forEach((cb) =>
+      cb.addEventListener('change', updateClBulkUI)
+    )
+    document.getElementById('clSelectAll').checked = false
+    updateClBulkUI()
+
+    renderClientPagination(filtered.length, totalPages)
+  }
+
+  function updateClBulkUI() {
+    const checked = document.querySelectorAll('.cl-row-cb:checked')
+    const bulk = document.getElementById('clBulkActions')
+    const countEl = document.getElementById('clSelectedCount')
+    if (!bulk) return
+    if (checked.length > 0) {
+      bulk.classList.remove('d-none')
+      if (countEl) countEl.textContent = checked.length
+    } else {
+      bulk.classList.add('d-none')
+    }
+  }
+
+  function renderClientPagination(total, totalPages) {
+    const footer = document.getElementById('clientPgFooter')
+    if (!footer) return
+    if (total === 0) { footer.innerHTML = ''; return }
+
+    const startRecord = (currentPage - 1) * pageSize + 1
+    const endRecord   = Math.min(currentPage * pageSize, total)
+    const pages = []
+    for (let p = Math.max(1, currentPage - 2); p <= Math.min(totalPages, currentPage + 2); p++) pages.push(p)
+
+    footer.innerHTML = `
+      <div style="padding:.5rem 1rem;">
+        <div class="row">
+          <div class="col-sm-12 col-md-5 d-flex align-items-center justify-content-center justify-content-md-start table-toolbar">
+            <div class="dataTables_length">
+              <select class="form-select form-select-sm form-select-solid" id="clientPgSize">
+                ${[5,10,25,50,100].map(n=>`<option value="${n}"${pageSize===n?' selected':''}>${n}</option>`).join('')}
+              </select>
+            </div>
+            <div class="dataTables_info ms-2" style="font-size:.875rem;color:var(--bs-secondary-color);">Showing ${startRecord} to ${endRecord} of ${total} records</div>
+          </div>
+          <div class="col-sm-12 col-md-7 d-flex align-items-center justify-content-center justify-content-md-end">
+            <div class="dataTables_paginate paging_simple_numbers">
+              <ul class="pagination">
+                <li class="paginate_button page-item previous${currentPage===1?' disabled':''}">
+                  <button class="page-link" id="clientPrevPg"><i class="ri-arrow-left-line"></i></button>
+                </li>
+                ${pages.map(p=>`<li class="paginate_button page-item${p===currentPage?' active':''}"><button class="page-link cli-pg-num" data-page="${p}">${p}</button></li>`).join('')}
+                <li class="paginate_button page-item next${currentPage===totalPages?' disabled':''}">
+                  <button class="page-link" id="clientNextPg"><i class="ri-arrow-right-line"></i></button>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>`
+
+    document.getElementById('clientPgSize').addEventListener('change', (e) => { pageSize = Number(e.target.value); currentPage = 1; renderTable() })
+    document.getElementById('clientPrevPg')?.addEventListener('click', () => { if (currentPage > 1) { currentPage--; renderTable() } })
+    document.getElementById('clientNextPg')?.addEventListener('click', () => { if (currentPage < totalPages) { currentPage++; renderTable() } })
+    footer.querySelectorAll('.cli-pg-num').forEach(btn => btn.addEventListener('click', () => { currentPage = Number(btn.dataset.page); renderTable() }))
+  }
+
+  // ── History ─────────────────────────────────────────────────────────
+  async function openHistory(id, nombre) {
+    const color = avatarColor(nombre)
+
+    // Reset modal
+    document.getElementById('chAvatar').textContent = initials(nombre)
+    document.getElementById('chAvatar').style.background = color
+    document.getElementById('chName').textContent = nombre
+    document.getElementById('chSub').textContent = 'Cargando historial...'
+    document.getElementById('chStatsRow').style.display = 'none'
+    document.getElementById('chBody').innerHTML =
+      '<div class="text-center py-5 text-muted"><i class="ri-loader-4-line ri-spin fs-3"></i></div>'
+
+    new bootstrap.Modal(document.getElementById('clientHistoryModal')).show()
+
+    try {
+      const res = await fetch(`${API}/api/clients/${id}/sales`)
+      const sales = await res.json()
+
+      const active = sales.filter((s) => s.estado === 'activa')
+      const totalGastado = active.reduce((sum, s) => sum + Number(s.total || 0), 0)
+      const avgCompra = active.length ? totalGastado / active.length : 0
+      const maxCompra = active.length ? Math.max(...active.map((s) => Number(s.total || 0))) : 0
+
+      // Subtitle
+      document.getElementById('chSub').innerHTML =
+        active.length
+          ? `<span class="text-success"><i class="ri-checkbox-circle-line me-1"></i>${active.length} compra${active.length !== 1 ? 's' : ''} activa${active.length !== 1 ? 's' : ''}</span>` +
+            (sales.length > active.length ? ` <span class="text-muted">&nbsp;·&nbsp;${sales.length - active.length} anulada${sales.length - active.length !== 1 ? 's' : ''}</span>` : '')
+          : '<span class="text-muted">Sin compras registradas</span>'
+
+      // Stats row
+      if (sales.length) {
+        document.getElementById('chStatTotal').textContent = fmt(totalGastado)
+        document.getElementById('chStatCount').textContent = sales.length
+        document.getElementById('chStatAvg').textContent = fmt(avgCompra)
+        document.getElementById('chStatMax').textContent = fmt(maxCompra)
+        document.getElementById('chStatsRow').style.removeProperty('display')
+      }
+
+      // Empty state
+      if (!sales.length) {
+        document.getElementById('chBody').innerHTML = `
+          <div class="ch-empty">
+            <i class="ri-shopping-bag-line" style="font-size:3rem;display:block;margin-bottom:.75rem;color:var(--bs-primary);opacity:.4;"></i>
+            <div class="fw-semibold mb-1">Sin compras aún</div>
+            <div class="small text-muted">Este cliente no tiene ventas registradas.</div>
+          </div>`
+        return
+      }
+
+      // Sale cards
+      document.getElementById('chBody').innerHTML = `<div class="d-flex flex-column gap-3">${sales.map((sale) => {
+        const isActive = sale.estado === 'activa'
+        const accentClass = isActive ? 'activa' : 'anulada'
+        const statusColor = isActive ? 'success' : 'secondary'
+
+        const itemsHtml = (sale.items || []).map((d) => `
+          <div class="sale-item-row">
+            <div class="d-flex align-items-center gap-2">
+              <span class="badge rounded-pill bg-secondary bg-opacity-25 text-muted" style="font-size:.68rem;min-width:24px;">${d.cantidad}</span>
+              <span>${esc(d.producto_id?.nombre || '—')}</span>
+            </div>
+            <span class="fw-semibold" style="white-space:nowrap;">${fmt(d.subtotal)}</span>
+          </div>`).join('')
+
+        const vendorName = sale.vendedor_id?.nombre || sale.vendedor_nombre || '—'
+
+        return `
+          <div class="sale-card d-flex" style="border-left:4px solid ${isActive ? '#198754' : '#6c757d'}!important;">
+            <div class="flex-grow-1 p-3">
+              <!-- Card header -->
+              <div class="d-flex align-items-start justify-content-between mb-2">
+                <div>
+                  <div class="fw-bold" style="font-size:.9rem;">
+                    <i class="ri-calendar-line me-1 opacity-50"></i>${fmtDate(sale.fecha)}
+                  </div>
+                  <div class="d-flex align-items-center gap-2 mt-1">
+                    <span style="font-size:.78rem;" class="text-muted">
+                      <i class="ri-user-3-line me-1"></i>${esc(vendorName)}
+                    </span>
+                    <span class="badge-payment"><i class="ri-bank-card-line me-1"></i>${esc(sale.metodo_pago || '—')}</span>
+                    <span class="badge text-bg-${statusColor}" style="font-size:.65rem;">${sale.estado}</span>
+                  </div>
+                </div>
+                <div class="text-end ms-3">
+                  <div class="fw-bold fs-6 ${isActive ? 'text-primary' : 'text-muted'}">${fmt(sale.total)}</div>
+                  <div class="text-muted" style="font-size:.7rem;">${(sale.items||[]).length} producto${(sale.items||[]).length !== 1 ? 's' : ''}</div>
+                </div>
+              </div>
+
+              <!-- Items -->
+              ${(sale.items||[]).length
+                ? `<div class="rounded-2 p-2" style="background:rgba(0,0,0,.03);">${itemsHtml}</div>`
+                : '<div class="text-muted small fst-italic">Sin detalle de productos</div>'
+              }
+            </div>
+          </div>`
+      }).join('')}</div>`
+
+    } catch {
+      document.getElementById('chBody').innerHTML =
+        '<div class="text-danger text-center py-4"><i class="ri-error-warning-line me-1"></i>Error al cargar el historial</div>'
+    }
+  }
+
+  // ── CRUD ──────────────────────────────────────────────────────────────
+  function openCreate() {
+    document.getElementById('clientEditId').value = ''
+    document.getElementById('clientNombre').value = ''
+    document.getElementById('clientCelular').value = ''
+    document.getElementById('clientModalTitle').textContent = 'Nuevo Cliente'
+    document.getElementById('clientSubmitBtn').textContent = 'Crear'
+    new bootstrap.Modal(document.getElementById('clientModal')).show()
+  }
+
+  async function openEdit(id) {
+    const client = allClients.find((c) => c._id === id)
+    if (!client) return
+    document.getElementById('clientEditId').value = client._id
+    document.getElementById('clientNombre').value = client.nombre
+    document.getElementById('clientCelular').value = client.celular || ''
+    document.getElementById('clientModalTitle').textContent = 'Editar Cliente'
+    document.getElementById('clientSubmitBtn').textContent = 'Actualizar'
+    new bootstrap.Modal(document.getElementById('clientModal')).show()
+  }
+
+  async function handleSubmit(e) {
+    e.preventDefault()
+    const id = document.getElementById('clientEditId').value
+    const payload = {
+      nombre: document.getElementById('clientNombre').value.trim(),
+      celular: document.getElementById('clientCelular').value.trim()
+    }
+    if (!payload.nombre) return
+
+    const btn = document.getElementById('clientSubmitBtn')
+    btn.disabled = true; btn.textContent = 'Guardando...'
+    const user = window.__authUser || {}
+
+    try {
+      const url = id ? `${API}/api/clients/${id}` : `${API}/api/clients`
+      const method = id ? 'PUT' : 'POST'
+      const res = await fetch(url, {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-id': user.id || '',
+          'x-user-name': user.nombre || ''
+        },
+        body: JSON.stringify(payload)
+      })
+      if (!res.ok) throw new Error()
+      bootstrap.Modal.getInstance(document.getElementById('clientModal')).hide()
+      showToast(id ? 'Cliente actualizado.' : 'Cliente creado.', 'success')
+      await loadClients()
+    } catch {
+      showToast('Error al guardar el cliente', 'danger')
+    } finally {
+      btn.disabled = false
+      btn.textContent = id ? 'Actualizar' : 'Crear'
+    }
+  }
+
+  async function deleteClient(id) {
+    const client = allClients.find((c) => c._id === id)
+    const ok = await window.showConfirm({
+      title: `Eliminar cliente`,
+      message: `¿Eliminar a <strong>${client?.nombre || 'este cliente'}</strong>? El historial de compras se mantendrá, pero el cliente no podrá asociarse a nuevas ventas.`,
+      confirmText: 'Sí, eliminar',
+      type: 'danger'
+    })
+    if (!ok) return
+    const user = window.__authUser || {}
+    try {
+      const res = await fetch(`${API}/api/clients/${id}`, {
+        method: 'DELETE',
+        headers: { 'x-user-id': user.id || '', 'x-user-name': user.nombre || '' }
+      })
+      if (!res.ok) throw new Error()
+      showToast('Cliente eliminado.', 'warning')
+      await loadClients()
+    } catch {
+      showToast('Error al eliminar', 'danger')
+    }
+  }
+
+  function showToast(msg, type = 'success') {
+    const el = document.getElementById('clientToast')
+    document.getElementById('clientToastMsg').textContent = msg
+    el.className = `toast align-items-center border-0 text-bg-${type}`
+    new bootstrap.Toast(el, { delay: 3000 }).show()
+  }
+})()
+</script>

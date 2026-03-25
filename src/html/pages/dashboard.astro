@@ -1,0 +1,454 @@
+---
+import AdminLayout from '../layouts/admin/admin-layout.astro'
+import PageHeader from '../components/common/page-header.astro'
+import { getPathPrefix } from '../../utils/path.js'
+
+const dashboardHeaderProps = {
+  title: 'Dashboard'
+}
+
+const dashboardChartScripts = `<!-- Chart.js CDN Integration -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  const apiBase =
+    window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+      ? 'http://localhost:4000'
+      : '';
+
+  let paymentChart = null;
+  let salesChart = null;
+
+  // ---- Payment methods management ----
+  async function loadPaymentMethods() {
+    try {
+      const res = await fetch(apiBase + '/api/settings/payment-methods');
+      const data = await res.json();
+      renderPaymentMethodsList(data.methods || []);
+      return data.methods || [];
+    } catch (e) {
+      console.error('Error cargando metodos de pago:', e);
+      return ['Efectivo', 'QR'];
+    }
+  }
+
+  function renderPaymentMethodsList(methods) {
+    const container = document.getElementById('paymentMethodsList');
+    if (!container) return;
+    container.innerHTML = '';
+    methods.forEach((m) => {
+      const badge = document.createElement('span');
+      badge.className = 'badge d-flex align-items-center gap-1 text-bg-secondary';
+      badge.innerHTML = m + '<button type="button" class="btn-close btn-close-white ms-1" style="font-size:0.55rem;" aria-label="Eliminar" data-method="' + encodeURIComponent(m) + '"></button>';
+      badge.querySelector('button').addEventListener('click', async () => {
+        await deletePaymentMethod(m);
+      });
+      container.appendChild(badge);
+    });
+  }
+
+  async function addPaymentMethod(name) {
+    try {
+      const res = await fetch(apiBase + '/api/settings/payment-methods', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ method: name })
+      });
+      const data = await res.json();
+      if (!res.ok) { alert(data.message || 'Error al agregar'); return; }
+      renderPaymentMethodsList(data.methods);
+      updatePaymentChart(data.methods);
+    } catch (e) {
+      alert('Error de conexion');
+    }
+  }
+
+  async function deletePaymentMethod(name) {
+    try {
+      const res = await fetch(apiBase + '/api/settings/payment-methods/' + encodeURIComponent(name), { method: 'DELETE' });
+      const data = await res.json();
+      renderPaymentMethodsList(data.methods);
+      updatePaymentChart(data.methods);
+    } catch (e) {
+      alert('Error de conexion');
+    }
+  }
+
+  // ---- Chart colors ----
+  const CHART_COLORS = ['#6f42c1', '#198754', '#0d6efd', '#ffc107', '#dc3545', '#0dcaf0', '#fd7e14'];
+
+  function updatePaymentChart(methods) {
+    if (!paymentChart) return;
+    const labels = paymentChart.data.labels;
+    const existingData = {};
+    labels.forEach((l, i) => { existingData[l] = paymentChart.data.datasets[0].data[i] || 0; });
+    paymentChart.data.labels = methods;
+    paymentChart.data.datasets[0].data = methods.map((m) => existingData[m] || 0);
+    paymentChart.data.datasets[0].backgroundColor = methods.map((_, i) => CHART_COLORS[i % CHART_COLORS.length]);
+    paymentChart.update();
+  }
+
+  // ---- Main data loader ----
+  async function loadDashboard() {
+    try {
+      const [summaryRes, productsRes, paymentMethods] = await Promise.all([
+        fetch(apiBase + '/api/summary'),
+        fetch(apiBase + '/api/products'),
+        loadPaymentMethods()
+      ]);
+
+      if (!summaryRes.ok || !productsRes.ok) return;
+
+      const summary = await summaryRes.json();
+      const products = await productsRes.json();
+
+      const activeProducts = products.filter((p) => Boolean(p.activo)).length;
+      const lowStockProducts = products.filter((p) => {
+        const s = Number(p.stock || 0);
+        return s > 0 && s <= 10;
+      }).length;
+
+      // KPIs
+      const el = (id) => document.getElementById(id);
+      if (el('kpi-sales-today'))    el('kpi-sales-today').textContent    = String(summary.sales_today || 0);
+      if (el('kpi-revenue-today'))  el('kpi-revenue-today').textContent  = '$' + Number(summary.revenue_today || 0).toFixed(2);
+      if (el('kpi-products-active')) el('kpi-products-active').textContent = String(activeProducts || summary.products || 0);
+      if (el('kpi-products-low-stock')) el('kpi-products-low-stock').textContent = String(lowStockProducts);
+      if (el('kpi-clients-total')) el('kpi-clients-total').textContent   = String(summary.clients || 0);
+
+      // Low stock list
+      const lowStock = products
+        .filter((p) => p.activo && Number(p.stock || 0) <= 10)
+        .sort((a, b) => Number(a.stock || 0) - Number(b.stock || 0))
+        .slice(0, 8);
+      const lowStockEl = document.getElementById('lowStockList');
+      if (lowStockEl) {
+        if (!lowStock.length) {
+          lowStockEl.innerHTML = '<div class="text-center text-muted py-4 small">Sin productos con stock bajo</div>';
+        } else {
+          lowStockEl.innerHTML = '<table class="table table-sm mb-0">' +
+            '<thead class="table-dark"><tr><th class="ps-3">Producto</th><th class="text-center">Stock</th></tr></thead>' +
+            '<tbody>' +
+            lowStock.map(function(p) {
+              var s = Number(p.stock || 0);
+              var cls = s === 0 ? 'danger' : 'warning';
+              return '<tr>' +
+                '<td class="ps-3 align-middle"><div class="fw-medium small">' + escHtml(p.nombre) + '</div>' +
+                '<div class="text-muted" style="font-size:.7rem;">' + escHtml(p.codigo || '') + '</div></td>' +
+                '<td class="text-center align-middle"><span class="badge text-bg-' + cls + '">' + s + '</span></td>' +
+                '</tr>';
+            }).join('') +
+            '</tbody></table>';
+        }
+      }
+
+      // Sales trend chart (last 7 days real data)
+      const last7 = summary.sales_last_7_days || [];
+      const salesLabels = last7.map((d) => d.label);
+      const salesData   = last7.map((d) => d.total);
+
+      const ctxSales = document.getElementById('salesChart');
+      if (ctxSales) {
+        if (salesChart) salesChart.destroy();
+        salesChart = new Chart(ctxSales, {
+          type: 'line',
+          data: {
+            labels: salesLabels,
+            datasets: [{
+              label: 'Ventas (USD)',
+              data: salesData,
+              borderColor: '#6f42c1',
+              backgroundColor: 'rgba(111,66,193,0.12)',
+              fill: true,
+              tension: 0.4,
+              pointBackgroundColor: '#6f42c1'
+            }]
+          },
+          options: {
+            responsive: true,
+            plugins: { legend: { display: false } },
+            scales: {
+              y: {
+                beginAtZero: true,
+                ticks: { callback: (v) => '$' + v }
+              }
+            }
+          }
+        });
+      }
+
+      // Payment methods donut (real data from sales)
+      const paymentData = summary.sales_by_payment || [];
+      const paymentLabels = paymentMethods;
+      const paymentValues = paymentMethods.map((m) => {
+        const found = paymentData.find((d) => d._id === m);
+        return found ? found.count : 0;
+      });
+
+      const ctxPayment = document.getElementById('paymentMethodsChart');
+      if (ctxPayment) {
+        if (paymentChart) paymentChart.destroy();
+        paymentChart = new Chart(ctxPayment, {
+          type: 'doughnut',
+          data: {
+            labels: paymentLabels,
+            datasets: [{
+              data: paymentValues,
+              backgroundColor: paymentLabels.map((_, i) => CHART_COLORS[i % CHART_COLORS.length])
+            }]
+          },
+          options: {
+            responsive: true,
+            plugins: { legend: { position: 'bottom' } }
+          }
+        });
+      }
+
+    } catch (error) {
+      console.error('Error cargando dashboard:', error);
+    }
+  }
+
+  // ---- Top clients ----
+  let topClientsCurrentPeriod = 'all';
+
+  async function loadTopClients(period) {
+    topClientsCurrentPeriod = period;
+    const container = document.getElementById('topClientsList');
+    if (!container) return;
+    container.innerHTML = '<div class="text-center text-muted py-3"><i class="ri-loader-4-line ri-spin"></i></div>';
+
+    try {
+      const res = await fetch(apiBase + '/api/summary/top-clients?period=' + period);
+      const data = await res.json();
+
+      if (!data.length) {
+        container.innerHTML = '<div class="text-center text-muted py-3 small">Sin datos para el período seleccionado</div>';
+        return;
+      }
+
+      const max = data[0].total_comprado || 1;
+      container.innerHTML = data.map((c, i) => {
+        const pct = Math.round((c.total_comprado / max) * 100);
+        const medals = ['🥇','🥈','🥉'];
+        const medal = medals[i] || '';
+        return '<div class="mb-3">' +
+          '<div class="d-flex justify-content-between align-items-center mb-1">' +
+            '<span class="fw-medium small">' + medal + ' ' + escHtml(c.nombre || 'Sin nombre') + '</span>' +
+            '<div class="text-end">' +
+              '<span class="fw-bold text-primary small">$' + Number(c.total_comprado||0).toFixed(2) + '</span>' +
+              '<span class="text-muted ms-2" style="font-size:.72rem;">' + c.cantidad_compras + ' compra(s)</span>' +
+            '</div>' +
+          '</div>' +
+          '<div class="progress" style="height:5px;">' +
+            '<div class="progress-bar bg-primary" style="width:' + pct + '%"></div>' +
+          '</div>' +
+        '</div>';
+      }).join('');
+    } catch {
+      container.innerHTML = '<div class="text-muted small text-center py-2">Error al cargar</div>';
+    }
+  }
+
+  function escHtml(str) {
+    return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  document.addEventListener('DOMContentLoaded', function() {
+    loadDashboard();
+    loadTopClients('all');
+
+    // Period filter buttons for top clients
+    document.querySelectorAll('.top-clients-filter').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        document.querySelectorAll('.top-clients-filter').forEach(function(b) { b.classList.remove('active'); });
+        this.classList.add('active');
+        loadTopClients(this.dataset.period);
+      });
+    });
+
+    // Add payment method form
+    const addMethodForm = document.getElementById('addPaymentMethodForm');
+    if (addMethodForm) {
+      addMethodForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const input = document.getElementById('newPaymentMethodInput');
+        const name = input ? input.value.trim() : '';
+        if (!name) return;
+        await addPaymentMethod(name);
+        if (input) input.value = '';
+      });
+    }
+  });
+</script>
+`
+---
+
+<AdminLayout
+  currentPath="dashboard"
+  title="Dashboard"
+  description="Resumen general del negocio: ventas, productos, clientes y metodos de pago"
+  pageScript={dashboardChartScripts}
+>
+  <PageHeader {...dashboardHeaderProps} />
+
+  <div class="row">
+    <div class="col">
+
+      <!-- KPI Cards -->
+      <div class="row g-4 mb-4">
+        <div class="col-xl col-md-6">
+          <div class="small-box text-bg-primary">
+            <div class="inner">
+              <h3 id="kpi-sales-today">0</h3>
+              <p>Ventas hoy</p>
+            </div>
+            <div class="small-box-icon">
+              <i class="ri-money-dollar-circle-fill"></i>
+            </div>
+            <a href={getPathPrefix('/sales')} class="small-box-footer">
+              Ver todas <i class="ri-arrow-right-line"></i>
+            </a>
+          </div>
+        </div>
+        <div class="col-xl col-md-6">
+          <div class="small-box" style="background:#6f42c1;color:#fff;">
+            <div class="inner">
+              <h3 id="kpi-revenue-today">$0.00</h3>
+              <p>Ingresos hoy</p>
+            </div>
+            <div class="small-box-icon">
+              <i class="ri-wallet-3-fill"></i>
+            </div>
+            <a href={getPathPrefix('/sales')} class="small-box-footer" style="background:rgba(0,0,0,0.15);">
+              Ver ventas <i class="ri-arrow-right-line"></i>
+            </a>
+          </div>
+        </div>
+        <div class="col-xl col-md-6">
+          <div class="small-box text-bg-success">
+            <div class="inner">
+              <h3 id="kpi-products-active">0</h3>
+              <p>Productos activos</p>
+            </div>
+            <div class="small-box-icon">
+              <i class="ri-box-3-fill"></i>
+            </div>
+            <a href={getPathPrefix('/tables/datatable')} class="small-box-footer">
+              Ir a productos <i class="ri-arrow-right-line"></i>
+            </a>
+          </div>
+        </div>
+        <div class="col-xl col-md-6">
+          <div class="small-box text-bg-info">
+            <div class="inner">
+              <h3 id="kpi-products-low-stock">0</h3>
+              <p>Stock bajo (&le;10)</p>
+            </div>
+            <div class="small-box-icon">
+              <i class="ri-alarm-warning-fill"></i>
+            </div>
+            <a href={getPathPrefix('/inventory-movements')} class="small-box-footer">
+              Revisar inventario <i class="ri-arrow-right-line"></i>
+            </a>
+          </div>
+        </div>
+        <div class="col-xl col-md-6">
+          <div class="small-box text-bg-warning">
+            <div class="inner">
+              <h3 id="kpi-clients-total">0</h3>
+              <p>Clientes registrados</p>
+            </div>
+            <div class="small-box-icon">
+              <i class="ri-user-3-fill"></i>
+            </div>
+            <a href={getPathPrefix('/clients')} class="small-box-footer">
+              Ver clientes <i class="ri-arrow-right-line"></i>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Charts row -->
+      <div class="row g-4 mb-4">
+        <div class="col-lg-8">
+          <div class="card h-100">
+            <div class="card-header border-0 pb-0">
+              <h5 class="card-title mb-0">Tendencia de Ventas — Últimos 7 días</h5>
+            </div>
+            <div class="card-body">
+              <canvas id="salesChart"></canvas>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-4">
+          <div class="card h-100">
+            <div class="card-header border-0 pb-0">
+              <h5 class="card-title mb-0">Métodos de Pago</h5>
+            </div>
+            <div class="card-body d-flex flex-column">
+              <canvas id="paymentMethodsChart" class="mb-3"></canvas>
+              <div class="border-top pt-3 mt-auto">
+                <p class="text-muted small mb-2">Métodos configurados</p>
+                <div id="paymentMethodsList" class="d-flex flex-wrap gap-2 mb-3"></div>
+                <form id="addPaymentMethodForm" class="d-flex gap-2">
+                  <input type="text" id="newPaymentMethodInput" class="form-control form-control-sm"
+                    placeholder="Nuevo método..." maxlength="30" />
+                  <button type="submit" class="btn btn-sm btn-primary text-nowrap">
+                    <i class="ri-add-line"></i> Agregar
+                  </button>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Top Clientes row -->
+      <div class="row g-4">
+        <div class="col-lg-6">
+          <div class="card h-100">
+            <div class="card-header border-0 d-flex align-items-center justify-content-between flex-wrap gap-2">
+              <h5 class="card-title mb-0">
+                <i class="ri-vip-crown-line me-2 text-warning"></i>Top Clientes
+              </h5>
+              <div class="d-flex gap-1">
+                <button class="btn btn-sm btn-outline-secondary top-clients-filter" data-period="week">Semana</button>
+                <button class="btn btn-sm btn-outline-secondary top-clients-filter" data-period="month">Mes</button>
+                <button class="btn btn-sm btn-primary top-clients-filter active" data-period="all">Todo</button>
+              </div>
+            </div>
+            <div class="card-body" id="topClientsList">
+              <div class="text-center text-muted py-3">
+                <i class="ri-loader-4-line ri-spin"></i>
+              </div>
+            </div>
+            <div class="card-footer border-0 pt-0">
+              <a href={getPathPrefix('/clients')} class="btn btn-sm btn-outline-secondary w-100">
+                Ver todos los clientes <i class="ri-arrow-right-line ms-1"></i>
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-6">
+          <div class="card h-100">
+            <div class="card-header border-0">
+              <h5 class="card-title mb-0">
+                <i class="ri-alarm-warning-line me-2 text-warning"></i>Productos con Stock Bajo
+              </h5>
+            </div>
+            <div class="card-body p-0" id="lowStockList">
+              <div class="text-center text-muted py-3"><i class="ri-loader-4-line ri-spin"></i></div>
+            </div>
+            <div class="card-footer border-0 pt-0">
+              <a href={getPathPrefix('/inventory-movements')} class="btn btn-sm btn-outline-warning w-100">
+                Registrar entrada de stock <i class="ri-arrow-right-line ms-1"></i>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</AdminLayout>

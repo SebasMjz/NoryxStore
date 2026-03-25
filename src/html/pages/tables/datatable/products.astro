@@ -1,0 +1,353 @@
+---
+import { getAssetPrefix } from '../../../../utils/path.js'
+import IframeLayout from '../../../layouts/admin/ifram-layout.astro'
+import CreateProductModal from '../../../components/modals/create-product-modal.astro'
+
+// Register DataTables styles with versioning for better dependency management
+const pageStyles = `
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/datatables.net-bs5@1.13.7/css/dataTables.bootstrap5.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/datatables.net-responsive-bs5@2.5.0/css/responsive.bootstrap5.min.css">
+`
+
+// Register DataTables scripts with proper initialization sequence
+const pageScript = `<!-- DataTables Dependencies -->
+<!-- jQuery Core -->
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
+<!-- DataTables Core -->
+<script src="https://cdn.jsdelivr.net/npm/datatables.net@1.13.7/js/jquery.dataTables.min.js"></script>
+<!-- Custom DataTables Initialization -->
+<script src="${getAssetPrefix('/assets/vendor/datatables/datatables.init.js')}"></script>
+<script type="module" src="${getAssetPrefix('/assets/js/pages/tables/datatable.js')}"></script>
+`
+---
+
+<IframeLayout
+  title="Productos"
+  description="Tabla de productos con filtros de inventario"
+  pageScript={pageScript}
+  pageCss={pageStyles}
+>
+  <div class="row">
+    <div class="col-12">
+      <div class="astero-table">
+        <!-- Status Navigation Filter -->
+        <nav
+          class="navbar navbar-expand overflow-auto p-0 mb-4"
+          aria-label="Product status filters"
+        >
+          <div class="navbar-nav gap-3">
+            <a
+              href="javascript:void(0)"
+              data-table-filter="status"
+              data-type="navbar"
+              data-value="all"
+              class="nav-link fw-medium px-1 active border-bottom border-2 border-dark d-flex align-items-start"
+              aria-current="page"
+            >
+              <i class="ri-apps-2-line me-1" aria-hidden="true"></i>Todos <span
+                id="productsCountAll"
+                class="badge bg-primary-subtle text-primary ms-1"
+                aria-label="Total de productos">0</span
+              >
+            </a>
+            <a
+              href="javascript:void(0)"
+              data-table-filter="status"
+              data-type="navbar"
+              data-value="activo"
+              class="nav-link fw-medium px-1 d-flex align-items-start"
+            >
+              <i class="ri-check-double-line me-1" aria-hidden="true"></i>Activos <span
+                id="productsCountActive"
+                class="badge bg-success-subtle text-success ms-1"
+                aria-label="Productos activos">0</span
+              >
+            </a>
+            <a
+              href="javascript:void(0)"
+              data-table-filter="status"
+              data-type="navbar"
+              data-value="inactivo"
+              class="nav-link fw-medium px-1 d-flex align-items-start"
+            >
+              <i class="ri-pause-circle-line me-1" aria-hidden="true"></i>Inactivos <span
+                id="productsCountInactive"
+                class="badge bg-secondary-subtle text-secondary ms-1"
+                aria-label="Productos inactivos">0</span
+              >
+            </a>
+          </div>
+        </nav>
+
+        <!-- Search and Actions Bar -->
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
+          <!-- Search Input -->
+          <div class="search-wrapper">
+            <i class="ri-search-2-line search-icon" aria-hidden="true"></i>
+            <input
+              type="text"
+              class="form-control search-input"
+              data-table-filter="search"
+              placeholder="Buscar productos..."
+              aria-label="Buscar productos"
+            />
+            <button
+              type="button"
+              class="btn-clear search-clear"
+              style="display: none;"
+              aria-label="Limpiar búsqueda"
+            >
+              <i class="ri-close-line" aria-hidden="true"></i>
+            </button>
+          </div>
+
+          <!-- Table Actions -->
+          <div class="d-flex gap-2 flex-wrap">
+            <button
+              class="btn btn-primary gap-1"
+              data-bs-toggle="modal"
+              data-bs-target="#createProductModal"
+            >
+              <i class="ri-add-line me-1" aria-hidden="true"></i> Nuevo producto
+            </button>
+            <!-- Filter Button -->
+            <button
+              class="btn btn-outline-primary gap-1"
+              data-bs-toggle="offcanvas"
+              data-bs-target="#filterDrawer"
+              data-table-toolbar="filter"
+              aria-label="Abrir filtros"
+            >
+              <i class="ri-filter-3-line me-1" aria-hidden="true"></i> Filtros
+            </button>
+
+            <!-- Filter Drawer -->
+            <div
+              class="offcanvas offcanvas-end filter-drawer datatable-filters"
+              tabindex="-1"
+              id="filterDrawer"
+              aria-labelledby="filterDrawerLabel"
+              data-table-toolbar="filter"
+            >
+              <div class="offcanvas-header border-bottom">
+                <h5 class="offcanvas-title" id="filterDrawerLabel">
+                  <i class="ri-filter-3-line me-1" aria-hidden="true"></i> Filtros
+                </h5>
+                <button
+                  type="button"
+                  class="btn-close"
+                  data-bs-dismiss="offcanvas"
+                  aria-label="Close filters"></button>
+              </div>
+              <div class="offcanvas-body p-0">
+                <div data-table-filter-form="form" class="filter-form h-100 d-flex flex-column">
+                  <div class="filter-form-fields p-4">
+                    <!-- Product Status Filter -->
+                    <div class="mb-4">
+                      <label class="form-label fw-medium" for="category">Estado</label>
+                      <select
+                        class="form-select"
+                        id="category"
+                        name="category"
+                        data-table-filter="category"
+                        data-type="select"
+                        data-label="Estado"
+                        aria-label="Filtrar por estado"
+                      >
+                        <option value="">Todos</option>
+                        <option value="activo" data-title="Activo">Activo</option>
+                        <option value="inactivo" data-title="Inactivo">Inactivo</option>
+                      </select>
+                    </div>
+
+                    <!-- Price Range Filter -->
+                    <div class="mb-4">
+                      <label class="form-label fw-medium">Rango de Precio</label>
+                      <div class="row g-2">
+                        <div class="col-6">
+                          <div class="input-group">
+                            <span class="input-group-text" aria-hidden="true">$</span>
+                            <input
+                              type="number"
+                              class="form-control"
+                              id="min_price"
+                              placeholder="Mín"
+                              name="min_price"
+                              data-table-filter="min_price"
+                              data-type="text"
+                              data-label="Precio mín."
+                              aria-label="Precio mínimo"
+                            />
+                          </div>
+                        </div>
+                        <div class="col-6">
+                          <div class="input-group">
+                            <span class="input-group-text" aria-hidden="true">$</span>
+                            <input
+                              type="number"
+                              class="form-control"
+                              id="max_price"
+                              placeholder="Máx"
+                              name="max_price"
+                              data-table-filter="max_price"
+                              data-type="text"
+                              data-label="Precio máx."
+                              aria-label="Precio máximo"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Stock Status Filter -->
+                    <div class="mb-4">
+                      <label class="form-label fw-medium">Estado de Stock</label>
+                      <div class="form-check mb-2">
+                        <input
+                          class="form-check-input"
+                          type="checkbox"
+                          value="in_stock"
+                          id="stockIn"
+                          name="stock"
+                          data-table-filter="stock"
+                          data-type="checkbox"
+                          data-label="Estado de Stock"
+                          data-title="Con Stock"
+                        />
+                        <label class="form-check-label" for="stockIn">
+                          <span class="badge bg-success-subtle text-success">
+                            <i class="ri-checkbox-circle-line me-1" aria-hidden="true"></i>Con Stock
+                          </span>
+                        </label>
+                      </div>
+                      <div class="form-check mb-2">
+                        <input
+                          class="form-check-input"
+                          type="checkbox"
+                          value="low_stock"
+                          id="stockLow"
+                          name="stock"
+                          data-table-filter="stock"
+                          data-type="checkbox"
+                          data-label="Estado de Stock"
+                          data-title="Stock Bajo"
+                        />
+                        <label class="form-check-label" for="stockLow">
+                          <span class="badge bg-warning-subtle text-warning">
+                            <i class="ri-error-warning-line me-1" aria-hidden="true"></i>Stock Bajo
+                          </span>
+                        </label>
+                      </div>
+                      <div class="form-check">
+                        <input
+                          class="form-check-input"
+                          type="checkbox"
+                          value="out_of_stock"
+                          id="stockOut"
+                          name="stock"
+                          data-table-filter="stock"
+                          data-type="checkbox"
+                          data-label="Estado de Stock"
+                          data-title="Sin Stock"
+                        />
+                        <label class="form-check-label" for="stockOut">
+                          <span class="badge bg-danger-subtle text-danger">
+                            <i class="ri-close-circle-line me-1" aria-hidden="true"></i>Sin Stock
+                          </span>
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Filter Actions -->
+                  <div class="border-top p-3 mt-auto">
+                    <div class="d-flex gap-2">
+                      <button
+                        type="submit"
+                        class="btn btn-primary flex-grow-1"
+                        data-table-filter-btn="filter"
+                      >
+                        <i class="ri-filter-3-line me-1" aria-hidden="true"></i> Aplicar Filtros
+                      </button>
+                      <button type="button" class="btn btn-light" data-table-filter-btn="reset">
+                        <i class="ri-refresh-line me-1" aria-hidden="true"></i> Limpiar
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Bulk Actions -->
+            <div class="bulk-actions-div d-none" data-table-toolbar="bulk_selected">
+              <span class="selected-count me-2" aria-live="polite"
+                ><span data-table-select="selected_count"></span> seleccionados</span
+              >
+              <button
+                class="btn btn-light-danger shadow-none align-items-center gap-2 bulk-delete"
+                data-table-select="delete_selected"
+                aria-label="Eliminar seleccionados"
+              >
+                <i class="ri-delete-bin-2-line me-1" aria-hidden="true"></i> Eliminar
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Table Container -->
+        <div class="table-container">
+          <!-- Active Filters Display -->
+          <div
+            class="d-none flex-column flex-lg-row justify-content-start filter-datas mb-3"
+            data-filters
+            aria-live="polite"
+          >
+            <strong class="fs-6 me-2 text-primary">Filtros Activos:</strong>
+            <div class="d-flex flex-row flex-wrap align-items-center" data-filters-data></div>
+          </div>
+
+          <!-- Products Table -->
+          <div class="table-responsive border-0">
+              <table
+              class="table table-hover table-row-dashed mb-0"
+              id="table_products"
+              aria-label="Tabla de gestión de productos"
+            >
+              <thead>
+                <tr>
+                  <th class="checkbox-column fs-6" style="width: 20px;" scope="col">
+                    <div class="form-check">
+                      <input
+                        class="form-check-input select-all-checkbox"
+                        type="checkbox"
+                        data-table-select="select_all"
+                        aria-label="Seleccionar todos los productos"
+                      />
+                    </div>
+                  </th>
+                  <th scope="col"
+                    ><i class="ri-shopping-bag-3-line me-1" aria-hidden="true"></i>PRODUCTO</th
+                  >
+                  <th scope="col"><i class="ri-barcode-line me-1" aria-hidden="true"></i>SKU</th>
+                  <th scope="col"><i class="ri-stack-line me-1" aria-hidden="true"></i>STOCK</th>
+                  <th scope="col"
+                    ><i class="ri-money-dollar-circle-line me-1" aria-hidden="true"></i>PRECIO</th
+                  >
+                  <th scope="col"><i class="ri-flag-2-line me-1" aria-hidden="true"></i>ESTADO</th>
+                  <th class="text-end pe-3" scope="col"
+                    ><i class="ri-settings-3-line me-1" aria-hidden="true"></i>ACCIONES</th
+                  >
+                </tr>
+              </thead>
+              <tbody>
+                <!-- Table body content will be dynamically populated -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <CreateProductModal />
+</IframeLayout>

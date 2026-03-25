@@ -1,0 +1,494 @@
+---
+import { getAssetPrefix, getPathPrefix } from '../../utils/path.js'
+
+const dashboardPath = getPathPrefix('/dashboard')
+const bannerPath = getAssetPrefix('/assets/img/noryx/NoryxStoreBanner.jpeg')
+const logoPath = getAssetPrefix('/assets/img/noryx/NoryxStoreLogo.jpeg')
+const cssPath = import.meta.env.DEV ? '/dist/css/style.css' : '/css/style.min.css'
+const skinPath = import.meta.env.DEV
+  ? '/dist/assets/vendor/css/skin.css'
+  : '/assets/vendor/css/skin.css'
+---
+
+<!doctype html>
+<html lang="es" data-bs-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Login | Noryx Store</title>
+
+    <link rel="icon" href={getAssetPrefix('/favicon.ico')} sizes="32x32" />
+    <link rel="icon" href={getAssetPrefix('/icon.svg')} type="image/svg+xml" />
+    <link rel="apple-touch-icon" href={getAssetPrefix('/apple-touch-icon.png')} />
+    <link rel="manifest" href={getAssetPrefix('/manifest.webmanifest')} />
+
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/remixicon@4.6.0/fonts/remixicon.css"
+    />
+    <link rel="stylesheet" href={cssPath} />
+    <link rel="stylesheet" href={skinPath} />
+
+    <style>
+      :root {
+        --noryx-purple: #7533f9;
+        --noryx-purple-dark: #5a20d4;
+        --noryx-purple-glow: rgba(117, 51, 249, 0.2);
+        /* Mismos tonos del dashboard en dark mode */
+        --noryx-bg: #212529;
+        --noryx-panel: #1a1d21;
+        --noryx-card: #2b3035;
+        --noryx-border: rgba(255, 255, 255, 0.08);
+      }
+
+      html, body {
+        height: 100%;
+        margin: 0;
+      }
+
+      body {
+        background-color: var(--noryx-bg);
+        display: flex;
+        min-height: 100vh;
+        overflow: hidden;
+      }
+
+      /* ── Panel izquierdo ── */
+      .login-visual {
+        display: none;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        width: 55%;
+        min-height: 100vh;
+        position: relative;
+        overflow: hidden;
+        background-color: var(--noryx-panel);
+      }
+
+      @media (min-width: 768px) {
+        .login-visual {
+          display: flex;
+        }
+      }
+
+      .login-visual-bg {
+        position: absolute;
+        inset: 0;
+        background-size: cover;
+        background-position: center;
+        filter: brightness(0.3) saturate(1.2);
+        z-index: 0;
+      }
+
+      .login-visual-overlay {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(to bottom, rgba(26, 29, 33, 0.5), rgba(26, 29, 33, 0.85));
+        z-index: 1;
+      }
+
+      .login-visual-content {
+        position: relative;
+        z-index: 2;
+        text-align: center;
+        padding: 2rem;
+      }
+
+      .brand-logo {
+        width: 80px;
+        height: 80px;
+        border-radius: 1rem;
+        object-fit: cover;
+        border: 2px solid var(--noryx-border);
+        box-shadow: 0 0 30px var(--noryx-purple-glow);
+        margin-bottom: 1.5rem;
+      }
+
+      .brand-tagline {
+        color: rgba(255, 255, 255, 0.5);
+        font-size: 0.9rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        margin-top: 0.5rem;
+      }
+
+      .brand-divider {
+        width: 48px;
+        height: 2px;
+        background: linear-gradient(to right, transparent, var(--noryx-purple), transparent);
+        margin: 1.25rem auto;
+      }
+
+      .brand-description {
+        color: rgba(255, 255, 255, 0.55);
+        font-size: 0.875rem;
+        max-width: 300px;
+        line-height: 1.6;
+      }
+
+      .glow-dot { display: none; }
+
+      /* ── Panel derecho (formulario) ── */
+      .login-form-panel {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem 1.5rem;
+        background-color: var(--noryx-bg);
+        min-height: 100vh;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .login-form-panel::before,
+      .login-form-panel::after {
+        display: none;
+      }
+
+      .login-wrap {
+        width: 100%;
+        max-width: 400px;
+        position: relative;
+        z-index: 1;
+      }
+
+      /* Banner mobile */
+      .login-mobile-banner {
+        display: block;
+        width: 100%;
+        height: 140px;
+        object-fit: cover;
+        border-radius: 0.875rem;
+        margin-bottom: 1.75rem;
+        border: 1px solid var(--noryx-border);
+        box-shadow: 0 4px 24px var(--noryx-purple-glow);
+      }
+
+      @media (min-width: 768px) {
+        .login-mobile-banner {
+          display: none;
+        }
+      }
+
+      /* Encabezado del formulario */
+      .login-header {
+        margin-bottom: 2rem;
+      }
+
+      .login-header .brand-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: rgba(117, 51, 249, 0.12);
+        border: 1px solid var(--noryx-border);
+        border-radius: 2rem;
+        padding: 0.3rem 0.85rem;
+        font-size: 0.8rem;
+        color: var(--noryx-purple);
+        font-weight: 600;
+        letter-spacing: 0.04em;
+        margin-bottom: 1rem;
+      }
+
+      .login-title {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: #f2f4f7;
+        margin-bottom: 0.3rem;
+        letter-spacing: -0.02em;
+      }
+
+      .login-subtitle {
+        color: rgba(255, 255, 255, 0.4);
+        font-size: 0.875rem;
+      }
+
+      /* Campos del formulario */
+      .form-label {
+        color: rgba(255, 255, 255, 0.65);
+        font-size: 0.8rem;
+        font-weight: 600;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        margin-bottom: 0.4rem;
+      }
+
+      .form-control {
+        background-color: rgba(255, 255, 255, 0.04) !important;
+        border-color: rgba(255, 255, 255, 0.1) !important;
+        color: #f2f4f7 !important;
+        border-radius: 0.6rem;
+        padding: 0.65rem 0.875rem;
+        transition: border-color 0.2s, box-shadow 0.2s;
+      }
+
+      .form-control::placeholder {
+        color: rgba(255, 255, 255, 0.25) !important;
+      }
+
+      .form-control:focus {
+        background-color: rgba(255, 255, 255, 0.06) !important;
+        border-color: rgba(255, 255, 255, 0.25) !important;
+        box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.06) !important;
+      }
+
+      /* Botón submit */
+      .btn-noryx {
+        background: linear-gradient(135deg, var(--noryx-purple), var(--noryx-purple-dark));
+        border: none;
+        border-radius: 0.6rem;
+        color: #fff;
+        font-weight: 600;
+        padding: 0.7rem 1rem;
+        letter-spacing: 0.03em;
+        box-shadow: 0 4px 20px var(--noryx-purple-glow);
+        transition: transform 0.15s, box-shadow 0.15s, opacity 0.15s;
+      }
+
+      .btn-noryx:hover {
+        opacity: 0.92;
+        transform: translateY(-1px);
+        box-shadow: 0 6px 28px rgba(117, 51, 249, 0.4);
+        color: #fff;
+      }
+
+      .btn-noryx:active {
+        transform: translateY(0);
+      }
+
+      .btn-noryx:disabled {
+        opacity: 0.6;
+        transform: none;
+      }
+
+      /* Link olvide contraseña */
+      .forgot-link {
+        color: var(--noryx-purple);
+        font-size: 0.8rem;
+        text-decoration: none;
+        transition: opacity 0.2s;
+      }
+
+      .forgot-link:hover {
+        opacity: 0.75;
+        color: var(--noryx-purple);
+      }
+
+      /* Checkbox */
+      .form-check-input:checked {
+        background-color: var(--noryx-purple);
+        border-color: var(--noryx-purple);
+      }
+
+      .form-check-input:focus {
+        box-shadow: 0 0 0 3px var(--noryx-purple-glow);
+        border-color: var(--noryx-purple);
+      }
+
+      .form-check-label {
+        font-size: 0.8rem;
+        color: rgba(255, 255, 255, 0.5);
+      }
+
+      /* Divider */
+      .form-divider {
+        height: 1px;
+        background: linear-gradient(to right, transparent, rgba(255,255,255,0.08), transparent);
+        margin: 1.75rem 0;
+      }
+
+      .login-footer-note {
+        text-align: center;
+        font-size: 0.75rem;
+        color: rgba(255, 255, 255, 0.25);
+      }
+
+      .login-footer-note .dot {
+        display: inline-block;
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: #22c55e;
+        margin-right: 0.35rem;
+        vertical-align: middle;
+        animation: pulse-dot 2s ease-in-out infinite;
+      }
+
+      @keyframes pulse-dot {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.4; }
+      }
+
+      .login-feedback {
+        min-height: 1.25rem;
+        font-size: 0.8rem;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Panel visual (solo desktop) -->
+    <div class="login-visual">
+      <div class="login-visual-bg" style={`background-image: url('${bannerPath}')`}></div>
+      <div class="login-visual-overlay"></div>
+      <div class="glow-dot glow-dot-1"></div>
+      <div class="glow-dot glow-dot-2"></div>
+      <div class="login-visual-content">
+        <img
+          src={logoPath}
+          alt="Noryx Store"
+          class="brand-logo"
+        />
+        <h2 style="color: #f0f0ff; font-weight: 700; font-size: 1.75rem; margin: 0;">Noryx Store</h2>
+        <p class="brand-tagline">Panel de administracion</p>
+        <div class="brand-divider"></div>
+        <p class="brand-description">
+          Gestiona tu inventario, ventas, clientes y movimientos en un solo lugar.
+        </p>
+      </div>
+    </div>
+
+    <!-- Panel del formulario -->
+    <div class="login-form-panel">
+      <div class="login-wrap">
+
+        <!-- Banner para mobile -->
+        <img
+          src={bannerPath}
+          alt="Noryx Store"
+          class="login-mobile-banner"
+        />
+
+        <!-- Encabezado -->
+        <div class="login-header">
+          <div class="brand-badge">
+            <i class="ri-store-3-line"></i>
+            Noryx Store
+          </div>
+          <h1 class="login-title">Iniciar sesion</h1>
+          <p class="login-subtitle">Accede como administrador o vendedor.</p>
+        </div>
+
+        <!-- Formulario -->
+        <form id="loginForm" data-redirect={dashboardPath} novalidate>
+          <div class="mb-3">
+            <label for="username" class="form-label">Usuario</label>
+            <input
+              id="username"
+              name="username"
+              type="text"
+              class="form-control"
+              placeholder="tu_usuario"
+              autocomplete="username"
+              required
+            />
+          </div>
+
+          <div class="mb-3">
+            <label for="password" class="form-label">Contrasena</label>
+            <input
+              id="password"
+              name="password"
+              type="password"
+              class="form-control"
+              placeholder="••••••••"
+              autocomplete="current-password"
+              required
+            />
+          </div>
+
+          <div class="d-flex justify-content-between align-items-center mb-4">
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" value="1" id="remember" />
+              <label class="form-check-label" for="remember">Recordarme</label>
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-noryx w-100">
+            <i class="ri-login-box-line me-2"></i>Entrar
+          </button>
+
+          <div id="loginFeedback" class="mt-3 login-feedback"></div>
+        </form>
+
+        <div class="form-divider"></div>
+
+      </div>
+    </div>
+
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+        const form = document.getElementById('loginForm')
+        const feedback = document.getElementById('loginFeedback')
+        if (!(form instanceof HTMLFormElement) || !(feedback instanceof HTMLElement)) {
+          return
+        }
+
+        const submitButton = form.querySelector('button[type="submit"]')
+        const usernameInput = form.querySelector('#username')
+        const passwordInput = form.querySelector('#password')
+
+        if (
+          !(submitButton instanceof HTMLButtonElement) ||
+          !(usernameInput instanceof HTMLInputElement) ||
+          !(passwordInput instanceof HTMLInputElement)
+        ) {
+          return
+        }
+
+        form.addEventListener('submit', async (event) => {
+          event.preventDefault()
+
+          const apiBase =
+            window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+              ? 'http://localhost:4000'
+              : ''
+
+          const username = String(usernameInput.value || '').trim()
+          const password = String(passwordInput.value || '')
+
+          feedback.className = 'mt-3 login-feedback'
+          feedback.textContent = ''
+
+          if (!username || !password) {
+            feedback.classList.add('text-danger')
+            feedback.textContent = 'Ingresa usuario y contrasena.'
+            return
+          }
+
+          submitButton.disabled = true
+          submitButton.innerHTML =
+            '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Entrando...'
+
+          try {
+            const response = await fetch(apiBase + '/api/login', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({ username, password })
+            })
+
+            const result = await response.json()
+
+            if (!response.ok || !result.ok) {
+              feedback.classList.add('text-danger')
+              feedback.textContent = result.message || 'No se pudo iniciar sesion.'
+              return
+            }
+
+            sessionStorage.setItem('auth_user', JSON.stringify(result.user))
+            window.location.href = form.dataset.redirect || '/dashboard'
+          } catch (_error) {
+            feedback.classList.add('text-danger')
+            feedback.textContent = 'Error de red. Intenta de nuevo.'
+          } finally {
+            submitButton.disabled = false
+            submitButton.innerHTML = '<i class="ri-login-box-line me-2"></i>Entrar'
+          }
+        })
+      })
+    </script>
+  </body>
+</html>

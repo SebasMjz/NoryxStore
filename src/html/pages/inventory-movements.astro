@@ -1,0 +1,440 @@
+---
+import { getPathPrefix } from '../../utils/path.js'
+import AdminLayout from '../layouts/admin/admin-layout.astro'
+import PageHeader from '../components/common/page-header.astro'
+import CreateMovementModal from '../components/modals/create-movement-modal.astro'
+
+const pageHeaderProps = {
+  title: 'Movimientos de inventario',
+  breadcrumbs: [
+    { label: 'Dashboard', href: getPathPrefix('/dashboard') },
+    { label: 'Movimientos', class: 'active' }
+  ]
+}
+---
+
+<AdminLayout
+  title="Movimientos de inventario"
+  description="Historial de entradas y salidas de inventario"
+  currentPath="inventory-movements"
+>
+  <PageHeader {...pageHeaderProps} />
+
+  <div class="card">
+    <div class="card-body">
+      <div class="astero-table">
+
+        <!-- Status Filter Tabs -->
+        <nav class="navbar navbar-expand overflow-auto p-0 mb-4" aria-label="Filtros de movimientos">
+          <div class="navbar-nav gap-3">
+            <a href="javascript:void(0)" class="nav-link fw-medium px-1 mv-filter active border-bottom border-2 border-dark d-flex align-items-start" data-filter="all" aria-current="page">
+              <i class="ri-apps-2-line me-1" aria-hidden="true"></i>Todos
+              <span id="mvCountAll" class="badge bg-primary-subtle text-primary ms-1">0</span>
+            </a>
+            <a href="javascript:void(0)" class="nav-link fw-medium px-1 mv-filter d-flex align-items-start" data-filter="entrada">
+              <i class="ri-arrow-down-circle-line me-1" aria-hidden="true"></i>Entradas
+              <span id="mvCountIn" class="badge bg-success-subtle text-success ms-1">0</span>
+            </a>
+            <a href="javascript:void(0)" class="nav-link fw-medium px-1 mv-filter d-flex align-items-start" data-filter="salida">
+              <i class="ri-arrow-up-circle-line me-1" aria-hidden="true"></i>Salidas
+              <span id="mvCountOut" class="badge bg-danger-subtle text-danger ms-1">0</span>
+            </a>
+          </div>
+        </nav>
+
+        <!-- Search & Actions -->
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
+          <div class="search-wrapper">
+            <i class="ri-search-2-line search-icon" aria-hidden="true"></i>
+            <input type="text" id="mvSearch" class="form-control search-input"
+              placeholder="Buscar producto o motivo..." autocomplete="off" aria-label="Buscar movimientos" />
+            <button type="button" id="mvSearchClear" class="btn-clear search-clear" style="display:none;" aria-label="Limpiar búsqueda">
+              <i class="ri-close-line"></i>
+            </button>
+          </div>
+          <div class="d-flex gap-2 flex-wrap">
+            <button class="btn btn-primary gap-1" data-bs-toggle="modal" data-bs-target="#createMovementModal">
+              <i class="ri-add-line me-1" aria-hidden="true"></i> Nuevo movimiento
+            </button>
+            <!-- Bulk Actions -->
+            <div class="bulk-actions-div d-none" id="mvBulkActions">
+              <span class="selected-count me-2" aria-live="polite"><span id="mvSelectedCount">0</span> seleccionados</span>
+              <button class="btn btn-light-danger shadow-none align-items-center gap-2" id="mvBulkDeleteBtn" aria-label="Eliminar seleccionados">
+                <i class="ri-delete-bin-2-line me-1" aria-hidden="true"></i> Eliminar
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Table -->
+        <div class="table-container">
+          <div class="table-responsive border-0">
+            <table class="table table-hover table-row-dashed mb-0" aria-label="Movimientos de inventario">
+              <thead>
+                <tr>
+                  <th class="checkbox-column fs-6" style="width: 20px;" scope="col">
+                    <div class="form-check">
+                      <input class="form-check-input" type="checkbox" id="mvSelectAll" aria-label="Seleccionar todos" />
+                    </div>
+                  </th>
+                  <th scope="col" data-sortable data-sort-key="fecha"><i class="ri-calendar-line me-1" aria-hidden="true"></i>FECHA</th>
+                  <th scope="col" data-sortable data-sort-key="producto"><i class="ri-shopping-bag-3-line me-1" aria-hidden="true"></i>PRODUCTO</th>
+                  <th class="text-center" scope="col" data-sortable data-sort-key="tipo"><i class="ri-exchange-line me-1" aria-hidden="true"></i>TIPO</th>
+                  <th class="text-center" scope="col" data-sortable data-sort-key="cantidad"><i class="ri-stack-line me-1" aria-hidden="true"></i>CANTIDAD</th>
+                  <th class="text-end" scope="col" data-sortable data-sort-key="precio"><i class="ri-money-dollar-circle-line me-1" aria-hidden="true"></i>P. COMPRA</th>
+                  <th scope="col"><i class="ri-file-text-line me-1" aria-hidden="true"></i>MOTIVO</th>
+                  <th scope="col" data-sortable data-sort-key="usuario"><i class="ri-user-3-line me-1" aria-hidden="true"></i>USUARIO</th>
+                  <th class="text-end pe-3 no-sort" scope="col"><i class="ri-settings-3-line me-1" aria-hidden="true"></i>ACCIONES</th>
+                </tr>
+              </thead>
+              <tbody id="mvTableBody">
+                <tr>
+                  <td colspan="9" class="text-center text-muted py-5">
+                    <i class="ri-loader-4-line ri-spin"></i> Cargando movimientos...
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+    </div>
+    <div class="card-footer border-0 p-0" id="mvFooter"></div>
+  </div>
+
+  <CreateMovementModal />
+</AdminLayout>
+
+<script is:inline>
+(function () {
+  const API =
+    window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+      ? 'http://localhost:4000'
+      : ''
+
+  const esc = (s) =>
+    String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')
+  const fmtDate = (v) =>
+    v ? new Date(v).toLocaleString('es-MX', { dateStyle: 'short', timeStyle: 'short' }) : '—'
+  const fmt = (n) => '$' + Number(n || 0).toFixed(2)
+
+  let allMovements = []
+  let currentFilter = 'all'
+  let currentPage = 1
+  let pageSize = 25
+  let sortKey = null
+  let sortDir = 'asc'
+
+  document.addEventListener('DOMContentLoaded', () => {
+    loadMovements()
+
+    const searchEl = document.getElementById('mvSearch')
+    const clearEl  = document.getElementById('mvSearchClear')
+    searchEl.addEventListener('input', () => {
+      currentPage = 1
+      clearEl.style.display = searchEl.value ? '' : 'none'
+      renderTable()
+    })
+    clearEl.addEventListener('click', () => {
+      searchEl.value = ''; clearEl.style.display = 'none'; currentPage = 1; renderTable()
+    })
+
+    document.querySelectorAll('.mv-filter').forEach((btn) => {
+      btn.addEventListener('click', function () {
+        document.querySelectorAll('.mv-filter').forEach((b) => {
+          b.classList.remove('active', 'border-bottom', 'border-2', 'border-dark')
+        })
+        this.classList.add('active', 'border-bottom', 'border-2', 'border-dark')
+        currentFilter = this.dataset.filter
+        currentPage = 1
+        renderTable()
+      })
+    })
+
+    document.getElementById('createMovementModal')?.addEventListener('hidden.bs.modal', loadMovements)
+
+    // Select all checkbox
+    document.getElementById('mvSelectAll').addEventListener('change', function () {
+      const checked = this.checked
+      document.querySelectorAll('.mv-row-cb').forEach((cb) => { cb.checked = checked })
+      updateMvBulkUI()
+    })
+
+    // Sortable headers
+    document.querySelectorAll('table[aria-label="Movimientos de inventario"] thead th[data-sortable]').forEach((th) => {
+      th.style.cursor = 'pointer'
+      th.addEventListener('click', () => {
+        const key = th.dataset.sortKey
+        if (sortKey === key) {
+          sortDir = sortDir === 'asc' ? 'desc' : 'asc'
+        } else {
+          sortKey = key
+          sortDir = 'asc'
+        }
+        document.querySelectorAll('table[aria-label="Movimientos de inventario"] thead th[data-sortable]').forEach((h) => {
+          h.classList.remove('sort-asc', 'sort-desc')
+        })
+        th.classList.add(sortDir === 'asc' ? 'sort-asc' : 'sort-desc')
+        currentPage = 1
+        renderTable()
+      })
+    })
+  })
+
+  async function loadMovements() {
+    try {
+      const res = await fetch(API + '/api/inventory-movements')
+      if (!res.ok) throw new Error()
+      allMovements = await res.json()
+      updateCounts()
+      renderTable()
+    } catch {
+      document.getElementById('mvTableBody').innerHTML =
+        '<tr><td colspan="9" class="text-center text-danger py-4">Error al cargar movimientos</td></tr>'
+    }
+  }
+
+  function updateCounts() {
+    document.getElementById('mvCountAll').textContent = String(allMovements.length)
+    document.getElementById('mvCountIn').textContent  = String(allMovements.filter(m => m.tipo_movimiento === 'entrada').length)
+    document.getElementById('mvCountOut').textContent = String(allMovements.filter(m => m.tipo_movimiento === 'salida').length)
+  }
+
+  function getFiltered() {
+    const q = (document.getElementById('mvSearch')?.value || '').toLowerCase().trim()
+    let source = allMovements.filter((m) => {
+      const matchFilter = currentFilter === 'all' || m.tipo_movimiento === currentFilter
+      if (!matchFilter) return false
+      if (!q) return true
+      return (m.producto_id?.nombre || '').toLowerCase().includes(q) ||
+             (m.motivo || '').toLowerCase().includes(q)
+    })
+    if (sortKey) {
+      source.sort((a, b) => {
+        let av, bv
+        if (sortKey === 'fecha')    { av = new Date(a.fecha).getTime(); bv = new Date(b.fecha).getTime() }
+        else if (sortKey === 'producto') { av = (a.producto_id?.nombre || '').toLowerCase(); bv = (b.producto_id?.nombre || '').toLowerCase() }
+        else if (sortKey === 'tipo')     { av = a.tipo_movimiento || ''; bv = b.tipo_movimiento || '' }
+        else if (sortKey === 'cantidad') { av = Number(a.cantidad || 0); bv = Number(b.cantidad || 0) }
+        else if (sortKey === 'precio')   { av = Number(a.precio_compra || 0); bv = Number(b.precio_compra || 0) }
+        else if (sortKey === 'usuario')  { av = (a.usuario_id?.nombre || '').toLowerCase(); bv = (b.usuario_id?.nombre || '').toLowerCase() }
+        else { av = String(a[sortKey] ?? '').toLowerCase(); bv = String(b[sortKey] ?? '').toLowerCase() }
+        if (av < bv) return sortDir === 'asc' ? -1 : 1
+        if (av > bv) return sortDir === 'asc' ? 1 : -1
+        return 0
+      })
+    }
+    return source
+  }
+
+  function renderTable() {
+    const filtered = getFiltered()
+    const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize))
+    currentPage = Math.min(currentPage, totalPages)
+    const start = (currentPage - 1) * pageSize
+    const paginated = filtered.slice(start, start + pageSize)
+
+    const tbody = document.getElementById('mvTableBody')
+    if (!filtered.length) {
+      tbody.innerHTML = '<tr><td colspan="9" class="text-center text-muted py-5">Sin resultados</td></tr>'
+      renderPagination(0, 1)
+      return
+    }
+
+    const badgeMap = { entrada: 'success-subtle text-success', salida: 'danger-subtle text-danger' }
+    const iconMap  = { entrada: 'ri-arrow-down-circle-line', salida: 'ri-arrow-up-circle-line' }
+
+    tbody.innerHTML = paginated.map((m) => {
+      const tipo = m.tipo_movimiento || 'salida'
+      const badgeClass = badgeMap[tipo] || 'secondary'
+      const icon = iconMap[tipo] || 'ri-circle-line'
+      const precioCell = tipo === 'entrada' && m.precio_compra != null
+        ? `<span class="text-success fw-semibold">${fmt(m.precio_compra)}</span>`
+        : '<span class="text-muted">—</span>'
+
+      return `
+        <tr>
+          <td class="checkbox-column align-middle">
+            <div class="form-check">
+              <input class="form-check-input mv-row-cb" type="checkbox" data-id="${m._id}" aria-label="Seleccionar movimiento" />
+            </div>
+          </td>
+          <td class="ps-3 text-muted small align-middle">${esc(fmtDate(m.fecha))}</td>
+          <td class="align-middle">
+            <div class="fw-semibold small">${esc(m.producto_id?.nombre || '—')}</div>
+            ${m.producto_id?.codigo ? `<div class="text-muted" style="font-size:.72rem;">${esc(m.producto_id.codigo)}</div>` : ''}
+          </td>
+          <td class="text-center align-middle">
+            <span class="badge text-bg-${badgeClass}">
+              <i class="${icon} me-1"></i>${esc(tipo)}
+            </span>
+          </td>
+          <td class="text-center align-middle fw-bold">${esc(m.cantidad ?? '—')}</td>
+          <td class="text-end align-middle">${precioCell}</td>
+          <td class="align-middle text-muted small">${esc({ compra: 'Compra', reposicion: 'Reposición', venta: 'Venta', ajuste_manual: 'Ajuste manual' }[m.motivo] || m.motivo || '—')}</td>
+          <td class="align-middle text-muted small">${esc(m.usuario_id?.nombre || m.created_by_username || '—')}</td>
+          <td class="text-end pe-3 align-middle">
+            <button class="btn btn-sm btn-icon edit-mv-btn" data-id="${m._id}" title="Editar"><i class="ri-pencil-line"></i></button>
+            <button class="btn btn-sm btn-icon text-danger delete-mv-btn" data-id="${m._id}" title="Eliminar"><i class="ri-delete-bin-line"></i></button>
+          </td>
+        </tr>`
+    }).join('')
+
+    tbody.querySelectorAll('.delete-mv-btn').forEach((btn) =>
+      btn.addEventListener('click', () => deleteMovement(btn.dataset.id))
+    )
+    tbody.querySelectorAll('.edit-mv-btn').forEach((btn) =>
+      btn.addEventListener('click', () => editMovement(btn.dataset.id))
+    )
+    tbody.querySelectorAll('.mv-row-cb').forEach((cb) =>
+      cb.addEventListener('change', updateMvBulkUI)
+    )
+    document.getElementById('mvSelectAll').checked = false
+    updateMvBulkUI()
+
+    renderPagination(filtered.length, totalPages)
+  }
+
+  function updateMvBulkUI() {
+    const checked = document.querySelectorAll('.mv-row-cb:checked')
+    const bulk = document.getElementById('mvBulkActions')
+    const countEl = document.getElementById('mvSelectedCount')
+    if (!bulk) return
+    if (checked.length > 0) {
+      bulk.classList.remove('d-none')
+      if (countEl) countEl.textContent = checked.length
+    } else {
+      bulk.classList.add('d-none')
+    }
+  }
+
+  function renderPagination(total, totalPages) {
+    const footer = document.getElementById('mvFooter')
+    if (total === 0) { footer.innerHTML = ''; return }
+
+    const startRecord = (currentPage - 1) * pageSize + 1
+    const endRecord   = Math.min(currentPage * pageSize, total)
+    const pages = []
+    for (let p = Math.max(1, currentPage - 2); p <= Math.min(totalPages, currentPage + 2); p++) pages.push(p)
+
+    footer.innerHTML = `
+      <div style="padding:.5rem 1rem;">
+        <div class="row">
+          <div class="col-sm-12 col-md-5 d-flex align-items-center justify-content-center justify-content-md-start table-toolbar">
+            <div class="dataTables_length">
+              <select class="form-select form-select-sm form-select-solid" id="mvPgSize">
+                ${[5,10,25,50,100].map(n=>`<option value="${n}"${pageSize===n?' selected':''}>${n}</option>`).join('')}
+              </select>
+            </div>
+            <div class="dataTables_info ms-2" style="font-size:.875rem;color:var(--bs-secondary-color);">Showing ${startRecord} to ${endRecord} of ${total} records</div>
+          </div>
+          <div class="col-sm-12 col-md-7 d-flex align-items-center justify-content-center justify-content-md-end">
+            <div class="dataTables_paginate paging_simple_numbers">
+              <ul class="pagination">
+                <li class="paginate_button page-item previous${currentPage===1?' disabled':''}">
+                  <button class="page-link" id="mvPrevPg"><i class="ri-arrow-left-line"></i></button>
+                </li>
+                ${pages.map(p=>`<li class="paginate_button page-item${p===currentPage?' active':''}"><button class="page-link mv-pg-num" data-page="${p}">${p}</button></li>`).join('')}
+                <li class="paginate_button page-item next${currentPage===totalPages?' disabled':''}">
+                  <button class="page-link" id="mvNextPg"><i class="ri-arrow-right-line"></i></button>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>`
+
+    document.getElementById('mvPgSize').addEventListener('change', (e) => { pageSize = Number(e.target.value); currentPage = 1; renderTable() })
+    document.getElementById('mvPrevPg')?.addEventListener('click', () => { if (currentPage > 1) { currentPage--; renderTable() } })
+    document.getElementById('mvNextPg')?.addEventListener('click', () => { if (currentPage < totalPages) { currentPage++; renderTable() } })
+    footer.querySelectorAll('.mv-pg-num').forEach(btn => btn.addEventListener('click', () => { currentPage = Number(btn.dataset.page); renderTable() }))
+  }
+
+  async function deleteMovement(id) {
+    const ok = await window.showConfirm({
+      title: 'Eliminar movimiento',
+      message: '¿Estás seguro? Esta acción revertirá el stock del producto y no se puede deshacer.',
+      confirmText: 'Sí, eliminar',
+      type: 'danger'
+    })
+    if (!ok) return
+    try {
+      await fetch(`${API}/api/inventory-movements/${id}`, { method: 'DELETE' })
+      await loadMovements()
+    } catch {
+      alert('Error al eliminar el movimiento')
+    }
+  }
+
+  async function editMovement(id) {
+    try {
+      const res = await fetch(`${API}/api/inventory-movements/${id}`)
+      const movement = await res.json()
+      const modalEl = document.getElementById('createMovementModal')
+      if (!modalEl) return
+
+      // Open modal first so the picker is initialized
+      new bootstrap.Modal(modalEl).show()
+
+      // Wait a tick for DOMContentLoaded scripts inside the modal to be ready
+      await new Promise(r => setTimeout(r, 80))
+
+      modalEl.querySelector('.modal-title').textContent = 'Editar movimiento'
+      const form = document.getElementById('createMovementForm')
+      form.dataset.editId = movement._id
+
+      // Set product using the searchable picker
+      const picker = window.moveProductoPicker
+      const pid = movement.producto_id?._id || movement.producto_id || ''
+      if (picker && pid) {
+        const products = picker.getAll()
+        const prod = products.find(p => p._id === pid)
+        if (prod) picker.select(prod)
+      } else {
+        // Fallback: set hidden input directly
+        const hiddenProd = form.querySelector('#moveProducto')
+        if (hiddenProd) hiddenProd.value = pid
+      }
+
+      form.querySelector('#moveCantidad').value = movement.cantidad || ''
+      form.querySelector('#moveObservacion').value = movement.observacion || ''
+
+      // Set tipo via radio buttons
+      const tipo = movement.tipo_movimiento || 'entrada'
+      const tipoEntradaR = form.querySelector('#tipoEntrada')
+      const tipoSalidaR  = form.querySelector('#tipoSalida')
+      if (tipoEntradaR && tipoSalidaR) {
+        tipoEntradaR.checked = tipo === 'entrada'
+        tipoSalidaR.checked  = tipo === 'salida'
+        tipoEntradaR.dispatchEvent(new Event('change'))
+      }
+
+      // Set motivo via radio buttons
+      const motivo = movement.motivo || ''
+      if (tipo === 'entrada') {
+        const mR = form.querySelector(`#motivoEntradaGroup input[value="${motivo}"]`)
+        if (mR) { mR.checked = true; mR.dispatchEvent(new Event('change')) }
+      } else {
+        const mR = form.querySelector(`#motivoSalidaGroup input[value="${motivo}"]`)
+        if (mR) { mR.checked = true; mR.dispatchEvent(new Event('change')) }
+      }
+
+      // Set precio_compra if entrada
+      if (tipo === 'entrada' && movement.precio_compra != null) {
+        const precioInput = form.querySelector('#movePrecioCompra')
+        if (precioInput) precioInput.value = movement.precio_compra
+      }
+
+      const authUser = window.__authUser
+      const usuarioInput = form.querySelector('#moveUsuario')
+      if (usuarioInput && authUser) usuarioInput.value = authUser.id || ''
+
+      const btnSubmit = form.querySelector('#moveSubmitBtn')
+      if (btnSubmit) btnSubmit.innerHTML = '<i class="ri-check-line me-1"></i>Actualizar'
+    } catch {
+      alert('Error al cargar el movimiento')
+    }
+  }
+})()
+</script>

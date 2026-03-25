@@ -1,0 +1,140 @@
+---
+import { getAssetPrefix, getPathPrefix } from '../../../utils/path.js'
+import AdminLayout from '../../layouts/admin/admin-layout.astro'
+import PageHeader from '../../components/common/page-header.astro'
+import CreateUserModal from '../../components/modals/create-user-modal.astro'
+
+const pageHeaderProps = {
+  title: 'Usuarios internos',
+  breadcrumbs: [
+    { label: 'Dashboard', href: getPathPrefix('/dashboard') },
+    { label: 'Usuarios internos', class: 'active' }
+  ]
+}
+
+const pageStyles = `
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/datatables.net-bs5@1.13.7/css/dataTables.bootstrap5.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/datatables.net-responsive-bs5@2.5.0/css/responsive.bootstrap5.min.css">
+`
+
+const pageScript = `
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/datatables.net@1.13.7/js/jquery.dataTables.min.js"></script>
+<script src="${getAssetPrefix('/assets/vendor/datatables/datatables.init.js')}"></script>
+<script type="module" src="${getAssetPrefix('/assets/js/pages/tables/users-datatable.js')}"></script>
+`
+---
+
+<AdminLayout
+  title="Usuarios internos"
+  description="Administradores y vendedores"
+  currentPath="users/staff"
+  pageScript={pageScript}
+  pageCss={pageStyles}
+>
+  <PageHeader {...pageHeaderProps} />
+
+  <div class="card">
+    <div class="card-body">
+      <div class="astero-table">
+        <nav class="navbar navbar-expand overflow-auto p-0 mb-4" aria-label="Users status filters">
+          <div class="navbar-nav gap-3">
+            <a
+              href="javascript:void(0)"
+              data-users-filter="all"
+              class="nav-link fw-medium px-1 active border-bottom border-2 border-dark d-flex align-items-start"
+              aria-current="page"
+            >
+              <i class="ri-apps-2-line me-1"></i>Todos <span
+                id="usersCountAll"
+                class="badge bg-primary-subtle text-primary ms-1">0</span
+              >
+            </a>
+            <a
+              href="javascript:void(0)"
+              data-users-filter="admin"
+              class="nav-link fw-medium px-1 d-flex align-items-start"
+            >
+              <i class="ri-shield-user-line me-1"></i>Admins <span
+                id="usersCountAdmins"
+                class="badge bg-info-subtle text-info ms-1">0</span
+              >
+            </a>
+            <a
+              href="javascript:void(0)"
+              data-users-filter="vendedor"
+              class="nav-link fw-medium px-1 d-flex align-items-start"
+            >
+              <i class="ri-user-star-line me-1"></i>Vendedores <span
+                id="usersCountSellers"
+                class="badge bg-success-subtle text-success ms-1">0</span
+              >
+            </a>
+          </div>
+        </nav>
+
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
+          <div class="search-wrapper">
+            <i class="ri-search-2-line search-icon"></i>
+            <input
+              type="text"
+              class="form-control search-input"
+              id="usersSearchInput"
+              placeholder="Buscar usuarios..."
+              aria-label="Buscar usuarios"
+            />
+          </div>
+          <div class="d-flex gap-2 flex-wrap">
+            <button
+              class="btn btn-primary gap-1"
+              data-bs-toggle="modal"
+              data-bs-target="#createUserModal"
+            >
+              <i class="ri-add-line me-1" aria-hidden="true"></i> Nuevo usuario
+            </button>
+            <!-- Bulk Actions -->
+            <div class="bulk-actions-div d-none" id="staffBulkActions">
+              <span class="selected-count me-2" aria-live="polite"><span id="staffSelectedCount">0</span> seleccionados</span>
+              <button class="btn btn-light-danger shadow-none align-items-center gap-2" id="staffBulkDeleteBtn" aria-label="Eliminar seleccionados">
+                <i class="ri-delete-bin-2-line me-1" aria-hidden="true"></i> Eliminar
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="table-container">
+          <div class="table-responsive border-0">
+            <table class="table table-hover table-row-dashed mb-0" id="table_users_staff">
+              <thead>
+                <tr>
+                  <th class="checkbox-column fs-6" style="width: 20px;" scope="col">
+                    <div class="form-check">
+                      <input
+                        class="form-check-input select-all-checkbox"
+                        type="checkbox"
+                        id="staffSelectAll"
+                        aria-label="Seleccionar todos los usuarios"
+                      />
+                    </div>
+                  </th>
+                  <th scope="col"><i class="ri-user-line me-1"></i>NOMBRE</th>
+                  <th scope="col"><i class="ri-at-line me-1"></i>USUARIO</th>
+                  <th scope="col"><i class="ri-phone-line me-1"></i>CELULAR</th>
+                  <th scope="col"><i class="ri-shield-user-line me-1"></i>ROL</th>
+                  <th scope="col"><i class="ri-flag-2-line me-1"></i>ESTADO</th>
+                  <th scope="col"><i class="ri-calendar-line me-1"></i>CREADO</th>
+                  <th class="text-end pe-3" scope="col"
+                    ><i class="ri-settings-3-line me-1" aria-hidden="true"></i>ACCIONES</th
+                  >
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <CreateUserModal />
+</AdminLayout>

@@ -1,0 +1,143 @@
+---
+
+---
+
+<div
+  class="modal fade"
+  id="createUserModal"
+  tabindex="-1"
+  aria-labelledby="createUserModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="createUserModalLabel">Nuevo usuario</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form id="createUserForm">
+          <div class="mb-3">
+            <label for="userNombre" class="form-label">Nombre</label>
+            <input type="text" class="form-control" id="userNombre" name="nombre" required />
+          </div>
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label for="userUsername" class="form-label">Username</label>
+              <input type="text" class="form-control" id="userUsername" name="username" required />
+            </div>
+            <div class="col-md-6 mb-3">
+              <label for="userPassword" class="form-label">Password</label>
+              <input
+                type="password"
+                class="form-control"
+                id="userPassword"
+                name="password"
+                required
+              />
+            </div>
+          </div>
+          <div class="mb-3">
+            <label for="userCelular" class="form-label">Celular</label>
+            <input type="text" class="form-control" id="userCelular" name="celular" />
+          </div>
+          <div class="row">
+            <div class="col-md-8 mb-3">
+              <label for="userTipo" class="form-label">Tipo de Usuario</label>
+              <select class="form-select" id="userTipo" name="tipo_usuario" required>
+                <option value="admin">Administrador</option>
+                <option value="vendedor" selected>Vendedor</option>
+              </select>
+            </div>
+            <div class="col-md-4 mb-3 d-flex align-items-end">
+              <div class="form-check pb-2">
+                <input
+                  class="form-check-input"
+                  type="checkbox"
+                  id="userActivo"
+                  name="activo"
+                  checked
+                />
+                <label class="form-check-label" for="userActivo">Activo</label>
+              </div>
+            </div>
+          </div>
+          <div class="d-flex justify-content-end gap-2 mt-3">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button
+            >
+            <button type="submit" class="btn btn-primary">Crear</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const form = document.getElementById('createUserForm')
+    if (!(form instanceof HTMLFormElement)) return
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault()
+
+      const formData = new FormData(form)
+      const payload = {
+        nombre: String(formData.get('nombre') || ''),
+        username: String(formData.get('username') || ''),
+        password_hash: String(formData.get('password') || ''),
+        celular: String(formData.get('celular') || ''),
+        tipo_usuario: String(formData.get('tipo_usuario') || ''),
+        activo: formData.has('activo')
+      }
+
+      const apiBase =
+        window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+          ? 'http://localhost:4000'
+          : ''
+
+      const userId = form.dataset.editId
+      const url = userId ? `${apiBase}/api/users/${userId}` : `${apiBase}/api/users`
+      const method = userId ? 'PUT' : 'POST'
+
+      try {
+        const authUser = window.__authUser || {}
+        const response = await fetch(url, {
+          method: method,
+          headers: {
+            'Content-Type': 'application/json',
+            'x-user-id': authUser.id || '',
+            'x-user-name': authUser.username || ''
+          },
+          body: JSON.stringify(payload)
+        })
+
+        if (!response.ok) throw new Error('Error al crear el usuario')
+
+        const modalEl = document.getElementById('createUserModal')
+        const bootstrapApi = window['bootstrap']
+        if (bootstrapApi && modalEl) {
+          const modal = bootstrapApi.Modal.getInstance(modalEl)
+          if (modal) modal.hide()
+        }
+        form.reset()
+
+        window.location.reload()
+      } catch (error) {
+        alert(error.message)
+      }
+    })
+
+    const modalEl = document.getElementById('createUserModal')
+    if (modalEl) {
+      modalEl.addEventListener('hidden.bs.modal', () => {
+        form.reset()
+        delete form.dataset.editId
+        const titleEl = modalEl.querySelector('.modal-title')
+        if (titleEl) titleEl.textContent = 'Nuevo usuario'
+
+        const btnSubmit = form.querySelector('button[type="submit"]')
+        if (btnSubmit) btnSubmit.textContent = 'Crear'
+      })
+    }
+  })
+</script>

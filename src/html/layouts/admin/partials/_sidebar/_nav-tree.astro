@@ -1,0 +1,76 @@
+---
+import { getPathPrefix } from '../../../../../utils/path.js'
+
+interface Props {
+  currentPath: string
+}
+
+const { currentPath } = Astro.props
+
+// Helper functions
+const isActive = (path: string) => currentPath === path
+---
+
+<nav class="nav-tree">
+  <ul class="list-unstyled">
+    <li class="nav-section">
+      <span class="nav-section-text text-uppercase px-2">Main</span>
+    </li>
+
+    <li class={`nav-item ${isActive('dashboard') ? 'active' : ''}`}>
+      <a class="nav-link" href={getPathPrefix('/dashboard')}>
+        <i class="ri-dashboard-line"></i>
+        <span>Dashboard</span>
+      </a>
+    </li>
+
+    <li class={`nav-item ${isActive('tables/datatable') ? 'active' : ''}`}>
+      <a class="nav-link" href={getPathPrefix('/tables/datatable')}>
+        <i class="ri-box-3-line"></i>
+        <span>Productos</span>
+      </a>
+    </li>
+
+    <li class={`nav-item ${isActive('categories') ? 'active' : ''}`}>
+      <a class="nav-link" href={getPathPrefix('/categories')}>
+        <i class="ri-price-tag-3-line"></i>
+        <span>Categorías</span>
+      </a>
+    </li>
+
+    <li class={`nav-item ${isActive('clients') ? 'active' : ''}`}>
+      <a class="nav-link" href={getPathPrefix('/clients')}>
+        <i class="ri-user-3-line"></i>
+        <span>Clientes</span>
+      </a>
+    </li>
+
+    <li class={`nav-item ${isActive('sales') ? 'active' : ''}`}>
+      <a class="nav-link" href={getPathPrefix('/sales')}>
+        <i class="ri-shopping-cart-2-line"></i>
+        <span>Nueva Venta</span>
+      </a>
+    </li>
+
+    <li class={`nav-item ${isActive('sales/history') ? 'active' : ''}`}>
+      <a class="nav-link" href={getPathPrefix('/sales/history')}>
+        <i class="ri-history-line"></i>
+        <span>Historial de Ventas</span>
+      </a>
+    </li>
+
+    <li class={`nav-item ${isActive('inventory-movements') ? 'active' : ''}`}>
+      <a class="nav-link" href={getPathPrefix('/inventory-movements')}>
+        <i class="ri-exchange-funds-line"></i>
+        <span>Movimientos</span>
+      </a>
+    </li>
+
+    <li class={`nav-item ${isActive('users/staff') ? 'active' : ''}`}>
+      <a class="nav-link" href={getPathPrefix('/users/staff')}>
+        <i class="ri-shield-user-line"></i>
+        <span>Usuarios internos</span>
+      </a>
+    </li>
+  </ul>
+</nav>

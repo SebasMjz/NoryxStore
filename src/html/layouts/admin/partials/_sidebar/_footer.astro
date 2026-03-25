@@ -1,0 +1,79 @@
+---
+import { getPathPrefix } from '../../../../../utils/path.js'
+---
+
+<!-- Sticky Footer -->
+<div class="sidebar-footer mt-2">
+  <div class="user-profile p-1">
+    <div class="d-flex align-items-center" data-bs-toggle="dropdown">
+      <div class="avatar position-relative">
+        <i class="ri-user-smile-line fs-3 text-secondary"></i>
+        <span class="online-indicator"></span>
+      </div>
+      <div class="user-info ms-3">
+        <span class="fw-semibold text-truncate" id="sidebarUserName">—</span>
+        <small class="text-muted d-block text-truncate" id="sidebarUserRole" style="margin-top: -0.25rem;">—</small>
+      </div>
+      <i class="ri-expand-up-down-line ms-auto fs-6"></i>
+    </div>
+    <ul class="dropdown-menu py-2">
+      <li class="border-0 border-bottom border-dashed pb-2 px-3">
+        <div class="d-flex align-items-center">
+          <i class="ri-user-smile-fill fs-2 text-primary me-2"></i>
+          <div>
+            <h6 class="mb-0 fw-semibold" id="sidebarDropUserName">—</h6>
+            <small class="text-muted" id="sidebarDropUserRole">—</small>
+          </div>
+        </div>
+      </li>
+      <li>
+        <a
+          class="dropdown-item d-flex align-items-center gap-2 text-danger"
+          href={getPathPrefix('/login')}
+          id="sidebarLogout"
+        >
+          <i class="ri-logout-box-line"></i>
+          <span>Cerrar sesion</span>
+        </a>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<script is:inline>
+  ;(function () {
+    function fillSidebar () {
+      const user = window.__authUser
+      if (!user) return
+
+      const nombre = user.nombre || user.username || '—'
+      const rol = user.tipo_usuario === 'admin' ? 'Administrador' : user.tipo_usuario === 'vendedor' ? 'Vendedor' : user.tipo_usuario || '—'
+
+      const nameEl = document.getElementById('sidebarUserName')
+      const roleEl = document.getElementById('sidebarUserRole')
+      const dropName = document.getElementById('sidebarDropUserName')
+      const dropRole = document.getElementById('sidebarDropUserRole')
+
+      if (nameEl) nameEl.textContent = nombre
+      if (roleEl) roleEl.textContent = rol
+      if (dropName) dropName.textContent = nombre
+      if (dropRole) dropRole.textContent = rol
+    }
+
+    const logoutBtn = document.getElementById('sidebarLogout')
+    if (logoutBtn) {
+      logoutBtn.addEventListener('click', function (e) {
+        e.preventDefault()
+        sessionStorage.removeItem('auth_user')
+        window.location.href = '/login'
+      })
+    }
+
+    // __authUser puede estar disponible inmediatamente (script anterior ya corrió)
+    if (window.__authUser) {
+      fillSidebar()
+    } else {
+      window.addEventListener('DOMContentLoaded', fillSidebar)
+    }
+  })()
+</script>

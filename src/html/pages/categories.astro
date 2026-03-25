@@ -1,0 +1,506 @@
+---
+import { getPathPrefix } from '../../utils/path.js'
+import AdminLayout from '../layouts/admin/admin-layout.astro'
+import PageHeader from '../components/common/page-header.astro'
+
+const pageHeaderProps = {
+  title: 'Categorías',
+  breadcrumbs: [
+    { label: 'Dashboard', href: getPathPrefix('/dashboard') },
+    { label: 'Categorías', class: 'active' }
+  ]
+}
+---
+
+<AdminLayout title="Categorías" description="Gestión de categorías de productos" currentPath="categories">
+  <PageHeader {...pageHeaderProps} />
+
+  <div class="card">
+    <div class="card-body">
+      <div class="astero-table">
+
+        <!-- Status Filter Tabs -->
+        <nav class="navbar navbar-expand overflow-auto p-0 mb-4" aria-label="Filtros de categorías">
+          <div class="navbar-nav gap-3">
+            <a href="javascript:void(0)" class="nav-link fw-medium px-1 cat-filter active border-bottom border-2 border-dark d-flex align-items-start" data-filter="all" aria-current="page">
+              <i class="ri-apps-2-line me-1" aria-hidden="true"></i>Todas
+              <span id="catCountAll" class="badge bg-primary-subtle text-primary ms-1" aria-label="Total categorías">0</span>
+            </a>
+            <a href="javascript:void(0)" class="nav-link fw-medium px-1 cat-filter d-flex align-items-start" data-filter="activo">
+              <i class="ri-check-double-line me-1" aria-hidden="true"></i>Activas
+              <span id="catCountActive" class="badge bg-success-subtle text-success ms-1">0</span>
+            </a>
+            <a href="javascript:void(0)" class="nav-link fw-medium px-1 cat-filter d-flex align-items-start" data-filter="inactivo">
+              <i class="ri-pause-circle-line me-1" aria-hidden="true"></i>Inactivas
+              <span id="catCountInactive" class="badge bg-secondary-subtle text-secondary ms-1">0</span>
+            </a>
+          </div>
+        </nav>
+
+        <!-- Search & Actions -->
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
+          <div class="search-wrapper">
+            <i class="ri-search-2-line search-icon" aria-hidden="true"></i>
+            <input type="text" id="catSearch" class="form-control search-input"
+              placeholder="Buscar categoría..." aria-label="Buscar categoría" />
+            <button type="button" id="catSearchClear" class="btn-clear search-clear" style="display:none;" aria-label="Limpiar búsqueda">
+              <i class="ri-close-line"></i>
+            </button>
+          </div>
+          <div class="d-flex gap-2 flex-wrap">
+            <button class="btn btn-primary gap-1" id="newCatBtn">
+              <i class="ri-add-line me-1" aria-hidden="true"></i> Nueva Categoría
+            </button>
+
+            <!-- Bulk Actions -->
+            <div class="bulk-actions-div d-none" id="catBulkActions">
+              <span class="selected-count me-2" aria-live="polite">
+                <span id="catSelectedCount">0</span> seleccionados</span>
+              <button
+                class="btn btn-light-danger shadow-none align-items-center gap-2 bulk-delete"
+                id="catBulkDeleteBtn"
+                aria-label="Eliminar seleccionados"
+              >
+                <i class="ri-delete-bin-2-line me-1" aria-hidden="true"></i> Eliminar
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Table -->
+        <div class="table-container">
+          <div class="table-responsive border-0">
+            <table class="table table-hover table-row-dashed mb-0" aria-label="Tabla de categorías">
+              <thead>
+                <tr>
+                  <th class="checkbox-column fs-6" style="width: 20px;" scope="col">
+                    <div class="form-check">
+                      <input
+                        class="form-check-input"
+                        type="checkbox"
+                        id="catSelectAll"
+                        aria-label="Seleccionar todas las categorías"
+                      />
+                    </div>
+                  </th>
+                  <th scope="col" data-sortable data-sort-key="nombre"><i class="ri-folder-line me-1" aria-hidden="true"></i>NOMBRE</th>
+                  <th scope="col" data-sortable data-sort-key="descripcion"><i class="ri-file-text-line me-1" aria-hidden="true"></i>DESCRIPCIÓN</th>
+                  <th class="text-center" scope="col" data-sortable data-sort-key="productos"><i class="ri-stack-line me-1" aria-hidden="true"></i>PRODUCTOS</th>
+                  <th class="text-center" scope="col" data-sortable data-sort-key="activo"><i class="ri-flag-2-line me-1" aria-hidden="true"></i>ESTADO</th>
+                  <th class="text-end pe-3 no-sort" scope="col"><i class="ri-settings-3-line me-1" aria-hidden="true"></i>ACCIONES</th>
+                </tr>
+              </thead>
+              <tbody id="catTableBody">
+                <tr>
+                  <td colspan="6" class="text-center text-muted py-5">
+                    <i class="ri-loader-4-line ri-spin"></i> Cargando...
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+    </div>
+    <div class="card-footer border-0 p-0" id="catPgFooter"></div>
+  </div>
+</AdminLayout>
+
+<!-- Create / Edit modal -->
+<div class="modal fade" id="catModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="catModalTitle">Nueva Categoría</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="catForm">
+          <input type="hidden" id="catEditId" />
+          <div class="mb-3">
+            <label class="form-label">Nombre <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" id="catNombre" required placeholder="Ej: Bebidas, Electrónica..." />
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Descripción</label>
+            <textarea class="form-control" id="catDescripcion" rows="3" placeholder="Descripción opcional..."></textarea>
+          </div>
+          <div class="form-check mb-3">
+            <input class="form-check-input" type="checkbox" id="catActivo" checked />
+            <label class="form-check-label" for="catActivo">Activa</label>
+          </div>
+          <div class="d-flex justify-content-end gap-2">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+            <button type="submit" class="btn btn-primary" id="catSubmitBtn">Crear</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index:9999;">
+  <div id="catToast" class="toast align-items-center border-0" role="alert" aria-live="assertive">
+    <div class="d-flex">
+      <div class="toast-body fw-semibold" id="catToastMsg"></div>
+      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+    </div>
+  </div>
+</div>
+
+<script is:inline>
+(function () {
+  const API =
+    window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+      ? 'http://localhost:4000'
+      : ''
+
+  let allCategories = []
+  let allProducts = []
+  let currentFilter = 'all'
+  let currentPage = 1
+  let pageSize = 5
+  let sortKey = null
+  let sortDir = 'asc'
+
+  const esc = (s) =>
+    String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+
+  document.addEventListener('DOMContentLoaded', async () => {
+    await Promise.all([loadCategories(), loadProducts()])
+
+    const searchEl = document.getElementById('catSearch')
+    const clearEl  = document.getElementById('catSearchClear')
+    searchEl.addEventListener('input', () => {
+      currentPage = 1
+      clearEl.style.display = searchEl.value ? '' : 'none'
+      renderTable()
+    })
+    clearEl.addEventListener('click', () => {
+      searchEl.value = ''; clearEl.style.display = 'none'; currentPage = 1; renderTable()
+    })
+    document.getElementById('newCatBtn').addEventListener('click', openCreate)
+    document.getElementById('catForm').addEventListener('submit', handleSubmit)
+
+    // Select all checkbox
+    document.getElementById('catSelectAll').addEventListener('change', function () {
+      const checked = this.checked
+      document.querySelectorAll('.cat-row-cb').forEach((cb) => { cb.checked = checked })
+      updateCatBulkUI()
+    })
+
+    document.querySelectorAll('.cat-filter').forEach((btn) => {
+      btn.addEventListener('click', function () {
+        document.querySelectorAll('.cat-filter').forEach((b) => {
+          b.classList.remove('active', 'border-bottom', 'border-2', 'border-dark')
+        })
+        this.classList.add('active', 'border-bottom', 'border-2', 'border-dark')
+        currentFilter = this.dataset.filter
+        currentPage = 1
+        renderTable()
+      })
+    })
+
+    // Sortable headers
+    document.querySelectorAll('#catTableBody').length // ensure DOM ready
+    document.querySelectorAll('table[aria-label="Tabla de categorías"] thead th[data-sortable]').forEach((th) => {
+      th.style.cursor = 'pointer'
+      th.addEventListener('click', () => {
+        const key = th.dataset.sortKey
+        if (sortKey === key) {
+          sortDir = sortDir === 'asc' ? 'desc' : 'asc'
+        } else {
+          sortKey = key
+          sortDir = 'asc'
+        }
+        document.querySelectorAll('table[aria-label="Tabla de categorías"] thead th[data-sortable]').forEach((h) => {
+          h.classList.remove('sort-asc', 'sort-desc')
+        })
+        th.classList.add(sortDir === 'asc' ? 'sort-asc' : 'sort-desc')
+        currentPage = 1
+        renderTable()
+      })
+    })
+  })
+
+  async function loadCategories() {
+    try {
+      const res = await fetch(API + '/api/categories')
+      allCategories = await res.json()
+      document.getElementById('catSelectAll').checked = false
+      updateCatBulkUI()
+      updateCounts()
+      renderTable()
+    } catch {
+      document.getElementById('catTableBody').innerHTML =
+        '<tr><td colspan="5" class="text-center text-danger py-4">Error al cargar categorías</td></tr>'
+    }
+  }
+
+  async function loadProducts() {
+    try {
+      const res = await fetch(API + '/api/products')
+      allProducts = await res.json()
+    } catch { /* no-op */ }
+  }
+
+  function productCountForCategory(catId) {
+    return allProducts.filter((p) => p.categoria_id?._id === catId || p.categoria_id === catId).length
+  }
+
+  function updateCounts() {
+    document.getElementById('catCountAll').textContent = String(allCategories.length)
+    document.getElementById('catCountActive').textContent = String(allCategories.filter((c) => c.activo).length)
+    document.getElementById('catCountInactive').textContent = String(allCategories.filter((c) => !c.activo).length)
+  }
+
+  function renderTable() {
+    const q = (document.getElementById('catSearch')?.value || '').toLowerCase().trim()
+
+    // Apply sort to base array
+    let source = [...allCategories]
+    if (sortKey) {
+      source.sort((a, b) => {
+        let av, bv
+        if (sortKey === 'productos') {
+          av = productCountForCategory(a._id)
+          bv = productCountForCategory(b._id)
+        } else if (sortKey === 'activo') {
+          av = a.activo ? 1 : 0
+          bv = b.activo ? 1 : 0
+        } else {
+          av = String(a[sortKey] ?? '').toLowerCase()
+          bv = String(b[sortKey] ?? '').toLowerCase()
+        }
+        if (av < bv) return sortDir === 'asc' ? -1 : 1
+        if (av > bv) return sortDir === 'asc' ? 1 : -1
+        return 0
+      })
+    }
+
+    const filtered = source.filter((c) => {
+      const matchFilter =
+        currentFilter === 'all' ||
+        (currentFilter === 'activo' && c.activo) ||
+        (currentFilter === 'inactivo' && !c.activo)
+      if (!matchFilter) return false
+      if (!q) return true
+      return (c.nombre || '').toLowerCase().includes(q) || (c.descripcion || '').toLowerCase().includes(q)
+    })
+
+    const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize))
+    currentPage = Math.min(currentPage, totalPages)
+    const start = (currentPage - 1) * pageSize
+    const paginated = filtered.slice(start, start + pageSize)
+
+    const tbody = document.getElementById('catTableBody')
+    if (!filtered.length) {
+      tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-5">Sin resultados</td></tr>'
+      renderCatPagination(0, 1)
+      return
+    }
+
+    tbody.innerHTML = paginated.map((c) => {
+      const count = productCountForCategory(c._id)
+      const badge = c.activo ? 'success-subtle text-success' : 'secondary-subtle text-secondary'
+      const label = c.activo ? 'Activa' : 'Inactiva'
+      return `
+        <tr>
+          <td class="checkbox-column align-middle">
+            <div class="form-check">
+              <input class="form-check-input cat-row-cb" type="checkbox" data-id="${c._id}" aria-label="Seleccionar categoría" />
+            </div>
+          </td>
+          <td class="ps-3 align-middle fw-semibold">${esc(c.nombre)}</td>
+          <td class="align-middle text-muted small">${esc(c.descripcion || '—')}</td>
+          <td class="text-center align-middle">
+            <span class="badge text-bg-primary">${count}</span>
+          </td>
+          <td class="text-center align-middle">
+            <span class="badge text-bg-${badge}">${label}</span>
+          </td>
+          <td class="text-end pe-3 align-middle">
+            <button class="btn btn-sm btn-icon edit-cat-btn" data-id="${c._id}" title="Editar">
+              <i class="ri-pencil-line"></i>
+            </button>
+            <button class="btn btn-sm btn-icon text-danger delete-cat-btn" data-id="${c._id}" title="Eliminar">
+              <i class="ri-delete-bin-line"></i>
+            </button>
+          </td>
+        </tr>`
+    }).join('')
+
+    tbody.querySelectorAll('.edit-cat-btn').forEach((btn) =>
+      btn.addEventListener('click', () => openEdit(btn.dataset.id))
+    )
+    tbody.querySelectorAll('.delete-cat-btn').forEach((btn) =>
+      btn.addEventListener('click', () => deleteCategory(btn.dataset.id))
+    )
+    tbody.querySelectorAll('.cat-row-cb').forEach((cb) =>
+      cb.addEventListener('change', updateCatBulkUI)
+    )
+    // Reset select-all when re-rendering
+    document.getElementById('catSelectAll').checked = false
+    updateCatBulkUI()
+
+    renderCatPagination(filtered.length, totalPages)
+  }
+
+  function updateCatBulkUI() {
+    const checked = document.querySelectorAll('.cat-row-cb:checked')
+    const bulk = document.getElementById('catBulkActions')
+    const countEl = document.getElementById('catSelectedCount')
+    if (!bulk) return
+    if (checked.length > 0) {
+      bulk.classList.remove('d-none')
+      if (countEl) countEl.textContent = checked.length
+    } else {
+      bulk.classList.add('d-none')
+    }
+  }
+
+  function renderCatPagination(total, totalPages) {
+    const footer = document.getElementById('catPgFooter')
+    if (!footer) return
+    if (total === 0) { footer.innerHTML = ''; return }
+
+    const startRecord = (currentPage - 1) * pageSize + 1
+    const endRecord   = Math.min(currentPage * pageSize, total)
+    const pages = []
+    for (let p = Math.max(1, currentPage - 2); p <= Math.min(totalPages, currentPage + 2); p++) pages.push(p)
+
+    footer.innerHTML = `
+      <div style="padding:.5rem 1rem;">
+        <div class="row">
+          <div class="col-sm-12 col-md-5 d-flex align-items-center justify-content-center justify-content-md-start table-toolbar">
+            <div class="dataTables_length">
+              <select class="form-select form-select-sm form-select-solid" id="catPgSize">
+                ${[5,10,25,50,100].map(n=>`<option value="${n}"${pageSize===n?' selected':''}>${n}</option>`).join('')}
+              </select>
+            </div>
+            <div class="dataTables_info ms-2" style="font-size:.875rem;color:var(--bs-secondary-color);">Showing ${startRecord} to ${endRecord} of ${total} records</div>
+          </div>
+          <div class="col-sm-12 col-md-7 d-flex align-items-center justify-content-center justify-content-md-end">
+            <div class="dataTables_paginate paging_simple_numbers">
+              <ul class="pagination">
+                <li class="paginate_button page-item previous${currentPage===1?' disabled':''}">
+                  <button class="page-link" id="catPrevPg"><i class="ri-arrow-left-line"></i></button>
+                </li>
+                ${pages.map(p=>`<li class="paginate_button page-item${p===currentPage?' active':''}"><button class="page-link cat-pg-num" data-page="${p}">${p}</button></li>`).join('')}
+                <li class="paginate_button page-item next${currentPage===totalPages?' disabled':''}">
+                  <button class="page-link" id="catNextPg"><i class="ri-arrow-right-line"></i></button>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>`
+
+    document.getElementById('catPgSize').addEventListener('change', (e) => { pageSize = Number(e.target.value); currentPage = 1; renderTable() })
+    document.getElementById('catPrevPg')?.addEventListener('click', () => { if (currentPage > 1) { currentPage--; renderTable() } })
+    document.getElementById('catNextPg')?.addEventListener('click', () => { if (currentPage < totalPages) { currentPage++; renderTable() } })
+    footer.querySelectorAll('.cat-pg-num').forEach(btn => btn.addEventListener('click', () => { currentPage = Number(btn.dataset.page); renderTable() }))
+  }
+
+  function openCreate() {
+    document.getElementById('catEditId').value = ''
+    document.getElementById('catNombre').value = ''
+    document.getElementById('catDescripcion').value = ''
+    document.getElementById('catActivo').checked = true
+    document.getElementById('catModalTitle').textContent = 'Nueva Categoría'
+    document.getElementById('catSubmitBtn').textContent = 'Crear'
+    new bootstrap.Modal(document.getElementById('catModal')).show()
+  }
+
+  function openEdit(id) {
+    const cat = allCategories.find((c) => c._id === id)
+    if (!cat) return
+    document.getElementById('catEditId').value = cat._id
+    document.getElementById('catNombre').value = cat.nombre
+    document.getElementById('catDescripcion').value = cat.descripcion || ''
+    document.getElementById('catActivo').checked = cat.activo
+    document.getElementById('catModalTitle').textContent = 'Editar Categoría'
+    document.getElementById('catSubmitBtn').textContent = 'Actualizar'
+    new bootstrap.Modal(document.getElementById('catModal')).show()
+  }
+
+  async function handleSubmit(e) {
+    e.preventDefault()
+    const id = document.getElementById('catEditId').value
+    const payload = {
+      nombre: document.getElementById('catNombre').value.trim(),
+      descripcion: document.getElementById('catDescripcion').value.trim(),
+      activo: document.getElementById('catActivo').checked
+    }
+    if (!payload.nombre) return
+
+    const btn = document.getElementById('catSubmitBtn')
+    btn.disabled = true
+    btn.textContent = 'Guardando...'
+
+    const user = window.__authUser || {}
+    try {
+      const url = id ? `${API}/api/categories/${id}` : `${API}/api/categories`
+      const method = id ? 'PUT' : 'POST'
+      const res = await fetch(url, {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-id': user.id || '',
+          'x-user-name': user.nombre || ''
+        },
+        body: JSON.stringify(payload)
+      })
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        throw new Error(err.message || 'Error al guardar')
+      }
+      bootstrap.Modal.getInstance(document.getElementById('catModal')).hide()
+      showToast(id ? 'Categoría actualizada.' : 'Categoría creada.', 'success')
+      await Promise.all([loadCategories(), loadProducts()])
+    } catch (err) {
+      showToast(err.message, 'danger')
+    } finally {
+      btn.disabled = false
+      btn.textContent = id ? 'Actualizar' : 'Crear'
+    }
+  }
+
+  async function deleteCategory(id) {
+    const cat = allCategories.find((c) => c._id === id)
+    const count = productCountForCategory(id)
+    const message = count > 0
+      ? `Los <strong>${count} producto(s)</strong> asociados a <strong>${cat?.nombre}</strong> quedarán sin categoría. Esta acción no se puede deshacer.`
+      : `La categoría <strong>${cat?.nombre}</strong> será eliminada permanentemente.`
+    const ok = await window.showConfirm({
+      title: `Eliminar "${cat?.nombre}"`,
+      message,
+      confirmText: 'Sí, eliminar',
+      type: count > 0 ? 'warning' : 'danger'
+    })
+    if (!ok) return
+
+    const user = window.__authUser || {}
+    try {
+      const res = await fetch(`${API}/api/categories/${id}`, {
+        method: 'DELETE',
+        headers: { 'x-user-id': user.id || '', 'x-user-name': user.nombre || '' }
+      })
+      if (!res.ok) throw new Error()
+      showToast('Categoría eliminada.', 'warning')
+      await Promise.all([loadCategories(), loadProducts()])
+    } catch {
+      showToast('Error al eliminar', 'danger')
+    }
+  }
+
+  function showToast(msg, type = 'success') {
+    const el = document.getElementById('catToast')
+    document.getElementById('catToastMsg').textContent = msg
+    el.className = `toast align-items-center border-0 text-bg-${type}`
+    new bootstrap.Toast(el, { delay: 3000 }).show()
+  }
+})()
+</script>

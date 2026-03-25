@@ -1,0 +1,167 @@
+---
+import { getAssetPrefix, getPathPrefix } from '../../../../utils/path.js'
+---
+
+<!-- Top Navigation -->
+<div class="topbar container">
+  <nav class="d-flex align-items-center justify-content-between py-2">
+    <!-- Left section -->
+    <div class="d-flex align-items-center gap-4">
+      <button
+        class="btn sidebar-toggle d-md-block d-lg-block d-xl-none p-0 border-0"
+        id="sidebar-toggle"
+      >
+        <i class="ri-menu-line fs-5"></i>
+      </button>
+      <!-- Search Modal Toggle Button -->
+      <button
+        class="btn search-toggle w-100 text-start d-flex align-items-center gap-2 border shadow-none"
+        id="search-toggle"
+        data-bs-toggle="modal"
+        data-bs-target="#searchModal"
+        type="button"
+      >
+        <i class="ri-search-line"></i>
+        <span class="search-placeholder d-none d-sm-inline">Search </span>
+        <span class="search-shortcut d-none d-sm-inline">Ctrl + K</span>
+      </button>
+    </div>
+
+    <!-- Right section -->
+    <div class="d-flex align-items-center gap-4">
+      <!-- Theme Toggle Button -->
+      <button class="btn p-0 border-0 shadow-none" id="theme-toggle">
+        <i class="ri-sun-line fs-5"></i>
+      </button>
+      <!-- User Profile Button -->
+      <div class="user-profile">
+        <button
+          class="btn p-0 border-0 shadow-none d-flex align-items-center"
+          type="button"
+          data-bs-toggle="offcanvas"
+          data-bs-target="#userProfileOffcanvas"
+          aria-controls="userProfileOffcanvas"
+        >
+          <div class="avatar position-relative">
+            <i class="ri-user-smile-line fs-3 text-primary"></i>
+            <span class="online-indicator"></span>
+          </div>
+        </button>
+      </div>
+    </div>
+  </nav>
+</div>
+
+<!-- User Profile Offcanvas -->
+<div
+  class="offcanvas offcanvas-end user-profile-offcanvas"
+  tabindex="-1"
+  id="userProfileOffcanvas"
+  aria-labelledby="userProfileOffcanvasLabel"
+>
+  <!-- Top Section -->
+  <div class="offcanvas-top">
+    <div class="user-profile-header text-center">
+      <div class="user-profile-cover"></div>
+      <div class="user-profile-avatar">
+        <div class="avatar-wrapper">
+          <i class="ri-user-smile-fill fs-1 text-primary"></i>
+          <span class="status-badge online"></span>
+        </div>
+      </div>
+      <div class="user-profile-info">
+        <h5 class="user-name" id="topbarUserName">—</h5>
+        <p class="user-email" id="topbarUserRole">—</p>
+      </div>
+
+      <button
+        type="button"
+        class="btn-close-custom d-flex align-items-center justify-content-center"
+        data-bs-dismiss="offcanvas"
+        aria-label="Close"
+      >
+        <i class="ri-close-line"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- Content Section -->
+  <div class="offcanvas-content">
+    <nav class="nav-tree p-0">
+      <ul class="list-unstyled">
+        <li class="nav-item">
+          <a class="nav-link" href={getPathPrefix('/users/staff')}>
+            <i class="ri-user-line"></i>
+            <span>Usuarios internos</span>
+          </a>
+        </li>
+
+        <li class="nav-item">
+          <a class="nav-link" href={getPathPrefix('/sales')}>
+            <i class="ri-shield-keyhole-line"></i>
+            <span>Ventas</span>
+          </a>
+        </li>
+
+        <li class="nav-item">
+          <a class="nav-link" href={getPathPrefix('/clients')}>
+            <i class="ri-wallet-3-line"></i>
+            <span>Clientes</span>
+          </a>
+        </li>
+
+        <li class="nav-item">
+          <a class="nav-link" href={getPathPrefix('/inventory-movements')}>
+            <i class="ri-notification-4-line"></i>
+            <span>Movimientos</span>
+          </a>
+        </li>
+      </ul>
+    </nav>
+  </div>
+
+  <!-- Bottom Section -->
+  <div class="offcanvas-bottom">
+    <!-- Logout Button -->
+    <div class="logout-section">
+      <a
+        href={getPathPrefix('/login')}
+        class="btn-logout d-flex align-items-center justify-content-center"
+        id="topbarLogout"
+      >
+        <i class="ri-logout-box-r-line"></i>
+        <span>Cerrar sesion</span>
+      </a>
+    </div>
+  </div>
+</div>
+
+<script is:inline>
+  ;(function () {
+    function fillTopbar () {
+      const user = window.__authUser
+      if (!user) return
+      const nombre = user.nombre || user.username || '—'
+      const rol = user.tipo_usuario === 'admin' ? 'Administrador' : user.tipo_usuario === 'vendedor' ? 'Vendedor' : user.tipo_usuario || '—'
+      const nameEl = document.getElementById('topbarUserName')
+      const roleEl = document.getElementById('topbarUserRole')
+      if (nameEl) nameEl.textContent = nombre
+      if (roleEl) roleEl.textContent = rol
+    }
+
+    const logoutBtn = document.getElementById('topbarLogout')
+    if (logoutBtn) {
+      logoutBtn.addEventListener('click', function (e) {
+        e.preventDefault()
+        sessionStorage.removeItem('auth_user')
+        window.location.href = '/login'
+      })
+    }
+
+    if (window.__authUser) {
+      fillTopbar()
+    } else {
+      window.addEventListener('DOMContentLoaded', fillTopbar)
+    }
+  })()
+</script>
