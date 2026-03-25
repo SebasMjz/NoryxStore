@@ -9,8 +9,7 @@ function getAssetPrefix(path) {
 }
 
 function getPathPrefix(path) {
-  const isDev = import.meta.env.DEV
-  return isDev ? `${path}` : `/pages${path}`
+  return path
 }
 
 export { getAssetPrefix, getPathPrefix }
