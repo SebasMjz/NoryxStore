@@ -26,7 +26,6 @@ bower_components/
 # Environment
 .env
 .env.*
-!.env.example
 
 # Docs
 /docs/_site/
