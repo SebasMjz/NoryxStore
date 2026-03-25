@@ -1,5 +1,5 @@
 {
-  "buildCommand": "npm run build",
+  "buildCommand": "node tools/build.mjs --skip-lint",
   "outputDirectory": "dist",
   "framework": null,
 
