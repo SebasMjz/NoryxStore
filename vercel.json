@@ -2,6 +2,8 @@
   "buildCommand": "node tools/build.mjs --skip-lint --skip-format",
   "outputDirectory": "dist",
   "framework": null,
+  "cleanUrls": true,
+  "trailingSlash": false,
 
   "rewrites": [
     { "source": "/api/:path*", "destination": "/api/server" }
