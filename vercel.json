@@ -1,5 +1,5 @@
 {
-  "buildCommand": "node tools/build.mjs --skip-lint",
+  "buildCommand": "node tools/build.mjs --skip-lint --skip-format",
   "outputDirectory": "dist",
   "framework": null,
 
