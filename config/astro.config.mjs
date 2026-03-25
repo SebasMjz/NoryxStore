@@ -44,8 +44,8 @@ export default defineConfig({
   },
 
   srcDir: './src/html',
-  cacheDir: './dist/pages',
-  outDir: './dist/pages',
+  cacheDir: './.cache/astro',
+  outDir: './dist',
   trailingSlash: 'never',
 
   vite: {
