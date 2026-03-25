@@ -46,14 +46,6 @@ function syncAssets() {
       log('Favicon directory not found', 'warning')
     }
 
-    // Copy index.html to dist directory. Used for redirecting to dashboard
-    if (fs.existsSync('./index.html')) {
-      fs.copySync('./index.html', './dist/index.html')
-      log('index.html copied to dist directory')
-    } else {
-      log('index.html not found in root directory', 'warning')
-    }
-
     log('Assets synchronized successfully!')
   } catch (error) {
     log(`Asset sync error: ${error}`, 'error')
