@@ -50,6 +50,9 @@ export default defineConfig({
 
   vite: {
     plugins: [assetHmrPlugin()],
+    build: {
+      emptyOutDir: false
+    },
     css: {
       preprocessorOptions: {
         scss: {

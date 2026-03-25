@@ -66,7 +66,15 @@ export async function build(options = {}) {
       log('Skipping lint step', 'info')
     }
 
-    // Run remaining build steps in parallel for better performance
+    // Build Astro pages first to avoid race condition with asset copying
+    log('Building Astro pages...', 'info')
+    await buildPages({
+      skipTypeCheck: opts.skipLint,
+      verbose: opts.verbose
+    })
+    log('Docs built', 'success')
+
+    // Run CSS, JS and asset copy in parallel after Astro is done
     log('Running parallel build steps...', 'info')
 
     const buildTasks = [
@@ -79,11 +87,6 @@ export async function build(options = {}) {
         isDev: !opts.production,
         verbose: opts.verbose
       }).then(() => log('JavaScript built', 'success')),
-
-      buildPages({
-        skipTypeCheck: opts.skipLint, // Skip type check if linting is skipped
-        verbose: opts.verbose
-      }).then(() => log('Docs built', 'success')),
 
       copyAssets({
         verbose: opts.verbose
