@@ -9,7 +9,6 @@ interface Props {
   title: string
   description?: string
   currentPath?: string
-  enableComponentPreview?: boolean
   pageScript?: string
   pageCss?: string
   isRtl?: boolean
@@ -19,7 +18,6 @@ const {
   title,
   description,
   currentPath,
-  enableComponentPreview = false,
   pageScript,
   pageCss,
   isRtl = false
@@ -29,16 +27,12 @@ const pageSeo = {
   title,
   description: description || `${title} page of the admin dashboard`
 }
-
-const componentStatus = {
-  enableComponentPreview
-}
 ---
 
 <!doctype html>
 <html lang="en" dir={isRtl ? 'rtl' : 'ltr'}>
   <head>
-    <Head {...pageSeo} {pageCss} {...componentStatus} isRtl={isRtl} />
+    <Head {...pageSeo} {pageCss} isRtl={isRtl} />
   </head>
   <body>
     <div class="wrapper">
@@ -58,7 +52,7 @@ const componentStatus = {
       </main>
     </div>
     <!-- All Scripts -->
-    <Scripts {pageScript} {...componentStatus} />
+    <Scripts {pageScript} />
 
     <!-- ── Global confirm modal ───────────────────────────────── -->
     <div class="modal fade" id="globalConfirmModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">

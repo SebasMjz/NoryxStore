@@ -1,6 +1,4 @@
 ---
-import { getAssetPrefix } from '../../../../utils/path.js'
-import ComponentPreviewCSS from '../../../components/component-preview/_css_component-preview.astro'
 import noryxLogo from '../../../../assets/img/noryx/NoryxStoreLogo.jpeg'
 
 interface Props {
@@ -8,23 +6,21 @@ interface Props {
   description?: string
   author?: string
   ogImage?: string
-  enableComponentPreview?: boolean
   pageCss?: string
   isRtl?: boolean
 }
 
 const {
-  title = 'Noryx Store', // Default title
-  description = 'Admin dashboard for managing your application', // Default description
+  title = 'Noryx Store',
+  description = 'Admin dashboard for managing your application',
   author = 'Noryx Store',
-  ogImage = '/src/assets/img/og-image.png',
-  enableComponentPreview = false,
+  ogImage,
   pageCss,
   isRtl = false
 } = Astro.props
 
-// Construct full title
 const fullTitle = title ? `${title} | Noryx Store` : 'Noryx Store'
+const ogImageUrl = ogImage ?? noryxLogo.src
 
 function getCSS() {
   const isDev = import.meta.env.DEV
@@ -62,7 +58,7 @@ function getRtlCSS() {
 <!-- Open Graph Meta Tags -->
 <meta property="og:title" content={fullTitle} />
 <meta property="og:description" content={description} />
-<meta property="og:image" content={ogImage} />
+<meta property="og:image" content={ogImageUrl} />
 <meta property="og:type" content="website" />
 
 <!-- Favicon — Noryx Store logo -->
@@ -89,13 +85,3 @@ function getRtlCSS() {
 
 <!-- Page CSS -->
 {pageCss && <Fragment set:html={pageCss} />}
-
-<!-- Component CSS -->
-{
-  enableComponentPreview && (
-    <>
-      <ComponentPreviewCSS />
-    </>
-  )
-}
-

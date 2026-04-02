@@ -114,9 +114,7 @@ export async function formatCode(targetPath = null) {
 
     // Track problematic files
     const problemFiles = []
-    const knownProblematicFiles = [
-      'component-preview.astro' // Add known problematic files here
-    ]
+    const knownProblematicFiles = []
 
     // Format files
     let formattedCount = 0
