@@ -4,27 +4,28 @@
 // Light Theme Variables
 :root,
 [data-bs-theme='light'] {
-  // Typography
+  // Tipografía: sistema local (sin red). Evita bloqueos si fonts.googleapis.com no resuelve.
   --font-family-sans-serif:
-    'Source Sans 3',
     system-ui,
     -apple-system,
     'Segoe UI',
-    roboto,
+    Roboto,
     'Helvetica Neue',
     'Noto Sans',
     'Liberation Sans',
-    arial,
+    Arial,
     sans-serif,
     'Apple Color Emoji',
     'Segoe UI Emoji',
     'Segoe UI Symbol',
     'Noto Color Emoji';
   --font-family-monospace:
-    sfmono-regular,
-    menlo,
-    monaco,
-    consolas,
+    ui-monospace,
+    SFMono-Regular,
+    'SF Mono',
+    Menlo,
+    Monaco,
+    Consolas,
     'Liberation Mono',
     'Courier New',
     monospace;

@@ -38,9 +38,7 @@ function getRtlCSS() {
 }
 ---
 
-<!-- Resource Hints --><!-- Preconnect to external domains -->
-<link rel="preconnect" href="https://fonts.googleapis.com" />
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<!-- Remixicon (único CSS externo en head; fuentes = sistema local, sin Google Fonts) -->
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
 
 <meta charset="UTF-8" />
@@ -76,12 +74,6 @@ function getRtlCSS() {
   const theme = localStorage.getItem('theme')
   if (theme) document.documentElement.setAttribute('data-bs-theme', theme)
 </script>
-
-<!-- Source Sans 3 from Google Fonts -->
-<link
-  href="https://fonts.googleapis.com/css2?family=Source+Sans+3:ital,wght@0,200..900;1,200..900&family=Ubuntu+Mono:ital,wght@0,400;0,700;1,400;1,700&display=swap"
-  rel="stylesheet"
-/>
 
 <!-- Page CSS -->
 {pageCss && <Fragment set:html={pageCss} />}
