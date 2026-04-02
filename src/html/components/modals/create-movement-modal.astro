@@ -90,9 +90,7 @@
             </div>
           </div>
 
-          <div id="moveEditNotice" class="alert alert-info py-2 small d-none mb-3" role="status">
-            <i class="ri-information-line me-1"></i>Estás editando un movimiento existente. Ajusta cantidad o precios y guarda.
-          </div>
+          <div id="moveEditNotice" class="alert alert-info py-2 small d-none mb-3" role="status"></div>
 
           <!-- Agregar productos al listado -->
           <div id="moveDraftSection" class="card border mb-3">
@@ -214,11 +212,13 @@
       __authUser: { id?: string; nombre?: string; [k: string]: any } | null
       moveProductoPicker: { select: (p: any) => void; clear: () => void; getAll: () => any[] } | undefined
       movementModalLoadEdit: ((m: any) => void) | undefined
+      movementModalLoadTransactionEdit: ((lines: any[], tid: string) => void) | undefined
     }
   }
   declare const bootstrap: { Modal: any }
 
   type MoveLine = {
+    movementLineId?: string
     producto_id: string
     nombre: string
     codigo: string
@@ -401,7 +401,7 @@
     }
 
     function addLineFromDraft() {
-      if (form.dataset.editId) return
+      if (form.dataset.editId || form.dataset.editTransaccionId) return
       if (!selectedProduct) {
         searchInput?.focus()
         return
@@ -460,7 +460,7 @@
       lines.forEach((line, idx) => {
         const tr = document.createElement('tr')
         tr.className = 'move-line-row align-middle'
-        const editing = Boolean(form.dataset.editId)
+        const editing = Boolean(form.dataset.editId || form.dataset.editTransaccionId)
         const pcCell = isEntrada
           ? `<td class="text-end"><input type="number" class="form-control form-control-sm text-end move-line-pc" data-i="${idx}" min="0" step="0.01" value="${line.precio_compra ?? ''}" /></td>
              <td class="text-end"><input type="number" class="form-control form-control-sm text-end move-line-pv" data-i="${idx}" min="0" step="0.01" value="${line.precio_venta ?? ''}" /></td>`
@@ -512,7 +512,7 @@
       syncTipo()
     })
     tipoSalidaRadio?.addEventListener('change', () => {
-      if (lines.length && !form.dataset.editId) {
+      if (lines.length && !form.dataset.editId && !form.dataset.editTransaccionId) {
         if (!confirm('Cambiar el tipo vaciará la lista de productos. ¿Continuar?')) {
           tipoEntradaRadio.checked = true
           tipoSalidaRadio.checked = false
@@ -531,6 +531,7 @@
     syncTipo()
 
     window.movementModalLoadEdit = (movement: any) => {
+      delete form.dataset.editTransaccionId
       form.dataset.editId = movement._id
       lines = []
       const pid = movement.producto_id?._id || movement.producto_id || ''
@@ -567,6 +568,8 @@
       syncTipo()
       draftSection.classList.add('d-none')
       addLineBtn.disabled = true
+      editNotice.innerHTML =
+        '<i class="ri-information-line me-1"></i>Estás editando un movimiento. Ajustá cantidad o precios y guardá.'
       editNotice.classList.remove('d-none')
       tipoEntradaRadio.disabled = true
       tipoSalidaRadio.disabled = true
@@ -576,9 +579,57 @@
       if (btnSubmit) btnSubmit.innerHTML = '<i class="ri-check-line me-1"></i>Actualizar'
     }
 
+    window.movementModalLoadTransactionEdit = (apiLines: any[], tid: string) => {
+      delete form.dataset.editId
+      form.dataset.editTransaccionId = tid
+      if (!apiLines?.length) return
+      lines = apiLines.map((m) => ({
+        movementLineId: String(m._id),
+        producto_id: String(m.producto_id?._id || m.producto_id || ''),
+        nombre: m.producto_id?.nombre || '—',
+        codigo: m.producto_id?.codigo || '',
+        cantidad: Math.max(1, Number(m.cantidad || 1)),
+        precio_compra: m.precio_compra != null ? Number(m.precio_compra) : null,
+        precio_venta: m.precio_venta != null ? Number(m.precio_venta) : null
+      }))
+
+      const first = apiLines[0]
+      const tipo = first.tipo_movimiento || 'entrada'
+      tipoEntradaRadio.checked = tipo === 'entrada'
+      tipoSalidaRadio.checked = tipo === 'salida'
+
+      const motivo = first.motivo || ''
+      if (tipo === 'entrada') {
+        const mR = motivoEntradaGrp.querySelector(`input[value="${motivo}"]`) as HTMLInputElement
+        if (mR) mR.checked = true
+      } else {
+        const mR = motivoSalidaGrp.querySelector(`input[value="${motivo}"]`) as HTMLInputElement
+        if (mR) mR.checked = true
+      }
+
+      const uid = first.usuario_id?._id || first.usuario_id
+      if (usuarioInput && uid) usuarioInput.value = String(uid)
+
+      ;(document.getElementById('moveObservacion') as HTMLTextAreaElement).value = first.observacion || ''
+      updateMotivoHidden()
+      syncTipo()
+      draftSection.classList.add('d-none')
+      addLineBtn.disabled = true
+      editNotice.innerHTML =
+        '<i class="ri-information-line me-1"></i>Estás editando una <strong>transacción</strong> con varios productos. Ajustá cantidades o precios y guardá.'
+      editNotice.classList.remove('d-none')
+      tipoEntradaRadio.disabled = true
+      tipoSalidaRadio.disabled = true
+      const titleEl = document.querySelector('#createMovementModal .modal-title')
+      if (titleEl) titleEl.textContent = 'Editar transacción'
+      const btnSubmit = document.getElementById('moveSubmitBtn') as HTMLButtonElement
+      if (btnSubmit) btnSubmit.innerHTML = '<i class="ri-check-line me-1"></i>Actualizar'
+    }
+
     function resetModal() {
       form.reset()
       delete form.dataset.editId
+      delete form.dataset.editTransaccionId
       lines = []
       clearProductSelection()
       draftCantidad.value = '1'
@@ -607,7 +658,7 @@
       }
 
       const btn = document.getElementById('moveSubmitBtn') as HTMLButtonElement
-      const isEditMode = Boolean(form.dataset.editId)
+      const isEditMode = Boolean(form.dataset.editId || form.dataset.editTransaccionId)
       if (btn) {
         btn.disabled = true
         btn.innerHTML = '<i class="ri-loader-4-line ri-spin me-1"></i>Guardando...'
@@ -615,9 +666,36 @@
 
       const tipo = getTipoActual()
       const movementId = form.dataset.editId
+      const transaccionId = form.dataset.editTransaccionId
 
       try {
-        if (movementId) {
+        if (transaccionId) {
+          for (const l of lines) {
+            if (!l.movementLineId) throw new Error('Falta id de línea')
+          }
+          const url = `${apiBase}/api/inventory-movements/transaccion/${encodeURIComponent(transaccionId)}`
+          const payload = {
+            motivo: motivoHidden.value,
+            usuario_id: usuarioInput?.value || '',
+            observacion: (document.getElementById('moveObservacion') as HTMLTextAreaElement)?.value || '',
+            items: lines.map((l) => ({
+              movement_id: l.movementLineId,
+              producto_id: l.producto_id,
+              cantidad: l.cantidad,
+              precio_compra: tipo === 'entrada' ? l.precio_compra : null,
+              precio_venta: tipo === 'entrada' ? l.precio_venta : null
+            }))
+          }
+          const response = await fetch(url, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          })
+          if (!response.ok) {
+            const err = await response.json().catch(() => ({}))
+            throw new Error((err as { message?: string }).message || 'Error al actualizar la transacción')
+          }
+        } else if (movementId) {
           const line = lines[0]
           if (!line) throw new Error('Sin línea')
           const url = `${apiBase}/api/inventory-movements/${movementId}`

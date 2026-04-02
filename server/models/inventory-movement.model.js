@@ -29,7 +29,9 @@ const inventoryMovementSchema = new mongoose.Schema(
       required: true
     },
     observacion: { type: String, default: '' },
-    fecha: { type: Date, default: Date.now }
+    fecha: { type: Date, default: Date.now },
+    /** Mismo id en todas las líneas creadas en un solo envío (varios productos). */
+    transaccion_id: { type: mongoose.Schema.Types.ObjectId, default: null, index: true }
   },
   {
     collection: 'inventory_movements',
@@ -42,5 +44,6 @@ const inventoryMovementSchema = new mongoose.Schema(
 
 inventoryMovementSchema.index({ fecha: -1 })
 inventoryMovementSchema.index({ producto_id: 1, fecha: -1 })
+inventoryMovementSchema.index({ transaccion_id: 1, fecha: -1 })
 
 export const InventoryMovement = mongoose.model('InventoryMovement', inventoryMovementSchema)

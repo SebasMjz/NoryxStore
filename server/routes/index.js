@@ -1,4 +1,5 @@
 import { Router } from 'express'
+import mongoose from 'mongoose'
 import { Category, Client, InventoryMovement, Product, Sale, SaleDetail, Setting, User } from '../models/index.js'
 
 const router = Router()
@@ -845,9 +846,161 @@ router.get('/inventory-movements', async (_req, res, next) => {
   }
 })
 
+router.get('/inventory-movements/transaccion/:tid', async (req, res, next) => {
+  try {
+    const tid = req.params.tid
+    if (!mongoose.Types.ObjectId.isValid(tid)) {
+      return res.status(400).json({ ok: false, message: 'ID de transacción inválido' })
+    }
+    const lines = await InventoryMovement.find({ transaccion_id: tid })
+      .populate('producto_id', 'nombre codigo')
+      .populate('usuario_id', 'nombre tipo_usuario')
+      .sort({ _id: 1 })
+    if (!lines.length) {
+      return res.status(404).json({ ok: false, message: 'Transacción no encontrada' })
+    }
+    res.json({ ok: true, transaccion_id: tid, lines })
+  } catch (error) {
+    next(error)
+  }
+})
+
+/** Actualizar todas las líneas de una transacción (cantidades, precios, motivo, observación). Ajusta stock por delta. */
+router.put('/inventory-movements/transaccion/:tid', async (req, res, next) => {
+  try {
+    const tid = req.params.tid
+    if (!mongoose.Types.ObjectId.isValid(tid)) {
+      return res.status(400).json({ ok: false, message: 'ID de transacción inválido' })
+    }
+    const payload = req.body || {}
+    const items = payload.items
+    if (!Array.isArray(items) || items.length === 0) {
+      return res.status(400).json({ ok: false, message: 'items[] es requerido' })
+    }
+    if (!payload.motivo || !payload.usuario_id) {
+      return res.status(400).json({ ok: false, message: 'motivo y usuario_id son requeridos' })
+    }
+
+    const existing = await InventoryMovement.find({ transaccion_id: tid }).sort({ _id: 1 })
+    if (!existing.length) {
+      return res.status(404).json({ ok: false, message: 'Transacción no encontrada' })
+    }
+    if (items.length !== existing.length) {
+      return res.status(400).json({ ok: false, message: 'La cantidad de líneas no coincide con la transacción' })
+    }
+
+    const refTipo = existing[0].tipo_movimiento
+    for (const m of existing) {
+      if (m.tipo_movimiento !== refTipo) {
+        return res.status(400).json({ ok: false, message: 'Transacción inconsistente' })
+      }
+    }
+
+    const existingById = new Map(existing.map((m) => [String(m._id), m]))
+    const used = new Set()
+    for (const it of items) {
+      const mid = it.movement_id || it.id
+      if (!mid || !existingById.has(String(mid))) {
+        return res.status(400).json({ ok: false, message: 'Cada ítem debe incluir movement_id válido de esta transacción' })
+      }
+      if (used.has(String(mid))) {
+        return res.status(400).json({ ok: false, message: 'movement_id duplicado' })
+      }
+      used.add(String(mid))
+      const m = existingById.get(String(mid))
+      if (it.producto_id && String(it.producto_id) !== String(m.producto_id)) {
+        return res.status(400).json({ ok: false, message: 'No se puede cambiar el producto de una línea' })
+      }
+      const newQty = Number(it.cantidad)
+      if (!Number.isFinite(newQty) || newQty < 1) {
+        return res.status(400).json({ ok: false, message: 'Cada línea necesita cantidad ≥ 1' })
+      }
+    }
+    if (used.size !== existing.length) {
+      return res.status(400).json({ ok: false, message: 'Faltan líneas en items[]' })
+    }
+
+    const observacion = payload.observacion != null ? String(payload.observacion) : ''
+    const audit = getUpdateAuditFields(req)
+
+    for (const it of items) {
+      const m = existingById.get(String(it.movement_id || it.id))
+      const oldQty = Number(m.cantidad)
+      const newQty = Number(it.cantidad)
+      const tipoM = m.tipo_movimiento
+      const stockDelta = tipoM === 'entrada' ? newQty - oldQty : oldQty - newQty
+      await Product.findByIdAndUpdate(m.producto_id, { $inc: { stock: stockDelta } })
+
+      let precio_compra = m.precio_compra
+      let precio_venta = m.precio_venta
+      if (tipoM === 'entrada') {
+        if (it.precio_compra !== undefined && it.precio_compra !== '') {
+          precio_compra = it.precio_compra == null ? null : Number(it.precio_compra)
+        }
+        if (it.precio_venta !== undefined && it.precio_venta !== '') {
+          precio_venta = it.precio_venta == null ? null : Number(it.precio_venta)
+        }
+      } else {
+        precio_compra = null
+        precio_venta = null
+      }
+
+      await InventoryMovement.findByIdAndUpdate(
+        m._id,
+        {
+          cantidad: newQty,
+          precio_compra: tipoM === 'entrada' ? precio_compra : null,
+          precio_venta: tipoM === 'entrada' ? precio_venta : null,
+          motivo: payload.motivo,
+          usuario_id: payload.usuario_id,
+          observacion,
+          ...audit
+        },
+        { new: true, runValidators: true }
+      )
+
+      if (tipoM === 'entrada') {
+        const set = {}
+        if (precio_compra != null && !Number.isNaN(Number(precio_compra))) set.precio_compra = Number(precio_compra)
+        if (precio_venta != null && !Number.isNaN(Number(precio_venta))) set.precio_venta = Number(precio_venta)
+        if (Object.keys(set).length > 0) {
+          await Product.findByIdAndUpdate(m.producto_id, { $set: set })
+        }
+      }
+    }
+
+    const lines = await InventoryMovement.find({ transaccion_id: tid })
+      .populate('producto_id', 'nombre codigo')
+      .populate('usuario_id', 'nombre tipo_usuario')
+      .sort({ _id: 1 })
+
+    res.json({ ok: true, transaccion_id: tid, lines })
+  } catch (error) {
+    next(error)
+  }
+})
+
+router.delete('/inventory-movements/transaccion/:tid', async (req, res, next) => {
+  try {
+    const tid = req.params.tid
+    if (!mongoose.Types.ObjectId.isValid(tid)) {
+      return res.status(400).json({ ok: false, message: 'ID de transacción inválido' })
+    }
+    const result = await InventoryMovement.deleteMany({ transaccion_id: tid })
+    if (result.deletedCount === 0) {
+      return res.status(404).json({ ok: false, message: 'Transacción no encontrada' })
+    }
+    res.json({ ok: true, message: 'Transacción eliminada', deleted: result.deletedCount })
+  } catch (error) {
+    next(error)
+  }
+})
+
 router.get('/inventory-movements/:id', async (req, res, next) => {
   try {
     const movement = await InventoryMovement.findById(req.params.id)
+      .populate('producto_id', 'nombre codigo')
+      .populate('usuario_id', 'nombre tipo_usuario')
     if (!movement) return res.status(404).json({ ok: false, message: 'Movimiento no encontrado' })
     res.json(movement)
   } catch (error) {
@@ -875,6 +1028,8 @@ router.post('/inventory-movements', async (req, res, next) => {
       const fecha = payload.fecha ? new Date(payload.fecha) : new Date()
       const audit = getCreateAuditFields(req)
       const movements = []
+      const transaccion_id =
+        payload.items.length > 1 ? new mongoose.Types.ObjectId() : null
 
       for (const item of payload.items) {
         const cantidad = Number(item.cantidad || 0)
@@ -901,6 +1056,7 @@ router.post('/inventory-movements', async (req, res, next) => {
           usuario_id,
           observacion,
           fecha,
+          transaccion_id,
           ...audit
         })
 
@@ -917,7 +1073,12 @@ router.post('/inventory-movements', async (req, res, next) => {
         movements.push(movement)
       }
 
-      return res.status(201).json({ ok: true, movements, count: movements.length })
+      return res.status(201).json({
+        ok: true,
+        movements,
+        count: movements.length,
+        transaccion_id: transaccion_id ? String(transaccion_id) : null
+      })
     }
 
     const movement = await InventoryMovement.create({
