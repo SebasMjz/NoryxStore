@@ -45,17 +45,10 @@ const isActive = (path: string) => currentPath === path
       </a>
     </li>
 
-    <li class={`nav-item ${isActive('sales') ? 'active' : ''}`}>
+    <li class={`nav-item ${currentPath.startsWith('sales') ? 'active' : ''}`}>
       <a class="nav-link" href={getPathPrefix('/sales')}>
         <i class="ri-shopping-cart-2-line"></i>
-        <span>Nueva Venta</span>
-      </a>
-    </li>
-
-    <li class={`nav-item ${isActive('sales/history') ? 'active' : ''}`}>
-      <a class="nav-link" href={getPathPrefix('/sales/history')}>
-        <i class="ri-history-line"></i>
-        <span>Historial de Ventas</span>
+        <span>Ventas</span>
       </a>
     </li>
 

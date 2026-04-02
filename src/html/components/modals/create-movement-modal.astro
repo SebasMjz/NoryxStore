@@ -17,6 +17,9 @@
     background: var(--bs-tertiary-bg);
     color: var(--bs-emphasis-color);
   }
+  #moveLinesTable .form-control-sm {
+    min-width: 4.5rem;
+  }
 </style>
 
 <div
@@ -26,7 +29,7 @@
   aria-labelledby="createMovementModalLabel"
   aria-hidden="true"
 >
-  <div class="modal-dialog">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title" id="createMovementModalLabel">Nuevo movimiento</h5>
@@ -34,46 +37,10 @@
       </div>
       <div class="modal-body">
         <form id="createMovementForm">
-
-          <!-- Producto — searchable picker -->
-          <div class="mb-3">
-            <label class="form-label fw-semibold">Producto <span class="text-danger">*</span></label>
-            <div class="position-relative" id="moveProductoWrapper">
-              <div class="input-group">
-                <span class="input-group-text text-muted"><i class="ri-search-line"></i></span>
-                <input
-                  type="text"
-                  class="form-control"
-                  id="moveProductoSearch"
-                  placeholder="Buscar por nombre o código..."
-                  autocomplete="off"
-                  aria-label="Buscar producto"
-                />
-                <button type="button" class="btn btn-outline-secondary" id="moveProductoClear"
-                  style="display:none;" title="Limpiar selección" tabindex="-1">
-                  <i class="ri-close-line"></i>
-                </button>
-              </div>
-              <!-- Selected chip -->
-              <div id="moveProductoChip" class="mt-1" style="display:none;">
-                <span class="badge bg-primary-subtle text-primary px-2 py-1" style="font-size:.8rem;"
-                  id="moveProductoChipLabel"></span>
-              </div>
-              <!-- Dropdown list -->
-              <div id="moveProductoDropdown"
-                class="list-group position-absolute w-100 border rounded overflow-auto"
-                style="z-index:1070;max-height:200px;display:none;top:calc(100% + 2px);left:0;
-                       box-shadow:0 6px 20px rgba(0,0,0,.18);">
-              </div>
-              <!-- Hidden value consumed by form -->
-              <input type="hidden" id="moveProducto" name="producto_id" required />
-            </div>
-          </div>
-
-          <!-- Tipo + Cantidad -->
+          <!-- Tipo + Motivo -->
           <div class="row g-3 mb-3">
             <div class="col-md-6">
-              <label for="moveTipo" class="form-label fw-semibold">Tipo <span class="text-danger">*</span></label>
+              <label class="form-label fw-semibold">Tipo <span class="text-danger">*</span></label>
               <div class="d-flex gap-2">
                 <div class="form-check form-check-inline flex-grow-1 m-0">
                   <input class="form-check-input" type="radio" name="tipo_movimiento" id="tipoEntrada" value="entrada" checked />
@@ -92,94 +59,147 @@
                   </label>
                 </div>
               </div>
-              <!-- Hidden select to keep compatibility with form serialization -->
-              <select id="moveTipo" name="tipo_movimiento_hidden" style="display:none;"></select>
             </div>
             <div class="col-md-6">
-              <label for="moveCantidad" class="form-label fw-semibold">Cantidad <span class="text-danger">*</span></label>
-              <input type="number" class="form-control" id="moveCantidad" name="cantidad" required min="1" placeholder="0" />
+              <label class="form-label fw-semibold">Motivo <span class="text-danger">*</span></label>
+              <div id="motivoEntradaGroup">
+                <div class="d-flex gap-2 flex-wrap">
+                  <div class="form-check">
+                    <input class="form-check-input" type="radio" name="motivo" id="motivoCompra" value="compra" checked />
+                    <label class="form-check-label small" for="motivoCompra">Compra</label>
+                  </div>
+                  <div class="form-check">
+                    <input class="form-check-input" type="radio" name="motivo" id="motivoReposicion" value="reposicion" />
+                    <label class="form-check-label small" for="motivoReposicion">Reposición</label>
+                  </div>
+                </div>
+              </div>
+              <div id="motivoSalidaGroup" style="display:none;">
+                <div class="d-flex gap-2 flex-wrap">
+                  <div class="form-check">
+                    <input class="form-check-input" type="radio" name="motivo_salida" id="motivoVenta" value="venta" checked />
+                    <label class="form-check-label small" for="motivoVenta">Venta</label>
+                  </div>
+                  <div class="form-check">
+                    <input class="form-check-input" type="radio" name="motivo_salida" id="motivoAjuste" value="ajuste_manual" />
+                    <label class="form-check-label small" for="motivoAjuste">Ajuste manual</label>
+                  </div>
+                </div>
+              </div>
+              <input type="hidden" id="moveMotivo" name="motivo" value="compra" />
             </div>
           </div>
 
-          <!-- Motivo dinámico según tipo -->
+          <div id="moveEditNotice" class="alert alert-info py-2 small d-none mb-3" role="status">
+            <i class="ri-information-line me-1"></i>Estás editando un movimiento existente. Ajusta cantidad o precios y guarda.
+          </div>
+
+          <!-- Agregar productos al listado -->
+          <div id="moveDraftSection" class="card border mb-3">
+            <div class="card-header py-2 d-flex align-items-center gap-2">
+              <i class="ri-add-circle-line text-primary"></i>
+              <span class="fw-semibold small">Agregar producto al movimiento</span>
+            </div>
+            <div class="card-body py-3">
+              <div class="mb-2">
+                <label class="form-label small fw-semibold mb-1">Buscar producto</label>
+                <div class="position-relative" id="moveProductoWrapper">
+                  <div class="input-group input-group-sm">
+                    <span class="input-group-text text-muted"><i class="ri-search-line"></i></span>
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="moveProductoSearch"
+                      placeholder="Nombre o código..."
+                      autocomplete="off"
+                      aria-label="Buscar producto"
+                    />
+                    <button type="button" class="btn btn-outline-secondary" id="moveProductoClear" style="display:none;" title="Limpiar">
+                      <i class="ri-close-line"></i>
+                    </button>
+                  </div>
+                  <div
+                    id="moveProductoDropdown"
+                    class="list-group position-absolute w-100 border rounded overflow-auto"
+                    style="z-index:1070;max-height:180px;display:none;top:calc(100% + 2px);left:0;
+                           box-shadow:0 6px 20px rgba(0,0,0,.18);"
+                  >
+                  </div>
+                  <input type="hidden" id="moveProducto" />
+                </div>
+              </div>
+
+              <div class="row g-2 align-items-end">
+                <div class="col-6 col-md-2">
+                  <label class="form-label small mb-0" for="moveDraftCantidad">Cantidad</label>
+                  <input type="number" class="form-control form-control-sm" id="moveDraftCantidad" min="1" value="1" />
+                </div>
+                <div class="col-6 col-md-3" id="moveDraftPrecioCompraCol">
+                  <label class="form-label small mb-0" for="moveDraftPrecioCompra">P. compra</label>
+                  <div class="input-group input-group-sm">
+                    <span class="input-group-text">$</span>
+                    <input type="number" class="form-control" id="moveDraftPrecioCompra" min="0" step="0.01" placeholder="0" />
+                  </div>
+                </div>
+                <div class="col-6 col-md-3" id="moveDraftPrecioVentaCol">
+                  <label class="form-label small mb-0" for="moveDraftPrecioVenta">P. venta</label>
+                  <div class="input-group input-group-sm">
+                    <span class="input-group-text">$</span>
+                    <input type="number" class="form-control" id="moveDraftPrecioVenta" min="0" step="0.01" placeholder="0" />
+                  </div>
+                </div>
+                <div class="col-12 col-md-4">
+                  <button type="button" class="btn btn-primary btn-sm w-100" id="moveAddLineBtn">
+                    <i class="ri-list-check-2 me-1"></i>Agregar a la lista
+                  </button>
+                </div>
+              </div>
+              <p class="form-text text-muted small mb-0 mt-2" id="moveDraftHelpEntrada">
+                En <strong>entrada</strong>, el precio de venta queda como el del producto (última mercadería registrada).
+              </p>
+              <p class="form-text text-muted small mb-0 mt-2 d-none" id="moveDraftHelpSalida">
+                En <strong>salida</strong> solo indicás cantidad por producto.
+              </p>
+            </div>
+          </div>
+
+          <!-- Lista de líneas -->
           <div class="mb-3">
-            <label class="form-label fw-semibold">Motivo <span class="text-danger">*</span></label>
-            <!-- Entrada motivos -->
-            <div id="motivoEntradaGroup">
-              <div class="d-flex gap-2 flex-wrap">
-                <div class="form-check">
-                  <input class="form-check-input" type="radio" name="motivo" id="motivoCompra" value="compra" checked />
-                  <label class="form-check-label" for="motivoCompra">
-                    <i class="ri-shopping-cart-line me-1 text-success"></i>Compra
-                    <small class="text-muted d-block">Adquisición de mercancía</small>
-                  </label>
-                </div>
-                <div class="form-check ms-3">
-                  <input class="form-check-input" type="radio" name="motivo" id="motivoReposicion" value="reposicion" />
-                  <label class="form-check-label" for="motivoReposicion">
-                    <i class="ri-refresh-line me-1 text-success"></i>Reposición
-                    <small class="text-muted d-block">Reabastecimiento de stock</small>
-                  </label>
-                </div>
-              </div>
+            <label class="form-label fw-semibold">Productos en este movimiento <span class="text-danger">*</span></label>
+            <div class="table-responsive border rounded">
+              <table class="table table-sm table-hover mb-0" id="moveLinesTable">
+                <thead class="table-light">
+                  <tr>
+                    <th>Producto</th>
+                    <th class="text-center" style="width:90px;">Cant.</th>
+                    <th class="text-end d-none move-col-precio" style="width:100px;">P. compra</th>
+                    <th class="text-end d-none move-col-precio" style="width:100px;">P. venta</th>
+                    <th style="width:44px;"></th>
+                  </tr>
+                </thead>
+                <tbody id="moveLinesBody">
+                  <tr id="moveLinesEmpty">
+                    <td colspan="5" class="text-center text-muted small py-4">
+                      <i class="ri-inbox-line d-block mb-1 fs-4 opacity-50"></i>
+                      Agregá uno o más productos con el buscador de arriba.
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
-            <!-- Salida motivos -->
-            <div id="motivoSalidaGroup" style="display:none;">
-              <div class="d-flex gap-2 flex-wrap">
-                <div class="form-check">
-                  <input class="form-check-input" type="radio" name="motivo_salida" id="motivoVenta" value="venta" checked />
-                  <label class="form-check-label" for="motivoVenta">
-                    <i class="ri-receipt-line me-1 text-danger"></i>Venta
-                    <small class="text-muted d-block">Producto vendido</small>
-                  </label>
-                </div>
-                <div class="form-check ms-3">
-                  <input class="form-check-input" type="radio" name="motivo_salida" id="motivoAjuste" value="ajuste_manual" />
-                  <label class="form-check-label" for="motivoAjuste">
-                    <i class="ri-equalizer-line me-1 text-danger"></i>Ajuste manual
-                    <small class="text-muted d-block">Merma, pérdida o corrección</small>
-                  </label>
-                </div>
-              </div>
-            </div>
-            <!-- Hidden input that carries the actual selected motivo -->
-            <input type="hidden" id="moveMotivo" name="motivo" value="compra" />
           </div>
 
-          <!-- Precio de compra: solo para entradas -->
-          <div class="mb-3" id="movePrecioCompraWrapper">
-            <label for="movePrecioCompra" class="form-label fw-semibold d-flex align-items-center gap-2">
-              Precio de compra
-              <span class="badge bg-success-subtle text-success fw-normal">entrada</span>
-            </label>
-            <div class="input-group">
-              <span class="input-group-text">$</span>
-              <input
-                type="number"
-                class="form-control"
-                id="movePrecioCompra"
-                name="precio_compra"
-                min="0"
-                step="0.01"
-                placeholder="0.00"
-              />
-            </div>
-            <div class="form-text text-muted">Precio al que compraste este lote. Actualiza el historial del producto.</div>
-          </div>
-
-          <!-- Usuario oculto -->
           <input type="hidden" id="moveUsuario" name="usuario_id" />
 
-          <!-- Observación -->
           <div class="mb-3">
             <label for="moveObservacion" class="form-label fw-semibold">Observación <span class="text-muted fw-normal small">(opcional)</span></label>
-            <textarea class="form-control" id="moveObservacion" name="observacion" rows="2" placeholder="Detalles adicionales..."></textarea>
+            <textarea class="form-control" id="moveObservacion" name="observacion" rows="2" placeholder="Detalles del movimiento..."></textarea>
           </div>
 
           <div class="d-flex justify-content-end gap-2 mt-3">
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
             <button type="submit" class="btn btn-primary" id="moveSubmitBtn">
-              <i class="ri-check-line me-1"></i>Crear
+              <i class="ri-check-line me-1"></i>Registrar movimiento
             </button>
           </div>
         </form>
@@ -193,124 +213,63 @@
     interface Window {
       __authUser: { id?: string; nombre?: string; [k: string]: any } | null
       moveProductoPicker: { select: (p: any) => void; clear: () => void; getAll: () => any[] } | undefined
+      movementModalLoadEdit: ((m: any) => void) | undefined
     }
   }
   declare const bootstrap: { Modal: any }
 
-  document.addEventListener('DOMContentLoaded', async () => {
+  type MoveLine = {
+    producto_id: string
+    nombre: string
+    codigo: string
+    cantidad: number
+    precio_compra: number | null
+    precio_venta: number | null
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
     const apiBase =
       window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
         ? 'http://localhost:4000'
         : ''
 
-    // ── Auth ──────────────────────────────────────────────────
-    const authUser    = window.__authUser
+    const authUser = window.__authUser
     const usuarioInput = document.getElementById('moveUsuario') as HTMLInputElement
     if (authUser && usuarioInput) usuarioInput.value = authUser.id || ''
 
-    // ── Refs ──────────────────────────────────────────────────
-    const tipoEntradaRadio = document.getElementById('tipoEntrada')   as HTMLInputElement
-    const tipoSalidaRadio  = document.getElementById('tipoSalida')    as HTMLInputElement
-    const precioWrapper    = document.getElementById('movePrecioCompraWrapper') as HTMLElement
-    const precioInput      = document.getElementById('movePrecioCompra')        as HTMLInputElement
-    const motivoEntradaGrp = document.getElementById('motivoEntradaGroup')      as HTMLElement
-    const motivoSalidaGrp  = document.getElementById('motivoSalidaGroup')       as HTMLElement
-    const motivoHidden     = document.getElementById('moveMotivo')              as HTMLInputElement
-    const prodHidden       = document.getElementById('moveProducto')            as HTMLInputElement
+    const tipoEntradaRadio = document.getElementById('tipoEntrada') as HTMLInputElement
+    const tipoSalidaRadio = document.getElementById('tipoSalida') as HTMLInputElement
+    const motivoEntradaGrp = document.getElementById('motivoEntradaGroup') as HTMLElement
+    const motivoSalidaGrp = document.getElementById('motivoSalidaGroup') as HTMLElement
+    const motivoHidden = document.getElementById('moveMotivo') as HTMLInputElement
+    const draftSection = document.getElementById('moveDraftSection') as HTMLElement
+    const editNotice = document.getElementById('moveEditNotice') as HTMLElement
+    const helpEntrada = document.getElementById('moveDraftHelpEntrada') as HTMLElement
+    const helpSalida = document.getElementById('moveDraftHelpSalida') as HTMLElement
+    const precioCompraCol = document.getElementById('moveDraftPrecioCompraCol') as HTMLElement
+    const precioVentaCol = document.getElementById('moveDraftPrecioVentaCol') as HTMLElement
+    const linesBody = document.getElementById('moveLinesBody') as HTMLElement
+    const linesEmpty = document.getElementById('moveLinesEmpty') as HTMLElement
+    const form = document.getElementById('createMovementForm') as HTMLFormElement
 
-    // ── Searchable product picker ─────────────────────────────
-    const searchInput  = document.getElementById('moveProductoSearch')   as HTMLInputElement
-    const clearBtn     = document.getElementById('moveProductoClear')    as HTMLButtonElement
-    const dropdown     = document.getElementById('moveProductoDropdown') as HTMLElement
-    const chip         = document.getElementById('moveProductoChip')     as HTMLElement
-    const chipLabel    = document.getElementById('moveProductoChipLabel') as HTMLElement
+    const searchInput = document.getElementById('moveProductoSearch') as HTMLInputElement
+    const clearBtn = document.getElementById('moveProductoClear') as HTMLButtonElement
+    const dropdown = document.getElementById('moveProductoDropdown') as HTMLElement
+    const prodHidden = document.getElementById('moveProducto') as HTMLInputElement
+    const draftCantidad = document.getElementById('moveDraftCantidad') as HTMLInputElement
+    const draftPrecioCompra = document.getElementById('moveDraftPrecioCompra') as HTMLInputElement
+    const draftPrecioVenta = document.getElementById('moveDraftPrecioVenta') as HTMLInputElement
+    const addLineBtn = document.getElementById('moveAddLineBtn') as HTMLButtonElement
 
     let allProducts: any[] = []
+    let productosMap: Record<string, { precio_compra: number | null; precio_venta: number | null }> = {}
     let selectedProduct: any = null
-    let productosMap: Record<string, number | null> = {}
-
-    // Load products
-    try {
-      const res = await fetch(`${apiBase}/api/products`)
-      allProducts = await res.json()
-      for (const p of allProducts) productosMap[p._id] = p.precio_compra ?? null
-    } catch (e) {
-      console.error('Error cargando productos', e)
-    }
+    let lines: MoveLine[] = []
 
     function esc(s: string) {
-      return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+      return String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
     }
 
-    function renderDropdown(query: string) {
-      const q = query.toLowerCase().trim()
-      const filtered = q
-        ? allProducts.filter(p =>
-            p.nombre.toLowerCase().includes(q) ||
-            (p.codigo || '').toLowerCase().includes(q))
-        : allProducts
-
-      if (!filtered.length) {
-        dropdown.innerHTML = `<div class="list-group-item text-muted small py-2 text-center">
-          <i class="ri-search-line me-1"></i>Sin resultados
-        </div>`
-      } else {
-        dropdown.innerHTML = filtered.map(p => `
-          <button type="button"
-            class="list-group-item list-group-item-action d-flex align-items-center gap-2 px-3 py-2"
-            data-pid="${p._id}">
-            <div class="flex-grow-1 min-w-0">
-              <div class="fw-semibold small text-truncate">${esc(p.nombre)}</div>
-              ${p.codigo ? `<div class="text-muted" style="font-size:.72rem;">${esc(p.codigo)}</div>` : ''}
-            </div>
-            ${p.stock != null ? `<span class="badge bg-secondary-subtle text-secondary flex-shrink-0" style="font-size:.7rem;">${p.stock} uds</span>` : ''}
-          </button>`).join('')
-
-        dropdown.querySelectorAll('button[data-pid]').forEach(btn => {
-          btn.addEventListener('mousedown', (e) => {
-            e.preventDefault()
-            const pid = (btn as HTMLElement).dataset.pid
-            const product = allProducts.find(p => p._id === pid)
-            if (product) selectProduct(product)
-          })
-        })
-      }
-      dropdown.style.display = ''
-    }
-
-    function selectProduct(product: any) {
-      selectedProduct = product
-      prodHidden.value = product._id
-      searchInput.value = `${product.nombre}${product.codigo ? ` (${product.codigo})` : ''}`
-      dropdown.style.display = 'none'
-      clearBtn.style.display = ''
-      if (chip) chip.style.display = 'none'  // chip redundant with input text
-      // Auto-fill purchase price if entrada
-      if (getTipoActual() === 'entrada' && precioInput && productosMap[product._id] != null) {
-        precioInput.value = String(productosMap[product._id])
-      }
-    }
-
-    function clearProductSelection() {
-      selectedProduct = null
-      prodHidden.value = ''
-      searchInput.value = ''
-      dropdown.style.display = 'none'
-      clearBtn.style.display = 'none'
-    }
-
-    searchInput?.addEventListener('input', () => renderDropdown(searchInput.value))
-    searchInput?.addEventListener('focus', () => renderDropdown(searchInput.value))
-    searchInput?.addEventListener('blur', () => {
-      // Delay hide so mousedown on option fires first
-      setTimeout(() => { dropdown.style.display = 'none' }, 150)
-    })
-    clearBtn?.addEventListener('click', clearProductSelection)
-
-    // Expose for external use (editMovement in inventory-movements.astro)
-    ;(window as any).moveProductoPicker = { select: selectProduct, clear: clearProductSelection, getAll: () => allProducts }
-
-    // ── Tipo / Motivo / Precio sync ───────────────────────────
     function getTipoActual() {
       return tipoSalidaRadio?.checked ? 'salida' : 'entrada'
     }
@@ -328,85 +287,408 @@
 
     function syncTipo() {
       const tipo = getTipoActual()
-      if (tipo === 'entrada') {
-        precioWrapper.style.display = ''
-        motivoEntradaGrp.style.display = ''
-        motivoSalidaGrp.style.display  = 'none'
-        // Pre-fill price from selected product
-        if (selectedProduct && productosMap[selectedProduct._id] != null && precioInput) {
-          precioInput.value = String(productosMap[selectedProduct._id])
+      const isEntrada = tipo === 'entrada'
+      motivoEntradaGrp.style.display = isEntrada ? '' : 'none'
+      motivoSalidaGrp.style.display = isEntrada ? 'none' : ''
+      precioCompraCol.classList.toggle('d-none', !isEntrada)
+      precioVentaCol.classList.toggle('d-none', !isEntrada)
+      helpEntrada.classList.toggle('d-none', !isEntrada)
+      helpSalida.classList.toggle('d-none', isEntrada)
+      document.querySelectorAll('.move-col-precio').forEach((el) => el.classList.toggle('d-none', !isEntrada))
+      if (!isEntrada) {
+        draftPrecioCompra.value = ''
+        draftPrecioVenta.value = ''
+      } else if (selectedProduct) {
+        const m = productosMap[selectedProduct._id]
+        if (m) {
+          if (m.precio_compra != null) draftPrecioCompra.value = String(m.precio_compra)
+          if (m.precio_venta != null) draftPrecioVenta.value = String(m.precio_venta)
         }
-      } else {
-        precioWrapper.style.display = 'none'
-        if (precioInput) precioInput.value = ''
-        motivoEntradaGrp.style.display = 'none'
-        motivoSalidaGrp.style.display  = ''
       }
       updateMotivoHidden()
+      renderLinesTable()
     }
 
-    tipoEntradaRadio?.addEventListener('change', syncTipo)
-    tipoSalidaRadio?.addEventListener('change', syncTipo)
-    motivoEntradaGrp?.querySelectorAll('input[type="radio"]').forEach(r => r.addEventListener('change', updateMotivoHidden))
-    motivoSalidaGrp?.querySelectorAll('input[type="radio"]').forEach(r  => r.addEventListener('change', updateMotivoHidden))
+    async function loadProducts() {
+      try {
+        const res = await fetch(`${apiBase}/api/products`)
+        allProducts = await res.json()
+        productosMap = {}
+        for (const p of allProducts) {
+          productosMap[p._id] = {
+            precio_compra: p.precio_compra ?? null,
+            precio_venta: p.precio_venta ?? null
+          }
+        }
+      } catch (e) {
+        console.error('Error cargando productos', e)
+      }
+    }
+    loadProducts()
+
+    function renderDropdown(query: string) {
+      const q = query.toLowerCase().trim()
+      const filtered = q
+        ? allProducts.filter(
+            (p) =>
+              p.nombre.toLowerCase().includes(q) || (p.codigo || '').toLowerCase().includes(q)
+          )
+        : allProducts
+
+      if (!filtered.length) {
+        dropdown.innerHTML = `<div class="list-group-item text-muted small py-2 text-center">Sin resultados</div>`
+      } else {
+        dropdown.innerHTML = filtered
+          .map(
+            (p) => `
+          <button type="button" class="list-group-item list-group-item-action d-flex align-items-center gap-2 px-3 py-2" data-pid="${p._id}">
+            <div class="flex-grow-1 min-w-0">
+              <div class="fw-semibold small text-truncate">${esc(p.nombre)}</div>
+              ${p.codigo ? `<div class="text-muted" style="font-size:.72rem;">${esc(p.codigo)}</div>` : ''}
+            </div>
+            ${p.stock != null ? `<span class="badge bg-secondary-subtle text-secondary flex-shrink-0" style="font-size:.7rem;">${p.stock} uds</span>` : ''}
+          </button>`
+          )
+          .join('')
+
+        dropdown.querySelectorAll('button[data-pid]').forEach((btn) => {
+          btn.addEventListener('mousedown', (e) => {
+            e.preventDefault()
+            const pid = (btn as HTMLElement).dataset.pid
+            const product = allProducts.find((p) => p._id === pid)
+            if (product) selectProduct(product)
+          })
+        })
+      }
+      dropdown.style.display = ''
+    }
+
+    function selectProduct(product: any) {
+      selectedProduct = product
+      prodHidden.value = product._id
+      searchInput.value = `${product.nombre}${product.codigo ? ` (${product.codigo})` : ''}`
+      dropdown.style.display = 'none'
+      clearBtn.style.display = ''
+      if (getTipoActual() === 'entrada') {
+        const m = productosMap[product._id]
+        if (m) {
+          draftPrecioCompra.value = m.precio_compra != null ? String(m.precio_compra) : ''
+          draftPrecioVenta.value = m.precio_venta != null ? String(m.precio_venta) : ''
+        }
+      }
+    }
+
+    function clearProductSelection() {
+      selectedProduct = null
+      prodHidden.value = ''
+      searchInput.value = ''
+      dropdown.style.display = 'none'
+      clearBtn.style.display = 'none'
+    }
+
+    searchInput?.addEventListener('input', () => renderDropdown(searchInput.value))
+    searchInput?.addEventListener('focus', () => renderDropdown(searchInput.value))
+    searchInput?.addEventListener('blur', () => {
+      setTimeout(() => {
+        dropdown.style.display = 'none'
+      }, 150)
+    })
+    clearBtn?.addEventListener('click', clearProductSelection)
+
+    function parseMoney(v: string) {
+      const n = Number(v)
+      return v === '' || Number.isNaN(n) ? null : n
+    }
+
+    function addLineFromDraft() {
+      if (form.dataset.editId) return
+      if (!selectedProduct) {
+        searchInput?.focus()
+        return
+      }
+      const cant = Math.max(1, parseInt(draftCantidad.value, 10) || 1)
+      const tipo = getTipoActual()
+      let pc: number | null = null
+      let pv: number | null = null
+      if (tipo === 'entrada') {
+        pc = parseMoney(draftPrecioCompra.value)
+        pv = parseMoney(draftPrecioVenta.value)
+      }
+
+      const pid = selectedProduct._id
+      const existing = lines.findIndex((l) => l.producto_id === pid)
+      if (existing >= 0) {
+        lines[existing].cantidad += cant
+        if (tipo === 'entrada') {
+          if (pc != null) lines[existing].precio_compra = pc
+          if (pv != null) lines[existing].precio_venta = pv
+        }
+      } else {
+        lines.push({
+          producto_id: pid,
+          nombre: selectedProduct.nombre,
+          codigo: selectedProduct.codigo || '',
+          cantidad: cant,
+          precio_compra: tipo === 'entrada' ? pc : null,
+          precio_venta: tipo === 'entrada' ? pv : null
+        })
+      }
+
+      draftCantidad.value = '1'
+      clearProductSelection()
+      renderLinesTable()
+    }
+
+    addLineBtn?.addEventListener('click', addLineFromDraft)
+
+    function removeLine(index: number) {
+      lines.splice(index, 1)
+      renderLinesTable()
+    }
+
+    function renderLinesTable() {
+      const tipo = getTipoActual()
+      const isEntrada = tipo === 'entrada'
+      if (!lines.length) {
+        linesEmpty.style.display = ''
+        linesBody.querySelectorAll('tr.move-line-row').forEach((r) => r.remove())
+        return
+      }
+      linesEmpty.style.display = 'none'
+      linesBody.querySelectorAll('tr.move-line-row').forEach((r) => r.remove())
+
+      lines.forEach((line, idx) => {
+        const tr = document.createElement('tr')
+        tr.className = 'move-line-row align-middle'
+        const editing = Boolean(form.dataset.editId)
+        const pcCell = isEntrada
+          ? `<td class="text-end"><input type="number" class="form-control form-control-sm text-end move-line-pc" data-i="${idx}" min="0" step="0.01" value="${line.precio_compra ?? ''}" /></td>
+             <td class="text-end"><input type="number" class="form-control form-control-sm text-end move-line-pv" data-i="${idx}" min="0" step="0.01" value="${line.precio_venta ?? ''}" /></td>`
+          : `<td class="text-end text-muted small">—</td><td class="text-end text-muted small">—</td>`
+
+        tr.innerHTML = `
+          <td>
+            <div class="fw-semibold small">${esc(line.nombre)}</div>
+            ${line.codigo ? `<div class="text-muted" style="font-size:.72rem;">${esc(line.codigo)}</div>` : ''}
+          </td>
+          <td class="text-center">
+            <input type="number" class="form-control form-control-sm text-center move-line-qty" data-i="${idx}" min="1" value="${line.cantidad}" ${editing ? '' : ''} />
+          </td>
+          ${pcCell}
+          <td class="text-center">
+            <button type="button" class="btn btn-sm btn-icon text-danger move-line-remove" data-i="${idx}" title="Quitar" ${editing ? 'style="display:none"' : ''}><i class="ri-close-line"></i></button>
+          </td>`
+
+        linesBody.appendChild(tr)
+      })
+
+      linesBody.querySelectorAll('.move-line-qty').forEach((inp) => {
+        inp.addEventListener('change', () => {
+          const i = Number((inp as HTMLInputElement).dataset.i)
+          const v = Math.max(1, parseInt((inp as HTMLInputElement).value, 10) || 1)
+          if (lines[i]) lines[i].cantidad = v
+        })
+      })
+      linesBody.querySelectorAll('.move-line-pc').forEach((inp) => {
+        inp.addEventListener('change', () => {
+          const i = Number((inp as HTMLInputElement).dataset.i)
+          const v = parseMoney((inp as HTMLInputElement).value)
+          if (lines[i]) lines[i].precio_compra = v
+        })
+      })
+      linesBody.querySelectorAll('.move-line-pv').forEach((inp) => {
+        inp.addEventListener('change', () => {
+          const i = Number((inp as HTMLInputElement).dataset.i)
+          const v = parseMoney((inp as HTMLInputElement).value)
+          if (lines[i]) lines[i].precio_venta = v
+        })
+      })
+      linesBody.querySelectorAll('.move-line-remove').forEach((btn) => {
+        btn.addEventListener('click', () => removeLine(Number((btn as HTMLElement).dataset.i)))
+      })
+    }
+
+    tipoEntradaRadio?.addEventListener('change', () => {
+      syncTipo()
+    })
+    tipoSalidaRadio?.addEventListener('change', () => {
+      if (lines.length && !form.dataset.editId) {
+        if (!confirm('Cambiar el tipo vaciará la lista de productos. ¿Continuar?')) {
+          tipoEntradaRadio.checked = true
+          tipoSalidaRadio.checked = false
+          return
+        }
+        lines = []
+      }
+      syncTipo()
+    })
+    motivoEntradaGrp?.querySelectorAll('input[type="radio"]').forEach((r) =>
+      r.addEventListener('change', updateMotivoHidden)
+    )
+    motivoSalidaGrp?.querySelectorAll('input[type="radio"]').forEach((r) =>
+      r.addEventListener('change', updateMotivoHidden)
+    )
     syncTipo()
 
-    // ── Form submit ───────────────────────────────────────────
-    const form = document.getElementById('createMovementForm') as HTMLFormElement
-    if (!form) return
+    window.movementModalLoadEdit = (movement: any) => {
+      form.dataset.editId = movement._id
+      lines = []
+      const pid = movement.producto_id?._id || movement.producto_id || ''
+      const nombre = movement.producto_id?.nombre || '—'
+      const codigo = movement.producto_id?.codigo || ''
+      lines.push({
+        producto_id: pid,
+        nombre,
+        codigo,
+        cantidad: Number(movement.cantidad || 1),
+        precio_compra: movement.precio_compra != null ? Number(movement.precio_compra) : null,
+        precio_venta: movement.precio_venta != null ? Number(movement.precio_venta) : null
+      })
+
+      const tipo = movement.tipo_movimiento || 'entrada'
+      tipoEntradaRadio.checked = tipo === 'entrada'
+      tipoSalidaRadio.checked = tipo === 'salida'
+
+      const motivo = movement.motivo || ''
+      if (tipo === 'entrada') {
+        const mR = motivoEntradaGrp.querySelector(`input[value="${motivo}"]`) as HTMLInputElement
+        if (mR) {
+          mR.checked = true
+        }
+      } else {
+        const mR = motivoSalidaGrp.querySelector(`input[value="${motivo}"]`) as HTMLInputElement
+        if (mR) {
+          mR.checked = true
+        }
+      }
+
+      ;(document.getElementById('moveObservacion') as HTMLTextAreaElement).value = movement.observacion || ''
+      updateMotivoHidden()
+      syncTipo()
+      draftSection.classList.add('d-none')
+      addLineBtn.disabled = true
+      editNotice.classList.remove('d-none')
+      tipoEntradaRadio.disabled = true
+      tipoSalidaRadio.disabled = true
+      const titleEl = document.querySelector('#createMovementModal .modal-title')
+      if (titleEl) titleEl.textContent = 'Editar movimiento'
+      const btnSubmit = document.getElementById('moveSubmitBtn') as HTMLButtonElement
+      if (btnSubmit) btnSubmit.innerHTML = '<i class="ri-check-line me-1"></i>Actualizar'
+    }
+
+    function resetModal() {
+      form.reset()
+      delete form.dataset.editId
+      lines = []
+      clearProductSelection()
+      draftCantidad.value = '1'
+      draftPrecioCompra.value = ''
+      draftPrecioVenta.value = ''
+      tipoEntradaRadio.checked = true
+      tipoSalidaRadio.checked = false
+      tipoEntradaRadio.disabled = false
+      tipoSalidaRadio.disabled = false
+      draftSection.classList.remove('d-none')
+      addLineBtn.disabled = false
+      editNotice.classList.add('d-none')
+      const titleEl = document.getElementById('createMovementModal')?.querySelector('.modal-title')
+      if (titleEl) titleEl.textContent = 'Nuevo movimiento'
+      const btnSubmit = document.getElementById('moveSubmitBtn') as HTMLButtonElement
+      if (btnSubmit) btnSubmit.innerHTML = '<i class="ri-check-line me-1"></i>Registrar movimiento'
+      syncTipo()
+    }
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault()
-      if (!prodHidden.value) { searchInput?.focus(); return }
       updateMotivoHidden()
-
-      const btn = document.getElementById('moveSubmitBtn') as HTMLButtonElement
-      if (btn) { btn.disabled = true; btn.innerHTML = '<i class="ri-loader-4-line ri-spin me-1"></i>Guardando...' }
-
-      const movementId = form.dataset.editId
-      const url    = movementId ? `${apiBase}/api/inventory-movements/${movementId}` : `${apiBase}/api/inventory-movements`
-      const method = movementId ? 'PUT' : 'POST'
-      const tipo   = getTipoActual()
-      const rawPrecio = precioInput?.value
-
-      const payload = {
-        producto_id:     prodHidden.value,
-        tipo_movimiento: tipo,
-        cantidad:        Number((document.getElementById('moveCantidad') as HTMLInputElement)?.value || 0),
-        precio_compra:   tipo === 'entrada' && rawPrecio !== '' && rawPrecio != null ? Number(rawPrecio) : null,
-        motivo:          motivoHidden?.value || 'compra',
-        usuario_id:      usuarioInput?.value || '',
-        observacion:     (document.getElementById('moveObservacion') as HTMLTextAreaElement)?.value || ''
+      if (!lines.length) {
+        alert('Agregá al menos un producto a la lista.')
+        return
       }
 
+      const btn = document.getElementById('moveSubmitBtn') as HTMLButtonElement
+      const isEditMode = Boolean(form.dataset.editId)
+      if (btn) {
+        btn.disabled = true
+        btn.innerHTML = '<i class="ri-loader-4-line ri-spin me-1"></i>Guardando...'
+      }
+
+      const tipo = getTipoActual()
+      const movementId = form.dataset.editId
+
       try {
-        const response = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
-        if (!response.ok) throw new Error('Error al guardar el movimiento')
+        if (movementId) {
+          const line = lines[0]
+          if (!line) throw new Error('Sin línea')
+          const url = `${apiBase}/api/inventory-movements/${movementId}`
+          const payload = {
+            producto_id: line.producto_id,
+            tipo_movimiento: tipo,
+            cantidad: line.cantidad,
+            precio_compra: tipo === 'entrada' ? line.precio_compra : null,
+            precio_venta: tipo === 'entrada' ? line.precio_venta : null,
+            motivo: motivoHidden.value,
+            usuario_id: usuarioInput?.value || '',
+            observacion: (document.getElementById('moveObservacion') as HTMLTextAreaElement)?.value || ''
+          }
+          const response = await fetch(url, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          })
+          if (!response.ok) throw new Error('Error al actualizar')
+        } else {
+          const items = lines.map((l) => ({
+            producto_id: l.producto_id,
+            cantidad: l.cantidad,
+            precio_compra: tipo === 'entrada' ? l.precio_compra : null,
+            precio_venta: tipo === 'entrada' ? l.precio_venta : null
+          }))
+          const payload = {
+            tipo_movimiento: tipo,
+            motivo: motivoHidden.value,
+            usuario_id: usuarioInput?.value || '',
+            observacion: (document.getElementById('moveObservacion') as HTMLTextAreaElement)?.value || '',
+            items
+          }
+          const response = await fetch(`${apiBase}/api/inventory-movements`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          })
+          if (!response.ok) throw new Error('Error al registrar movimientos')
+        }
 
         const modalEl = document.getElementById('createMovementModal')
         if (modalEl) bootstrap.Modal.getInstance(modalEl)?.hide()
       } catch (error) {
         alert(error instanceof Error ? error.message : 'Error al guardar')
       } finally {
-        if (btn) { btn.disabled = false; btn.innerHTML = '<i class="ri-check-line me-1"></i>Crear' }
+        if (btn) {
+          btn.disabled = false
+          btn.innerHTML = isEditMode
+            ? '<i class="ri-check-line me-1"></i>Actualizar'
+            : '<i class="ri-check-line me-1"></i>Registrar movimiento'
+        }
       }
     })
 
-    // ── Reset on modal close ──────────────────────────────────
     const modalEl = document.getElementById('createMovementModal')
     if (modalEl) {
-      modalEl.addEventListener('hidden.bs.modal', () => {
-        form.reset()
-        delete form.dataset.editId
-        const titleEl = modalEl.querySelector('.modal-title')
-        if (titleEl) titleEl.textContent = 'Nuevo movimiento'
-        const btnSubmit = document.getElementById('moveSubmitBtn') as HTMLButtonElement
-        if (btnSubmit) btnSubmit.innerHTML = '<i class="ri-check-line me-1"></i>Crear'
-        clearProductSelection()
-        if (tipoEntradaRadio) tipoEntradaRadio.checked = true
-        if (tipoSalidaRadio)  tipoSalidaRadio.checked  = false
-        syncTipo()
-      })
+      modalEl.addEventListener('hidden.bs.modal', resetModal)
+    }
+
+    function selectProductExternal(product: any) {
+      selectProduct(product)
+    }
+    function clearProductExternal() {
+      clearProductSelection()
+    }
+
+    window.moveProductoPicker = {
+      select: selectProductExternal,
+      clear: clearProductExternal,
+      getAll: () => allProducts
     }
   })
 </script>

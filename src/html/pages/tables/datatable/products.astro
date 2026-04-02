@@ -160,6 +160,21 @@ const pageScript = `<!-- DataTables Dependencies -->
                       </select>
                     </div>
 
+                    <div class="mb-4">
+                      <label class="form-label fw-medium" for="filter_categoria_producto">Categoría</label>
+                      <select
+                        class="form-select"
+                        id="filter_categoria_producto"
+                        name="product_categoria"
+                        data-table-filter="product_categoria"
+                        data-type="select"
+                        data-label="Categoría"
+                        aria-label="Filtrar por categoría de producto"
+                      >
+                        <option value="">Todas</option>
+                      </select>
+                    </div>
+
                     <!-- Price Range Filter -->
                     <div class="mb-4">
                       <label class="form-label fw-medium">Rango de Precio</label>
@@ -325,22 +340,20 @@ const pageScript = `<!-- DataTables Dependencies -->
                       />
                     </div>
                   </th>
+                  <th scope="col"><i class="ri-barcode-line me-1" aria-hidden="true"></i>SKU</th>
                   <th scope="col"
                     ><i class="ri-shopping-bag-3-line me-1" aria-hidden="true"></i>PRODUCTO</th
                   >
-                  <th scope="col"><i class="ri-barcode-line me-1" aria-hidden="true"></i>SKU</th>
                   <th scope="col"><i class="ri-stack-line me-1" aria-hidden="true"></i>STOCK</th>
                   <th scope="col"
-                    ><i class="ri-money-dollar-circle-line me-1" aria-hidden="true"></i>PRECIO</th
-                  >
+                    ><i class="ri-money-dollar-circle-line me-1" aria-hidden="true"></i>PRECIO</th>
                   <th scope="col"><i class="ri-flag-2-line me-1" aria-hidden="true"></i>ESTADO</th>
-                  <th class="text-end pe-3" scope="col"
+                  <th class="text-end pe-3 no-sort" scope="col"
                     ><i class="ri-settings-3-line me-1" aria-hidden="true"></i>ACCIONES</th
                   >
                 </tr>
               </thead>
               <tbody>
-                <!-- Table body content will be dynamically populated -->
               </tbody>
             </table>
           </div>

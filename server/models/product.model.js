@@ -9,6 +9,8 @@ const productSchema = new mongoose.Schema(
     precio_compra: { type: Number, default: 0, min: 0 },
     precio_venta: { type: Number, required: true, min: 0 },
     stock: { type: Number, default: 0 },
+    /** Con stock positivo, si cantidad <= este valor se muestra alerta de stock bajo */
+    stock_minimo: { type: Number, default: 10, min: 0 },
     activo: { type: Boolean, default: true },
     created_by_id: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
     created_by_username: { type: String, default: 'system' },

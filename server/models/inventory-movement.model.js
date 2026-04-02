@@ -14,6 +14,8 @@ const inventoryMovementSchema = new mongoose.Schema(
     },
     cantidad: { type: Number, required: true },
     precio_compra: { type: Number, default: null },
+    /** Precio de venta aplicado en esta entrada (actualiza el producto). */
+    precio_venta: { type: Number, default: null },
     motivo: {
       type: String,
       // Entradas: compra | reposicion   /   Salidas: venta | ajuste_manual

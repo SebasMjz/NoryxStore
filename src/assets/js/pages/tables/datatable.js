@@ -5,6 +5,12 @@ const data_url =
     ? 'http://localhost:4000/api/products'
     : '/api/products'
 
+const categories_url =
+  typeof window !== 'undefined' &&
+  (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+    ? 'http://localhost:4000/api/categories'
+    : '/api/categories'
+
 let pageindex = 0 // Default to first page if not specified
 
 // Class definition
@@ -18,7 +24,8 @@ var ProductsDatatable = (function () {
       searchDelay: 500,
       processing: true,
       data: [],
-      order: [1, 'asc'],
+      order: [1, 'asc'], /* columna 1 = SKU */
+      columnDefs: [{ orderable: false, targets: [0, 6] }],
       lengthMenu: [5, 10, 50, 100],
       iDisplayLength: 5,
       select: {
@@ -29,13 +36,19 @@ var ProductsDatatable = (function () {
       columns: [
         {
           data: null,
-          sortable: false,
+          orderable: false,
           searchable: false,
           className: 'select-checkbox',
           render: function (data, type, row) {
             return `<div class="form-check">
                                     <input class="form-check-input bulk-select" type="checkbox" value="${row.id}">
                                 </div>`
+          }
+        },
+        {
+          data: 'sku',
+          render: function (data) {
+            return `<span class="text-muted fw-medium">${data || '-'}</span>`
           }
         },
         {
@@ -52,18 +65,14 @@ var ProductsDatatable = (function () {
           }
         },
         {
-          data: 'sku',
-          render: function (data) {
-            return `<span class="text-muted">${data || '-'}</span>`
-          }
-        },
-        {
           data: 'stock',
-          render: function (data) {
-            const stockClass = data === 0 ? 'danger' : data <= 20 ? 'warning' : 'success'
-            const stockLabel = data === 0 ? 'sin stock' : data <= 20 ? 'stock bajo' : 'en stock'
+          render: function (data, _type, row) {
+            const qty = Number(data || 0)
+            const min = Number(row.stockMinimo ?? 10)
+            const stockClass = qty === 0 ? 'danger' : qty <= min ? 'warning' : 'success'
+            const stockLabel = qty === 0 ? 'sin stock' : qty <= min ? 'stock bajo' : 'en stock'
             return `<div class="d-flex align-items-center">
-                            <span class="badge text-bg-${stockClass} me-2">${data}</span>
+                            <span class="badge text-bg-${stockClass} me-2">${qty}</span>
                             <span class="text-muted">${stockLabel}</span>
                         </div>`
           }
@@ -88,55 +97,66 @@ var ProductsDatatable = (function () {
           }
         },
         {
-          targets: -1,
           data: null,
           orderable: false,
           className: 'text-end',
-          render: function (data, type, row) {
+          render: function (_data, _type, row) {
             return `<div class="d-flex gap-1 justify-content-end pe-1">
               <button class="btn btn-sm btn-icon view-button" data-id="${row.id}" title="Ver"><i class="ri-eye-line"></i></button>
               <button class="btn btn-sm btn-icon edit-button" data-id="${row.id}" title="Editar"><i class="ri-pencil-line"></i></button>
               <button class="btn btn-sm btn-icon text-danger delete-button" data-id="${row.id}" title="Eliminar"><i class="ri-delete-bin-line"></i></button>
             </div>`
           }
-        },
-        {
-          data: 'category',
-          visible: false,
-          render: function (_data, _type, row) {
-            return `<span class="text-muted">${row.status || ''}</span>`
-          }
         }
       ]
     })
 
     $.getJSON(data_url, function (json) {
-      const normalizedData = Array.isArray(json)
-        ? json.map((item) => ({
-            id: item._id,
-            product: item.nombre,
-            sku: item.codigo,
-            stock: Number(item.stock || 0),
-            price: Number(item.precio_venta || 0),
-            status: item.activo ? 'Activo' : 'Inactivo',
-            category: item.activo ? 'activo' : 'inactivo',
-            descripcion: item.descripcion || ''
-          }))
-        : []
+      $.getJSON(categories_url)
+        .done(function (cats) {
+          const catSel = document.getElementById('filter_categoria_producto')
+          if (catSel && Array.isArray(cats)) {
+            cats
+              .filter((c) => c.activo)
+              .forEach((c) => {
+                const o = document.createElement('option')
+                o.value = c._id
+                o.textContent = c.nombre
+                o.setAttribute('data-title', c.nombre)
+                catSel.appendChild(o)
+              })
+          }
+        })
+        .always(function () {
+          const normalizedData = Array.isArray(json)
+            ? json.map((item) => ({
+                id: item._id,
+                product: item.nombre,
+                sku: item.codigo,
+                stock: Number(item.stock || 0),
+                stockMinimo: Number.isFinite(Number(item.stock_minimo)) ? Number(item.stock_minimo) : 10,
+                price: Number(item.precio_venta || 0),
+                status: item.activo ? 'Activo' : 'Inactivo',
+                category: item.activo ? 'activo' : 'inactivo',
+                descripcion: item.descripcion || '',
+                categoriaId: String(item.categoria_id?._id || item.categoria_id || '')
+              }))
+            : []
 
-      const total = normalizedData.length
-      const active = normalizedData.filter((item) => item.category === 'activo').length
-      const inactive = normalizedData.filter((item) => item.category === 'inactivo').length
+          const total = normalizedData.length
+          const active = normalizedData.filter((item) => item.category === 'activo').length
+          const inactive = normalizedData.filter((item) => item.category === 'inactivo').length
 
-      const totalEl = document.getElementById('productsCountAll')
-      const activeEl = document.getElementById('productsCountActive')
-      const inactiveEl = document.getElementById('productsCountInactive')
+          const totalEl = document.getElementById('productsCountAll')
+          const activeEl = document.getElementById('productsCountActive')
+          const inactiveEl = document.getElementById('productsCountInactive')
 
-      if (totalEl) totalEl.textContent = String(total)
-      if (activeEl) activeEl.textContent = String(active)
-      if (inactiveEl) inactiveEl.textContent = String(inactive)
+          if (totalEl) totalEl.textContent = String(total)
+          if (activeEl) activeEl.textContent = String(active)
+          if (inactiveEl) inactiveEl.textContent = String(inactive)
 
-      dt.rows.add(normalizedData).draw()
+          dt.rows.add(normalizedData).draw()
+        })
     })
 
     dt.on('init', function () {
@@ -220,22 +240,27 @@ var ProductsDatatable = (function () {
     let priceMin = $('#min_price').val()
     let priceMax = $('#max_price').val()
     let category = $('#category').val()
+    let productCategoria = $('#filter_categoria_producto').val()
 
-    // Add custom filtering
-    $.fn.dataTable.ext.search.push(function (_settings, data) {
-      let rowStatus = data[5].toLowerCase() // Status column
-      let rowStock = parseInt(data[3].match(/\d+/)[0]) // Stock column
-      let rowPrice = parseFloat(data[4].replace(/[^0-9.-]+/g, '')) // Price column
-      let rowCategory = data[7].toLowerCase() // Status from hidden column
+    // Add custom filtering (usa fila completa para umbral de stock bajo por producto)
+    $.fn.dataTable.ext.search.push(function (settings, data, dataIndex) {
+      const api = new $.fn.dataTable.Api(settings)
+      const rowData = api.row(dataIndex).data() || {}
+      const rowMin = Number(rowData.stockMinimo ?? 10)
+      const rowStock = Number(rowData.stock ?? parseInt(String(data[3]).match(/\d+/)?.[0] || '0', 10))
+      let rowPrice = parseFloat(String(data[4] || '').replace(/[^0-9.-]+/g, ''))
+      const rowCategory =
+        rowData.category ||
+        (String(data[5] || '').toLowerCase().includes('inactivo') ? 'inactivo' : 'activo')
 
-      // Status filter
-      let statusMatch = statusFilters.length === 0 || statusFilters.includes(rowStatus)
+      // Status filter (navbar: activo / inactivo)
+      let statusMatch = statusFilters.length === 0 || statusFilters.includes(rowCategory)
 
       // Stock filter
       let stockMatch =
         stockFilters.length === 0 ||
-        (stockFilters.includes('in_stock') && rowStock > 20) ||
-        (stockFilters.includes('low_stock') && rowStock > 0 && rowStock <= 20) ||
+        (stockFilters.includes('in_stock') && rowStock > rowMin) ||
+        (stockFilters.includes('low_stock') && rowStock > 0 && rowStock <= rowMin) ||
         (stockFilters.includes('out_of_stock') && rowStock === 0)
 
       // Price filter
@@ -243,10 +268,14 @@ var ProductsDatatable = (function () {
         (!priceMin || rowPrice >= parseFloat(priceMin)) &&
         (!priceMax || rowPrice <= parseFloat(priceMax))
 
-      // Category filter
+      // Estado (drawer select id=category)
       let categoryMatch = !category || rowCategory === category
 
-      return statusMatch && stockMatch && priceMatch && categoryMatch
+      // Categoría de producto (Mongo id)
+      let productCatMatch =
+        !productCategoria || String(rowData.categoriaId || '') === String(productCategoria)
+
+      return statusMatch && stockMatch && priceMatch && categoryMatch && productCatMatch
     })
 
     // Simulate loading delay
@@ -277,6 +306,8 @@ var ProductsDatatable = (function () {
       if ($('#filterDrawer .form-select').length > 0) {
         $('#filterDrawer .form-select').val('')
       }
+      const prodCatSel = document.getElementById('filter_categoria_producto')
+      if (prodCatSel) prodCatSel.value = ''
 
       $('[data-table-filter="search"]').val('')
       $('.search-clear').hide()
@@ -626,6 +657,8 @@ var ProductsDatatable = (function () {
             form.querySelector('#productNombre').value = product.nombre
             form.querySelector('#productDescripcion').value = product.descripcion || ''
             form.querySelector('#productPrecioVenta').value = product.precio_venta
+            const sm = form.querySelector('#productStockMinimo')
+            if (sm) sm.value = String(product.stock_minimo ?? 10)
             form.querySelector('#productActivo').checked = product.activo
             
             form.querySelector('button[type="submit"]').textContent = 'Actualizar'

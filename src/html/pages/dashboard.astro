@@ -102,9 +102,13 @@ const dashboardChartScripts = `<!-- Chart.js CDN Integration -->
       const products = await productsRes.json();
 
       const activeProducts = products.filter((p) => Boolean(p.activo)).length;
+      const minStock = (p) => {
+        const m = Number(p.stock_minimo);
+        return Number.isFinite(m) && m >= 0 ? m : 10;
+      };
       const lowStockProducts = products.filter((p) => {
         const s = Number(p.stock || 0);
-        return s > 0 && s <= 10;
+        return s > 0 && s <= minStock(p);
       }).length;
 
       // KPIs
@@ -117,7 +121,11 @@ const dashboardChartScripts = `<!-- Chart.js CDN Integration -->
 
       // Low stock list
       const lowStock = products
-        .filter((p) => p.activo && Number(p.stock || 0) <= 10)
+        .filter((p) => {
+          if (!p.activo) return false;
+          const s = Number(p.stock || 0);
+          return s > 0 && s <= minStock(p);
+        })
         .sort((a, b) => Number(a.stock || 0) - Number(b.stock || 0))
         .slice(0, 8);
       const lowStockEl = document.getElementById('lowStockList');

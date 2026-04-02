@@ -82,6 +82,7 @@ const pageHeaderProps = {
                   <th class="text-center" scope="col" data-sortable data-sort-key="tipo"><i class="ri-exchange-line me-1" aria-hidden="true"></i>TIPO</th>
                   <th class="text-center" scope="col" data-sortable data-sort-key="cantidad"><i class="ri-stack-line me-1" aria-hidden="true"></i>CANTIDAD</th>
                   <th class="text-end" scope="col" data-sortable data-sort-key="precio"><i class="ri-money-dollar-circle-line me-1" aria-hidden="true"></i>P. COMPRA</th>
+                  <th class="text-end" scope="col" data-sortable data-sort-key="precioVenta"><i class="ri-price-tag-3-line me-1" aria-hidden="true"></i>P. VENTA</th>
                   <th scope="col"><i class="ri-file-text-line me-1" aria-hidden="true"></i>MOTIVO</th>
                   <th scope="col" data-sortable data-sort-key="usuario"><i class="ri-user-3-line me-1" aria-hidden="true"></i>USUARIO</th>
                   <th class="text-end pe-3 no-sort" scope="col"><i class="ri-settings-3-line me-1" aria-hidden="true"></i>ACCIONES</th>
@@ -89,7 +90,7 @@ const pageHeaderProps = {
               </thead>
               <tbody id="mvTableBody">
                 <tr>
-                  <td colspan="9" class="text-center text-muted py-5">
+                  <td colspan="10" class="text-center text-muted py-5">
                     <i class="ri-loader-4-line ri-spin"></i> Cargando movimientos...
                   </td>
                 </tr>
@@ -191,7 +192,7 @@ const pageHeaderProps = {
       renderTable()
     } catch {
       document.getElementById('mvTableBody').innerHTML =
-        '<tr><td colspan="9" class="text-center text-danger py-4">Error al cargar movimientos</td></tr>'
+        '<tr><td colspan="10" class="text-center text-danger py-4">Error al cargar movimientos</td></tr>'
     }
   }
 
@@ -218,6 +219,7 @@ const pageHeaderProps = {
         else if (sortKey === 'tipo')     { av = a.tipo_movimiento || ''; bv = b.tipo_movimiento || '' }
         else if (sortKey === 'cantidad') { av = Number(a.cantidad || 0); bv = Number(b.cantidad || 0) }
         else if (sortKey === 'precio')   { av = Number(a.precio_compra || 0); bv = Number(b.precio_compra || 0) }
+        else if (sortKey === 'precioVenta') { av = Number(a.precio_venta || 0); bv = Number(b.precio_venta || 0) }
         else if (sortKey === 'usuario')  { av = (a.usuario_id?.nombre || '').toLowerCase(); bv = (b.usuario_id?.nombre || '').toLowerCase() }
         else { av = String(a[sortKey] ?? '').toLowerCase(); bv = String(b[sortKey] ?? '').toLowerCase() }
         if (av < bv) return sortDir === 'asc' ? -1 : 1
@@ -237,7 +239,7 @@ const pageHeaderProps = {
 
     const tbody = document.getElementById('mvTableBody')
     if (!filtered.length) {
-      tbody.innerHTML = '<tr><td colspan="9" class="text-center text-muted py-5">Sin resultados</td></tr>'
+      tbody.innerHTML = '<tr><td colspan="10" class="text-center text-muted py-5">Sin resultados</td></tr>'
       renderPagination(0, 1)
       return
     }
@@ -251,6 +253,9 @@ const pageHeaderProps = {
       const icon = iconMap[tipo] || 'ri-circle-line'
       const precioCell = tipo === 'entrada' && m.precio_compra != null
         ? `<span class="text-success fw-semibold">${fmt(m.precio_compra)}</span>`
+        : '<span class="text-muted">—</span>'
+      const precioVentaCell = tipo === 'entrada' && m.precio_venta != null
+        ? `<span class="text-primary fw-semibold">${fmt(m.precio_venta)}</span>`
         : '<span class="text-muted">—</span>'
 
       return `
@@ -272,6 +277,7 @@ const pageHeaderProps = {
           </td>
           <td class="text-center align-middle fw-bold">${esc(m.cantidad ?? '—')}</td>
           <td class="text-end align-middle">${precioCell}</td>
+          <td class="text-end align-middle">${precioVentaCell}</td>
           <td class="align-middle text-muted small">${esc({ compra: 'Compra', reposicion: 'Reposición', venta: 'Venta', ajuste_manual: 'Ajuste manual' }[m.motivo] || m.motivo || '—')}</td>
           <td class="align-middle text-muted small">${esc(m.usuario_id?.nombre || m.created_by_username || '—')}</td>
           <td class="text-end pe-3 align-middle">
@@ -380,58 +386,14 @@ const pageHeaderProps = {
       // Wait a tick for DOMContentLoaded scripts inside the modal to be ready
       await new Promise(r => setTimeout(r, 80))
 
-      modalEl.querySelector('.modal-title').textContent = 'Editar movimiento'
       const form = document.getElementById('createMovementForm')
-      form.dataset.editId = movement._id
-
-      // Set product using the searchable picker
-      const picker = window.moveProductoPicker
-      const pid = movement.producto_id?._id || movement.producto_id || ''
-      if (picker && pid) {
-        const products = picker.getAll()
-        const prod = products.find(p => p._id === pid)
-        if (prod) picker.select(prod)
-      } else {
-        // Fallback: set hidden input directly
-        const hiddenProd = form.querySelector('#moveProducto')
-        if (hiddenProd) hiddenProd.value = pid
-      }
-
-      form.querySelector('#moveCantidad').value = movement.cantidad || ''
-      form.querySelector('#moveObservacion').value = movement.observacion || ''
-
-      // Set tipo via radio buttons
-      const tipo = movement.tipo_movimiento || 'entrada'
-      const tipoEntradaR = form.querySelector('#tipoEntrada')
-      const tipoSalidaR  = form.querySelector('#tipoSalida')
-      if (tipoEntradaR && tipoSalidaR) {
-        tipoEntradaR.checked = tipo === 'entrada'
-        tipoSalidaR.checked  = tipo === 'salida'
-        tipoEntradaR.dispatchEvent(new Event('change'))
-      }
-
-      // Set motivo via radio buttons
-      const motivo = movement.motivo || ''
-      if (tipo === 'entrada') {
-        const mR = form.querySelector(`#motivoEntradaGroup input[value="${motivo}"]`)
-        if (mR) { mR.checked = true; mR.dispatchEvent(new Event('change')) }
-      } else {
-        const mR = form.querySelector(`#motivoSalidaGroup input[value="${motivo}"]`)
-        if (mR) { mR.checked = true; mR.dispatchEvent(new Event('change')) }
-      }
-
-      // Set precio_compra if entrada
-      if (tipo === 'entrada' && movement.precio_compra != null) {
-        const precioInput = form.querySelector('#movePrecioCompra')
-        if (precioInput) precioInput.value = movement.precio_compra
-      }
-
       const authUser = window.__authUser
       const usuarioInput = form.querySelector('#moveUsuario')
       if (usuarioInput && authUser) usuarioInput.value = authUser.id || ''
 
-      const btnSubmit = form.querySelector('#moveSubmitBtn')
-      if (btnSubmit) btnSubmit.innerHTML = '<i class="ri-check-line me-1"></i>Actualizar'
+      if (typeof window.movementModalLoadEdit === 'function') {
+        window.movementModalLoadEdit(movement)
+      }
     } catch {
       alert('Error al cargar el movimiento')
     }

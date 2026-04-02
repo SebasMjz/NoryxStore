@@ -260,6 +260,18 @@ router.get('/summary/caja', async (req, res, next) => {
 // ---- Settings: métodos de pago ----
 const PAYMENT_METHODS_KEY = 'payment_methods'
 const DEFAULT_PAYMENT_METHODS = ['Efectivo', 'QR']
+const RECEIPT_SEQUENCE_KEY = 'receipt_sequence_counter'
+
+/** Siguiente número de comprobante (atómico, persistente en BD). */
+async function getNextReceiptNumber() {
+  const doc = await Setting.findOneAndUpdate(
+    { key: RECEIPT_SEQUENCE_KEY },
+    { $inc: { value: 1 }, $setOnInsert: { key: RECEIPT_SEQUENCE_KEY } },
+    { new: true, upsert: true }
+  )
+  const n = Number(doc?.value)
+  return Number.isFinite(n) && n >= 1 ? n : 1
+}
 
 router.get('/settings/payment-methods', async (_req, res, next) => {
   try {
@@ -397,12 +409,14 @@ router.post('/products', async (req, res, next) => {
   try {
     const payload = req.body || {}
     const product = await Product.create({
+      categoria_id: payload.categoria_id || null,
       codigo: payload.codigo,
       nombre: payload.nombre,
       descripcion: payload.descripcion || '',
       precio_compra: Number(payload.precio_compra || 0),
       precio_venta: Number(payload.precio_venta || 0),
       stock: Number(payload.stock || 0),
+      stock_minimo: Math.max(0, Number(payload.stock_minimo ?? 10)),
       activo: payload.activo !== false,
       ...getCreateAuditFields(req)
     })
@@ -570,6 +584,24 @@ router.get('/sales', async (_req, res, next) => {
   }
 })
 
+function normalizePagosMixtos(raw, total) {
+  if (!Array.isArray(raw) || raw.length === 0) return { ok: true, pagos: undefined }
+  const cleaned = raw
+    .map((p) => ({
+      metodo: String(p.metodo || '').trim(),
+      monto: Math.max(0, Number(p.monto) || 0)
+    }))
+    .filter((p) => p.metodo && p.monto > 0)
+  if (cleaned.length < 2) {
+    return { ok: false, message: 'Pago mixto: use al menos dos medios con monto mayor a cero.' }
+  }
+  const sum = cleaned.reduce((s, p) => s + p.monto, 0)
+  if (Math.abs(sum - total) > 0.02) {
+    return { ok: false, message: 'Pago mixto: la suma de los montos debe igualar el total de la venta.' }
+  }
+  return { ok: true, pagos: cleaned }
+}
+
 router.post('/sales', async (req, res, next) => {
   try {
     const payload = req.body || {}
@@ -579,17 +611,40 @@ router.post('/sales', async (req, res, next) => {
       return res.status(400).json({ ok: false, message: 'La venta debe tener al menos un producto' })
     }
 
-    const total = items.reduce((sum, item) => {
+    const subtotal = items.reduce((sum, item) => {
       return sum + Number(item.precio_unitario || 0) * Number(item.cantidad || 1)
     }, 0)
+
+    const rawDesc = Math.max(0, Number(payload.descuento_monto) || 0)
+    const descuento_monto = Math.min(rawDesc, subtotal)
+    const total = Math.max(0, subtotal - descuento_monto)
+
+    const mixNorm = normalizePagosMixtos(payload.pagos_mixtos, total)
+    if (!mixNorm.ok) {
+      return res.status(400).json({ ok: false, message: mixNorm.message })
+    }
+
+    let metodo_pago = String(payload.metodo_pago || '').trim()
+    let pagos_mixtos = mixNorm.pagos
+    if (pagos_mixtos && pagos_mixtos.length) {
+      metodo_pago = 'Mixto'
+    } else if (!metodo_pago) {
+      return res.status(400).json({ ok: false, message: 'Indique el método de pago' })
+    }
+
+    const numero_comprobante = await getNextReceiptNumber()
 
     const sale = await Sale.create({
       cliente_id: payload.cliente_id || null,
       vendedor_id: payload.vendedor_id || null,
       fecha: new Date(),
+      subtotal,
+      descuento_monto,
       total,
+      numero_comprobante,
       estado: 'activa',
-      metodo_pago: payload.metodo_pago || '',
+      metodo_pago,
+      pagos_mixtos: pagos_mixtos && pagos_mixtos.length ? pagos_mixtos : undefined,
       observacion: payload.observacion || '',
       ...getCreateAuditFields(req)
     })
@@ -609,7 +664,11 @@ router.post('/sales', async (req, res, next) => {
       })
     )
 
-    res.status(201).json({ ok: true, sale })
+    const saleOut = await Sale.findById(sale._id)
+      .populate('cliente_id', 'nombre celular')
+      .populate('vendedor_id', 'nombre tipo_usuario')
+
+    res.status(201).json({ ok: true, sale: saleOut })
   } catch (error) {
     next(error)
   }
@@ -800,12 +859,76 @@ router.post('/inventory-movements', async (req, res, next) => {
   try {
     const payload = req.body || {}
 
+    /** Varios productos en un mismo movimiento (mismo tipo, motivo y observación). */
+    if (Array.isArray(payload.items) && payload.items.length > 0) {
+      const tipo = payload.tipo_movimiento
+      const motivo = payload.motivo
+      const usuario_id = payload.usuario_id
+      if (!['entrada', 'salida'].includes(tipo)) {
+        return res.status(400).json({ ok: false, message: 'tipo_movimiento inválido' })
+      }
+      if (!motivo || !usuario_id) {
+        return res.status(400).json({ ok: false, message: 'motivo y usuario_id son requeridos' })
+      }
+
+      const observacion = payload.observacion || ''
+      const fecha = payload.fecha ? new Date(payload.fecha) : new Date()
+      const audit = getCreateAuditFields(req)
+      const movements = []
+
+      for (const item of payload.items) {
+        const cantidad = Number(item.cantidad || 0)
+        if (!item.producto_id || cantidad < 1) {
+          return res.status(400).json({ ok: false, message: 'Cada ítem necesita producto_id y cantidad ≥ 1' })
+        }
+
+        const precioCompra =
+          tipo === 'entrada' && item.precio_compra != null && item.precio_compra !== ''
+            ? Number(item.precio_compra)
+            : null
+        const precioVenta =
+          tipo === 'entrada' && item.precio_venta != null && item.precio_venta !== ''
+            ? Number(item.precio_venta)
+            : null
+
+        const movement = await InventoryMovement.create({
+          producto_id: item.producto_id,
+          tipo_movimiento: tipo,
+          cantidad,
+          precio_compra: precioCompra,
+          precio_venta: precioVenta,
+          motivo,
+          usuario_id,
+          observacion,
+          fecha,
+          ...audit
+        })
+
+        const stockDelta = tipo === 'entrada' ? cantidad : -cantidad
+        const productUpdate = { $inc: { stock: stockDelta } }
+        if (tipo === 'entrada') {
+          const set = {}
+          if (precioCompra != null && !Number.isNaN(precioCompra)) set.precio_compra = precioCompra
+          if (precioVenta != null && !Number.isNaN(precioVenta)) set.precio_venta = precioVenta
+          if (Object.keys(set).length > 0) productUpdate.$set = set
+        }
+
+        await Product.findByIdAndUpdate(item.producto_id, productUpdate)
+        movements.push(movement)
+      }
+
+      return res.status(201).json({ ok: true, movements, count: movements.length })
+    }
+
     const movement = await InventoryMovement.create({
       producto_id: payload.producto_id,
       tipo_movimiento: payload.tipo_movimiento,
       cantidad: Number(payload.cantidad || 0),
       precio_compra: payload.tipo_movimiento === 'entrada' && payload.precio_compra != null
         ? Number(payload.precio_compra)
+        : null,
+      precio_venta: payload.tipo_movimiento === 'entrada' && payload.precio_venta != null
+        ? Number(payload.precio_venta)
         : null,
       motivo: payload.motivo,
       usuario_id: payload.usuario_id,
@@ -820,8 +943,11 @@ router.post('/inventory-movements', async (req, res, next) => {
         : -Number(payload.cantidad || 0)
 
     const productUpdate = { $inc: { stock: stockDelta } }
-    if (payload.tipo_movimiento === 'entrada' && payload.precio_compra != null) {
-      productUpdate.$set = { precio_compra: Number(payload.precio_compra) }
+    if (payload.tipo_movimiento === 'entrada') {
+      const set = {}
+      if (payload.precio_compra != null) set.precio_compra = Number(payload.precio_compra)
+      if (payload.precio_venta != null) set.precio_venta = Number(payload.precio_venta)
+      if (Object.keys(set).length > 0) productUpdate.$set = set
     }
 
     await Product.findByIdAndUpdate(payload.producto_id, productUpdate)
@@ -845,6 +971,16 @@ router.put('/inventory-movements/:id', async (req, res, next) => {
       { new: true, runValidators: true }
     )
     if (!movement) return res.status(404).json({ ok: false, message: 'Movimiento no encontrado' })
+
+    if (movement.tipo_movimiento === 'entrada' && movement.producto_id) {
+      const set = {}
+      if (movement.precio_compra != null) set.precio_compra = Number(movement.precio_compra)
+      if (movement.precio_venta != null) set.precio_venta = Number(movement.precio_venta)
+      if (Object.keys(set).length > 0) {
+        await Product.findByIdAndUpdate(movement.producto_id, { $set: set })
+      }
+    }
+
     res.json(movement)
   } catch (error) {
     next(error)

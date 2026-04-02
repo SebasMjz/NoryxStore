@@ -48,6 +48,19 @@
             />
           </div>
           <div class="mb-3">
+            <label for="productStockMinimo" class="form-label">Alerta de stock bajo desde</label>
+            <input
+              type="number"
+              min="0"
+              step="1"
+              class="form-control"
+              id="productStockMinimo"
+              name="stock_minimo"
+              value="10"
+            />
+            <div class="form-text">Si el stock es mayor que 0 y menor o igual a este número, verás la alerta «stock bajo».</div>
+          </div>
+          <div class="mb-3">
             <div class="form-check">
               <input
                 class="form-check-input"
@@ -103,6 +116,7 @@
         nombre: String(formData.get('nombre') || ''),
         descripcion: String(formData.get('descripcion') || ''),
         precio_venta: Number(formData.get('precio_venta') || 0),
+        stock_minimo: Math.max(0, Number(formData.get('stock_minimo') ?? 10)),
         activo: formData.has('activo')
       }
 
@@ -152,6 +166,8 @@
     if (modalEl) {
       modalEl.addEventListener('hidden.bs.modal', () => {
         form.reset()
+        const sm = document.getElementById('productStockMinimo')
+        if (sm) sm.value = '10'
         delete form.dataset.editId
         const titleEl = modalEl.querySelector('.modal-title')
         if (titleEl) titleEl.textContent = 'Nuevo producto'
