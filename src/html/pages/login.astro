@@ -1,7 +1,7 @@
 ---
 import { getAssetPrefix, getPathPrefix } from '../../utils/path.js'
 
-const dashboardPath = getPathPrefix('/dashboard')
+const salesPath = getPathPrefix('/sales')
 const bannerPath = getAssetPrefix('/assets/img/noryx/NoryxStoreBanner.jpeg')
 const logoPath = getAssetPrefix('/assets/img/noryx/NoryxStoreLogo.jpeg')
 const cssPath = import.meta.env.DEV ? '/dist/css/style.css' : '/css/style.min.css'
@@ -371,7 +371,7 @@ const skinPath = import.meta.env.DEV
         </div>
 
         <!-- Formulario -->
-        <form id="loginForm" data-redirect={dashboardPath} novalidate>
+        <form id="loginForm" data-redirect={salesPath} novalidate>
           <div class="mb-3">
             <label for="username" class="form-label">Usuario</label>
             <input
@@ -479,7 +479,7 @@ const skinPath = import.meta.env.DEV
             }
 
             sessionStorage.setItem('auth_user', JSON.stringify(result.user))
-            window.location.href = form.dataset.redirect || '/dashboard'
+            window.location.href = form.dataset.redirect || '/sales'
           } catch (_error) {
             feedback.classList.add('text-danger')
             feedback.textContent = 'Error de red. Intenta de nuevo.'
