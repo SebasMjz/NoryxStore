@@ -12,7 +12,7 @@ function esc(s) {
 }
 
 function fmt(n) {
-  return '$' + Number(n || 0).toFixed(2)
+  return 'Bs. ' + Number(n || 0).toFixed(2)
 }
 
 function fmtDate(v) {

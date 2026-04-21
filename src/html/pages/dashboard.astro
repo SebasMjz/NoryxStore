@@ -114,7 +114,7 @@ const dashboardChartScripts = `<!-- Chart.js CDN Integration -->
       // KPIs
       const el = (id) => document.getElementById(id);
       if (el('kpi-sales-today'))    el('kpi-sales-today').textContent    = String(summary.sales_today || 0);
-      if (el('kpi-revenue-today'))  el('kpi-revenue-today').textContent  = '$' + Number(summary.revenue_today || 0).toFixed(2);
+      if (el('kpi-revenue-today'))  el('kpi-revenue-today').textContent  = 'Bs. ' + Number(summary.revenue_today || 0).toFixed(2);
       if (el('kpi-products-active')) el('kpi-products-active').textContent = String(activeProducts || summary.products || 0);
       if (el('kpi-products-low-stock')) el('kpi-products-low-stock').textContent = String(lowStockProducts);
       if (el('kpi-clients-total')) el('kpi-clients-total').textContent   = String(summary.clients || 0);
@@ -243,7 +243,7 @@ const dashboardChartScripts = `<!-- Chart.js CDN Integration -->
           '<div class="d-flex justify-content-between align-items-center mb-1">' +
             '<span class="fw-medium small">' + medal + ' ' + escHtml(c.nombre || 'Sin nombre') + '</span>' +
             '<div class="text-end">' +
-              '<span class="fw-bold text-primary small">$' + Number(c.total_comprado||0).toFixed(2) + '</span>' +
+              '<span class="fw-bold text-primary small">Bs. ' + Number(c.total_comprado||0).toFixed(2) + '</span>' +
               '<span class="text-muted ms-2" style="font-size:.72rem;">' + c.cantidad_compras + ' compra(s)</span>' +
             '</div>' +
           '</div>' +
@@ -321,7 +321,7 @@ const dashboardChartScripts = `<!-- Chart.js CDN Integration -->
         <div class="col-xl col-md-6">
           <div class="small-box" style="background:#6f42c1;color:#fff;">
             <div class="inner">
-              <h3 id="kpi-revenue-today">$0.00</h3>
+              <h3 id="kpi-revenue-today">Bs. 0.00</h3>
               <p>Ingresos hoy</p>
             </div>
             <div class="small-box-icon">

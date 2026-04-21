@@ -213,7 +213,7 @@ const pageHeaderProps = {
         .replace(/"/g, '&quot;')
     const fmtDate = (v) =>
       v ? new Date(v).toLocaleString('es-MX', { dateStyle: 'short', timeStyle: 'short' }) : '—'
-    const fmt = (n) => '$' + Number(n || 0).toFixed(2)
+    const fmt = (n) => 'Bs. ' + Number(n || 0).toFixed(2)
 
     let allMovements = []
     let currentFilter = 'all'

@@ -334,7 +334,7 @@ const pageHeaderProps = {
       ? 'http://localhost:4000'
       : ''
 
-  const fmt = (n) => '$' + Number(n || 0).toFixed(2)
+  const fmt = (n) => 'Bs. ' + Number(n || 0).toFixed(2)
   const esc = (s) =>
     String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')
   const fmtDate = (v) =>

@@ -85,8 +85,7 @@ var ProductsDatatable = (function () {
           data: 'price',
           render: function (data) {
             return `<div class="d-flex align-items-center">
-                            <span class="fw-medium">$${Number(data || 0).toFixed(2)}</span>
-                            <span class="text-muted ms-1">USD</span>
+                            <span class="fw-medium">Bs. ${Number(data || 0).toFixed(2)}</span>
                         </div>`
           }
         },

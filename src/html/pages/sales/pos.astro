@@ -191,33 +191,33 @@ const receiptLogoUrl = getAssetPrefix('/assets/img/noryx/NoryxStoreLogo.jpeg')
                 class="d-flex justify-content-between gap-3 text-muted"
                 style="font-size:.72rem;"
               >
-                <span>Subtotal</span><span id="cartSubtotal" class="text-body">$0.00</span>
+                <span>Subtotal</span><span id="cartSubtotal" class="text-body">Bs. 0.00</span>
               </div>
               <div
                 id="cartDiscountRow"
                 class="d-none d-flex justify-content-between gap-3 text-warning"
                 style="font-size:.72rem;"
               >
-                <span>Descuento</span><span id="cartDiscountAmt">-$0.00</span>
+                <span>Descuento</span><span id="cartDiscountAmt">-Bs. 0.00</span>
               </div>
               <div
                 id="cartPaidNowRow"
                 class="d-none d-flex justify-content-between gap-3 text-info"
                 style="font-size:.72rem;"
               >
-                <span>Pagado ahora</span><span id="cartPaidNowAmt">$0.00</span>
+                <span>Pagado ahora</span><span id="cartPaidNowAmt">Bs. 0.00</span>
               </div>
               <div
                 id="cartPendingRow"
                 class="d-none d-flex justify-content-between gap-3 text-warning"
                 style="font-size:.72rem;"
               >
-                <span>Saldo pendiente</span><span id="cartPendingAmt">$0.00</span>
+                <span>Saldo pendiente</span><span id="cartPendingAmt">Bs. 0.00</span>
               </div>
               <div class="text-muted mt-1" style="font-size:.68rem;letter-spacing:.06em;">
                 TOTAL
               </div>
-              <div class="fs-4 fw-bold text-primary" id="cartTotal">$0.00</div>
+              <div class="fs-4 fw-bold text-primary" id="cartTotal">Bs. 0.00</div>
             </div>
           </div>
         </div>
@@ -285,10 +285,10 @@ const receiptLogoUrl = getAssetPrefix('/assets/img/noryx/NoryxStoreLogo.jpeg')
               </p>
               <div id="posMixedPayRows"></div>
               <div class="d-flex justify-content-between mt-2 fw-medium">
-                <span>Sumatoria</span><span id="posMixedSum">$0.00</span>
+                <span>Sumatoria</span><span id="posMixedSum">Bs. 0.00</span>
               </div>
               <div class="d-flex justify-content-between text-muted" style="font-size:.68rem;">
-                <span>Total venta</span><span id="posMixedTarget">$0.00</span>
+                <span>Total venta</span><span id="posMixedTarget">Bs. 0.00</span>
               </div>
               <div id="posMixedWarn" class="text-warning small d-none mt-1">
                 La suma debe igualar el total (tolerancia 1 céntimo).
@@ -529,7 +529,7 @@ const receiptLogoUrl = getAssetPrefix('/assets/img/noryx/NoryxStoreLogo.jpeg')
     let previewBlobUrl = null
     let lastRegisteredReceipt = null
 
-    const fmt = (n) => '$' + Number(n || 0).toFixed(2)
+    const fmt = (n) => 'Bs. ' + Number(n || 0).toFixed(2)
     const esc = (s) =>
       String(s ?? '')
         .replace(/&/g, '&amp;')
