@@ -171,7 +171,9 @@
           <div class="row g-3 mb-3">
             <div class="col-lg-5 d-none" id="moveClienteWrap">
               <div class="move-special-panel h-100">
-                <label class="form-label fw-semibold mb-2">Cliente <span class="text-danger">*</span></label>
+                <label class="form-label fw-semibold mb-2"
+                  >Cliente <span class="text-danger">*</span></label
+                >
                 <select id="moveCliente" class="form-select">
                   <option value="">Selecciona un cliente...</option>
                 </select>
@@ -184,19 +186,29 @@
                 <div class="d-flex align-items-start justify-content-between gap-2 mb-2 flex-wrap">
                   <div>
                     <div class="fw-semibold">Consignación origen</div>
-                    <div class="small text-muted">Selecciona una salida previa para registrar su devolución o liquidación.</div>
+                    <div class="small text-muted">
+                      Selecciona una salida previa para registrar su devolución o liquidación.
+                    </div>
                   </div>
-                  <span class="badge rounded-pill text-bg-primary-subtle text-primary border border-primary-subtle">Consignación</span>
+                  <span
+                    class="badge rounded-pill text-bg-primary-subtle text-primary border border-primary-subtle"
+                    >Consignación</span
+                  >
                 </div>
                 <div class="input-group">
                   <select id="moveConsignacionOrigen" class="form-select">
                     <option value="">Selecciona una consignación...</option>
                   </select>
-                  <button type="button" class="btn btn-outline-primary" id="moveLoadConsignacionBtn">
+                  <button
+                    type="button"
+                    class="btn btn-outline-primary"
+                    id="moveLoadConsignacionBtn"
+                  >
                     Cargar productos
                   </button>
                 </div>
-                <div id="moveConsignacionBanner" class="move-consignacion-banner mt-2 small d-none"></div>
+                <div id="moveConsignacionBanner" class="move-consignacion-banner mt-2 small d-none">
+                </div>
               </div>
             </div>
           </div>
@@ -253,7 +265,11 @@
                   />
                 </div>
                 <div class="col-6 col-md-3" id="moveDraftPrecioCompraCol">
-                  <label class="form-label small mb-0" for="moveDraftPrecioCompra" id="moveDraftPrecioCompraLabel">P. compra</label>
+                  <label
+                    class="form-label small mb-0"
+                    for="moveDraftPrecioCompra"
+                    id="moveDraftPrecioCompraLabel">P. compra</label
+                  >
                   <div class="input-group input-group-sm">
                     <span class="input-group-text">$</span>
                     <input
@@ -267,7 +283,11 @@
                   </div>
                 </div>
                 <div class="col-6 col-md-3" id="moveDraftPrecioVentaCol">
-                  <label class="form-label small mb-0" for="moveDraftPrecioVenta" id="moveDraftPrecioVentaLabel">P. venta</label>
+                  <label
+                    class="form-label small mb-0"
+                    for="moveDraftPrecioVenta"
+                    id="moveDraftPrecioVentaLabel">P. venta</label
+                  >
                   <div class="input-group input-group-sm">
                     <span class="input-group-text">$</span>
                     <input
@@ -307,8 +327,12 @@
                   <tr>
                     <th>Producto</th>
                     <th class="text-center" style="width:90px;">Cant.</th>
-                    <th class="text-end d-none move-col-precio-compra" style="width:100px;">P. compra</th>
-                    <th class="text-end d-none move-col-precio-venta" style="width:100px;">P. venta</th>
+                    <th class="text-end d-none move-col-precio-compra" style="width:100px;"
+                      >P. compra</th
+                    >
+                    <th class="text-end d-none move-col-precio-venta" style="width:100px;"
+                      >P. venta</th
+                    >
                     <th style="width:44px;"></th>
                   </tr>
                 </thead>
@@ -410,12 +434,22 @@
     const clienteWrap = document.getElementById('moveClienteWrap') as HTMLElement
     const clienteSelect = document.getElementById('moveCliente') as HTMLSelectElement
     const consignacionWrap = document.getElementById('moveConsignacionWrap') as HTMLElement
-    const consignacionSelect = document.getElementById('moveConsignacionOrigen') as HTMLSelectElement
-    const loadConsignacionBtn = document.getElementById('moveLoadConsignacionBtn') as HTMLButtonElement
+    const consignacionSelect = document.getElementById(
+      'moveConsignacionOrigen'
+    ) as HTMLSelectElement
+    const loadConsignacionBtn = document.getElementById(
+      'moveLoadConsignacionBtn'
+    ) as HTMLButtonElement
     const consignacionBanner = document.getElementById('moveConsignacionBanner') as HTMLElement
-    const draftPrecioCompraLabel = document.getElementById('moveDraftPrecioCompraLabel') as HTMLElement
-    const draftPrecioVentaLabel = document.getElementById('moveDraftPrecioVentaLabel') as HTMLElement
-    const consignacionDevRadio = document.getElementById('motivoConsignacionDev') as HTMLInputElement
+    const draftPrecioCompraLabel = document.getElementById(
+      'moveDraftPrecioCompraLabel'
+    ) as HTMLElement
+    const draftPrecioVentaLabel = document.getElementById(
+      'moveDraftPrecioVentaLabel'
+    ) as HTMLElement
+    const consignacionDevRadio = document.getElementById(
+      'motivoConsignacionDev'
+    ) as HTMLInputElement
 
     let allProducts: any[] = []
     let allClients: any[] = []
@@ -500,20 +534,21 @@
       clienteWrap.classList.toggle('col-lg-12', !isConsignacionDev)
       consignacionWrap.classList.toggle('col-lg-7', isConsignacionDev)
       if (!requiresClient) clienteSelect.value = ''
-      document.querySelectorAll('.move-col-precio-compra').forEach((el) =>
-        el.classList.toggle('d-none', isConsignacionDev)
-      )
-      document.querySelectorAll('.move-col-precio-venta').forEach((el) =>
-        el.classList.remove('d-none')
-      )
-      
+      document
+        .querySelectorAll('.move-col-precio-compra')
+        .forEach((el) => el.classList.toggle('d-none', isConsignacionDev))
+      document
+        .querySelectorAll('.move-col-precio-venta')
+        .forEach((el) => el.classList.remove('d-none'))
+
       draftPrecioCompra.disabled = !isEntrada
       draftPrecioVenta.disabled = !isEntrada
 
       if (selectedProduct) {
         const m = productosMap[selectedProduct._id]
         if (m) {
-          if (!isConsignacionDev && m.precio_compra != null) draftPrecioCompra.value = String(m.precio_compra)
+          if (!isConsignacionDev && m.precio_compra != null)
+            draftPrecioCompra.value = String(m.precio_compra)
           if (m.precio_venta != null) draftPrecioVenta.value = String(m.precio_venta)
         }
       }
@@ -523,7 +558,8 @@
       updateMotivoHidden()
       if (isConsignacionDev && consignacionDevBlocked && consignacionBanner) {
         consignacionBanner.classList.remove('d-none')
-        consignacionBanner.textContent = 'No hay consignaciones activas para devolver. Debes registrar una consignación antes de usar esta opción.'
+        consignacionBanner.textContent =
+          'No hay consignaciones activas para devolver. Debes registrar una consignación antes de usar esta opción.'
       }
       updateConsignacionAvailabilityUi()
       if (isConsignacionDev) loadConsignaciones(clienteSelect?.value || '')
@@ -592,7 +628,8 @@
         console.error('Error cargando consignaciones', e)
         consignaciones = []
         setConsignacionDevState(false, 'No fue posible cargar las consignaciones disponibles.')
-        consignacionSelect.innerHTML = '<option value="">No se pudieron cargar las consignaciones</option>'
+        consignacionSelect.innerHTML =
+          '<option value="">No se pudieron cargar las consignaciones</option>'
         updateConsignacionAvailabilityUi()
       }
     }
@@ -712,7 +749,8 @@
       }
       const cant = Math.max(1, parseInt(draftCantidad.value, 10) || 1)
       const tipo = getTipoActual()
-      const isConsignacionDev = tipo === 'entrada' && motivoHidden.value === 'consignacion_devolucion'
+      const isConsignacionDev =
+        tipo === 'entrada' && motivoHidden.value === 'consignacion_devolucion'
       let pc: number | null = null
       let pv: number | null = null
       pc = isConsignacionDev ? null : parseMoney(draftPrecioCompra.value)
@@ -763,7 +801,7 @@
         const tr = document.createElement('tr')
         tr.className = 'move-line-row align-middle'
         const editing = Boolean(form.dataset.editId || form.dataset.editTransaccionId)
-          const pcCell = `<td class="text-end move-col-precio-compra ${isConsignacionDev ? 'd-none' : ''}">${isConsignacionDev ? '<span class="text-muted small">—</span>' : `<input type="number" class="form-control form-control-sm text-end move-line-pc" data-i="${idx}" min="0" step="0.01" value="${line.precio_compra ?? ''}" ${!isEntrada ? 'disabled title="Solo previsualización"' : ''} />`}</td>
+        const pcCell = `<td class="text-end move-col-precio-compra ${isConsignacionDev ? 'd-none' : ''}">${isConsignacionDev ? '<span class="text-muted small">—</span>' : `<input type="number" class="form-control form-control-sm text-end move-line-pc" data-i="${idx}" min="0" step="0.01" value="${line.precio_compra ?? ''}" ${!isEntrada ? 'disabled title="Solo previsualización"' : ''} />`}</td>
              <td class="text-end move-col-precio-venta"><input type="number" class="form-control form-control-sm text-end move-line-pv" data-i="${idx}" min="0" step="0.01" value="${line.precio_venta ?? ''}" ${!isEntrada ? 'disabled title="Solo previsualización"' : ''} /></td>`
 
         tr.innerHTML = `
@@ -829,7 +867,11 @@
     })
     motivoEntradaGrp?.querySelectorAll('input[type="radio"]').forEach((r) =>
       r.addEventListener('change', () => {
-        if (r instanceof HTMLInputElement && r.id === 'motivoConsignacionDev' && consignacionDevBlocked) {
+        if (
+          r instanceof HTMLInputElement &&
+          r.id === 'motivoConsignacionDev' &&
+          consignacionDevBlocked
+        ) {
           r.checked = false
           const compraRadio = motivoEntradaGrp?.querySelector('#motivoCompra') as HTMLInputElement
           if (compraRadio) compraRadio.checked = true

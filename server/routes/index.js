@@ -653,7 +653,9 @@ async function generateNextProductCode() {
   let maxN = 0
   const used = new Set()
   for (const r of rows) {
-    const code = String(r.codigo || '').trim().toUpperCase()
+    const code = String(r.codigo || '')
+      .trim()
+      .toUpperCase()
     if (!code) continue
     used.add(code)
     const m = code.match(/(\d+)$/)
@@ -945,7 +947,7 @@ router.post('/clients/:id/settle-debt', async (req, res, next) => {
     if (salesWithDebt.length === 0 || total_deuda < 0.01) {
       return res.status(400).json({ ok: false, message: 'El cliente no tiene deuda pendiente.' })
     }
-    
+
     if (monto > total_deuda + 0.01) {
       return res.status(400).json({ ok: false, message: 'Abono supera la deuda total.' })
     }
@@ -955,7 +957,7 @@ router.post('/clients/:id/settle-debt', async (req, res, next) => {
 
     for (const sale of salesWithDebt) {
       if (montoRestante <= 0.01) break
-      
+
       const abonarAsale = Math.min(montoRestante, sale.saldo_pendiente)
       montoRestante -= abonarAsale
 
@@ -976,7 +978,7 @@ router.post('/clients/:id/settle-debt', async (req, res, next) => {
       sale.estado_cobro = cobro.estado_cobro
       Object.assign(sale, getUpdateAuditFields(req))
       await sale.save()
-      
+
       paymentsCreated.push(payment)
     }
 
@@ -1200,12 +1202,10 @@ router.put('/inventory-movements/transaccion/:tid', async (req, res, next) => {
     for (const it of items) {
       const mid = it.movement_id || it.id
       if (!mid || !existingById.has(String(mid))) {
-        return res
-          .status(400)
-          .json({
-            ok: false,
-            message: 'Cada ítem debe incluir movement_id válido de esta transacción'
-          })
+        return res.status(400).json({
+          ok: false,
+          message: 'Cada ítem debe incluir movement_id válido de esta transacción'
+        })
       }
       if (used.has(String(mid))) {
         return res.status(400).json({ ok: false, message: 'movement_id duplicado' })
@@ -1404,20 +1404,20 @@ router.post('/inventory-movements', async (req, res, next) => {
         })
       }
 
-        if (isConsignacionDevolucion) {
-          const consignacionQuery = {
-            tipo_movimiento: 'salida',
-            motivo: 'consignacion_envio'
-          }
-          if (payload.cliente_id) consignacionQuery.cliente_id = payload.cliente_id
-          const hasConsignaciones = await InventoryMovement.exists(consignacionQuery)
-          if (!hasConsignaciones) {
-            return res.status(400).json({
-              ok: false,
-              message: 'No hay consignaciones activas para registrar una devolución.'
-            })
-          }
+      if (isConsignacionDevolucion) {
+        const consignacionQuery = {
+          tipo_movimiento: 'salida',
+          motivo: 'consignacion_envio'
         }
+        if (payload.cliente_id) consignacionQuery.cliente_id = payload.cliente_id
+        const hasConsignaciones = await InventoryMovement.exists(consignacionQuery)
+        if (!hasConsignaciones) {
+          return res.status(400).json({
+            ok: false,
+            message: 'No hay consignaciones activas para registrar una devolución.'
+          })
+        }
+      }
 
       const observacion = payload.observacion || ''
       const fecha = payload.fecha ? new Date(payload.fecha) : new Date()

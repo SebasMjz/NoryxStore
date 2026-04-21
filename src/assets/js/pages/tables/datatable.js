@@ -23,9 +23,10 @@ var ProductsDatatable = (function () {
     dt = $('#table_products').DataTable({
       searchDelay: 500,
       processing: true,
+      dom: 'lrtip',
       data: [],
-      order: [1, 'asc'], /* columna 1 = SKU */
-      columnDefs: [{ orderable: false, targets: [0, 6] }],
+      order: [], /* Sin orden inicial para mantener cronología del API */
+      columnDefs: [{ orderable: false, targets: [0, 1, 6, 'no-sort'] }],
       lengthMenu: [5, 10, 50, 100],
       iDisplayLength: 5,
       select: {
@@ -39,16 +40,19 @@ var ProductsDatatable = (function () {
           orderable: false,
           searchable: false,
           className: 'select-checkbox',
-          render: function (data, type, row) {
+          render: function (_data, _type, row) {
             return `<div class="form-check">
                                     <input class="form-check-input bulk-select" type="checkbox" value="${row.id}">
                                 </div>`
           }
         },
         {
-          data: 'sku',
-          render: function (data) {
-            return `<span class="text-muted fw-medium">${data || '-'}</span>`
+          data: null,
+          orderable: false,
+          searchable: false,
+          className: 'text-center text-muted fw-semibold',
+          render: function (_data, _type, _row, meta) {
+            return meta.settings._iDisplayStart + meta.row + 1;
           }
         },
         {
@@ -56,12 +60,12 @@ var ProductsDatatable = (function () {
           render: function (data, _type, row) {
             const productName = data || ''
             const productDescription = row.descripcion || ''
-            return `<div class="d-flex align-items-center">
-                            <div>
-                                <h6 class="mb-0 text-truncate" style="max-width: 250px;">${productName}</h6>
-                                ${productDescription ? `<small class="text-muted text-truncate" style="max-width: 250px; display: inline-block;">${productDescription}</small>` : ''}
-                            </div>
-                        </div>`
+            const sku = row.sku || ''
+            return `<div class="d-flex flex-column">
+                        <span class="text-muted small fw-semibold mb-1"><i class="ri-barcode-line me-1"></i>${sku}</span>
+                        <h6 class="mb-0 text-wrap" style="line-height: 1.4;">${productName}</h6>
+                        ${productDescription ? `<small class="text-muted text-wrap mt-1" style="display: inline-block;">${productDescription}</small>` : ''}
+                    </div>`
           }
         },
         {
@@ -134,7 +138,9 @@ var ProductsDatatable = (function () {
                 product: item.nombre,
                 sku: item.codigo,
                 stock: Number(item.stock || 0),
-                stockMinimo: Number.isFinite(Number(item.stock_minimo)) ? Number(item.stock_minimo) : 10,
+                stockMinimo: Number.isFinite(Number(item.stock_minimo))
+                  ? Number(item.stock_minimo)
+                  : 10,
                 price: Number(item.precio_venta || 0),
                 status: item.activo ? 'Activo' : 'Inactivo',
                 category: item.activo ? 'activo' : 'inactivo',
@@ -247,11 +253,17 @@ var ProductsDatatable = (function () {
       const api = new $.fn.dataTable.Api(settings)
       const rowData = api.row(dataIndex).data() || {}
       const rowMin = Number(rowData.stockMinimo ?? 10)
-      const rowStock = Number(rowData.stock ?? parseInt(String(data[3]).match(/\d+/)?.[0] || '0', 10))
+      const rowStock = Number(
+        rowData.stock ?? parseInt(String(data[3]).match(/\d+/)?.[0] || '0', 10)
+      )
       let rowPrice = parseFloat(String(data[4] || '').replace(/[^0-9.-]+/g, ''))
       const rowCategory =
         rowData.category ||
-        (String(data[5] || '').toLowerCase().includes('inactivo') ? 'inactivo' : 'activo')
+        (String(data[5] || '')
+          .toLowerCase()
+          .includes('inactivo')
+          ? 'inactivo'
+          : 'activo')
 
       // Status filter (navbar: activo / inactivo)
       let statusMatch = statusFilters.length === 0 || statusFilters.includes(rowCategory)
@@ -463,22 +475,32 @@ var ProductsDatatable = (function () {
     deleteSelected.addEventListener('click', async function () {
       var selectedcheckboxes = container.querySelectorAll('[type="checkbox"]:checked')
       var selectedIds = []
-      selectedcheckboxes.forEach(function (sc) { selectedIds.push(sc.value) })
+      selectedcheckboxes.forEach(function (sc) {
+        selectedIds.push(sc.value)
+      })
       if (!selectedIds.length) return
 
       var ok = await window.showConfirm({
         title: 'Eliminar ' + selectedIds.length + ' producto(s)',
-        message: '¿Estás seguro de eliminar los <strong>' + selectedIds.length + ' productos seleccionados</strong>? Esta acción no se puede deshacer.',
+        message:
+          '¿Estás seguro de eliminar los <strong>' +
+          selectedIds.length +
+          ' productos seleccionados</strong>? Esta acción no se puede deshacer.',
         confirmText: 'Sí, eliminar todo',
         type: 'danger'
       })
       if (!ok) return
 
       try {
-        var apiBase = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? 'http://localhost:4000' : ''
-        await Promise.all(selectedIds.map(function (id) {
-          return fetch(apiBase + '/api/products/' + id, { method: 'DELETE' })
-        }))
+        var apiBase =
+          window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+            ? 'http://localhost:4000'
+            : ''
+        await Promise.all(
+          selectedIds.map(function (id) {
+            return fetch(apiBase + '/api/products/' + id, { method: 'DELETE' })
+          })
+        )
         window.location.reload()
       } catch (err) {
         alert('Error al eliminar los productos')
@@ -613,43 +635,53 @@ var ProductsDatatable = (function () {
 
   // init single delete button
   var initRowDelete = function () {
-    $('#table_products').off('click', '.delete-button').on('click', '.delete-button', async function (e) {
-      e.preventDefault()
-      var productId = $(this).attr('data-id')
+    $('#table_products')
+      .off('click', '.delete-button')
+      .on('click', '.delete-button', async function (e) {
+        e.preventDefault()
+        var productId = $(this).attr('data-id')
 
-      var ok = await window.showConfirm({
-        title: 'Eliminar producto',
-        message: '¿Estás seguro de eliminar este producto? Esta acción no se puede deshacer.',
-        confirmText: 'Sí, eliminar',
-        type: 'danger'
+        var ok = await window.showConfirm({
+          title: 'Eliminar producto',
+          message: '¿Estás seguro de eliminar este producto? Esta acción no se puede deshacer.',
+          confirmText: 'Sí, eliminar',
+          type: 'danger'
+        })
+        if (!ok) return
+
+        try {
+          var apiBase =
+            window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+              ? 'http://localhost:4000'
+              : ''
+          var res = await fetch(apiBase + '/api/products/' + productId, { method: 'DELETE' })
+          if (!res.ok) throw new Error()
+          window.location.reload()
+        } catch (err) {
+          alert('Error al eliminar el producto')
+        }
       })
-      if (!ok) return
 
-      try {
-        var apiBase = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? 'http://localhost:4000' : ''
-        var res = await fetch(apiBase + '/api/products/' + productId, { method: 'DELETE' })
-        if (!res.ok) throw new Error()
-        window.location.reload()
-      } catch (err) {
-        alert('Error al eliminar el producto')
-      }
-    })
+    $('#table_products')
+      .off('click', '.edit-button')
+      .on('click', '.edit-button', async function (e) {
+        e.preventDefault()
+        const productId = $(this).attr('data-id')
+        const apiBase =
+          window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+            ? 'http://localhost:4000'
+            : ''
 
-    $('#table_products').off('click', '.edit-button').on('click', '.edit-button', async function(e) {
-      e.preventDefault()
-      const productId = $(this).attr('data-id')
-      const apiBase = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? 'http://localhost:4000' : ''
-      
-      try {
-        const res = await fetch(`${apiBase}/api/products/${productId}`)
+        try {
+          const res = await fetch(`${apiBase}/api/products/${productId}`)
           const product = await res.json()
-          
+
           const modalEl = document.getElementById('createProductModal')
           if (modalEl) {
             modalEl.querySelector('.modal-title').textContent = 'Editar producto'
             const form = document.getElementById('createProductForm')
             form.dataset.editId = product._id
-            
+
             const catId = product.categoria_id?._id || product.categoria_id || ''
             const catSel = form.querySelector('#productCategoria')
             if (catSel) catSel.value = catId
@@ -664,9 +696,9 @@ var ProductsDatatable = (function () {
             const sm = form.querySelector('#productStockMinimo')
             if (sm) sm.value = String(product.stock_minimo ?? 10)
             form.querySelector('#productActivo').checked = product.activo
-            
+
             form.querySelector('button[type="submit"]').textContent = 'Actualizar'
-            
+
             const modal = new bootstrap.Modal(modalEl)
             modal.show()
           }
@@ -674,6 +706,66 @@ var ProductsDatatable = (function () {
           console.error(err)
           alert('Error cargando el producto')
         }
+      })
+
+    $('#table_products').off('click', '.view-button').on('click', '.view-button', async function (e) {
+      e.preventDefault()
+      const productId = $(this).attr('data-id')
+      const apiBase = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? 'http://localhost:4000' : ''
+      
+      try {
+        const res = await fetch(`${apiBase}/api/products/${productId}`)
+        const product = await res.json()
+        
+        const modalEl = document.getElementById('createProductModal')
+        if (modalEl) {
+          modalEl.querySelector('.modal-title').textContent = 'Detalles del producto'
+          const form = document.getElementById('createProductForm')
+          form.dataset.editId = '' // No edit id because we are viewing
+
+          const catId = product.categoria_id?._id || product.categoria_id || ''
+          const catSel = form.querySelector('#productCategoria')
+          if (catSel) { catSel.value = catId; catSel.disabled = true; }
+          const codeInput = form.querySelector('#productCodigo')
+          if (codeInput) { codeInput.value = product.codigo; codeInput.readOnly = true; }
+          
+          const nom = form.querySelector('#productNombre')
+          if (nom) { nom.value = product.nombre; nom.readOnly = true; }
+          
+          const desc = form.querySelector('#productDescripcion')
+          if (desc) { desc.value = product.descripcion || ''; desc.readOnly = true; }
+          
+          const prev = form.querySelector('#productPrecioVenta')
+          if (prev) { prev.value = product.precio_venta; prev.readOnly = true; }
+          
+          const sm = form.querySelector('#productStockMinimo')
+          if (sm) { sm.value = String(product.stock_minimo ?? 10); sm.readOnly = true; }
+          
+          const act = form.querySelector('#productActivo')
+          if (act) { act.checked = product.activo; act.disabled = true; }
+
+          const btnSubmit = form.querySelector('button[type="submit"]')
+          if (btnSubmit) btnSubmit.style.display = 'none'
+
+          // Restore normal mode on close
+          modalEl.addEventListener('hidden.bs.modal', function restoreForm() {
+            if (catSel) catSel.disabled = false
+            if (nom) nom.readOnly = false
+            if (desc) desc.readOnly = false
+            if (prev) prev.readOnly = false
+            if (sm) sm.readOnly = false
+            if (act) act.disabled = false
+            if (btnSubmit) btnSubmit.style.display = 'block'
+            modalEl.removeEventListener('hidden.bs.modal', restoreForm)
+          }, { once: true })
+
+          const modal = new window.bootstrap.Modal(modalEl)
+          modal.show()
+        }
+      } catch (err) {
+        console.error(err)
+        alert('Error cargando el producto')
+      }
     })
   }
 

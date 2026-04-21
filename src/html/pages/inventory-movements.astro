@@ -23,19 +23,34 @@ const pageHeaderProps = {
   <div class="card">
     <div class="card-body">
       <div class="astero-table">
-
         <!-- Status Filter Tabs -->
-        <nav class="navbar navbar-expand overflow-auto p-0 mb-4" aria-label="Filtros de movimientos">
+        <nav
+          class="navbar navbar-expand overflow-auto p-0 mb-4"
+          aria-label="Filtros de movimientos"
+        >
           <div class="navbar-nav gap-3">
-            <a href="javascript:void(0)" class="nav-link fw-medium px-1 mv-filter active border-bottom border-2 border-dark d-flex align-items-start" data-filter="all" aria-current="page">
+            <a
+              href="javascript:void(0)"
+              class="nav-link fw-medium px-1 mv-filter active border-bottom border-2 border-dark d-flex align-items-start"
+              data-filter="all"
+              aria-current="page"
+            >
               <i class="ri-apps-2-line me-1" aria-hidden="true"></i>Todos
               <span id="mvCountAll" class="badge bg-primary-subtle text-primary ms-1">0</span>
             </a>
-            <a href="javascript:void(0)" class="nav-link fw-medium px-1 mv-filter d-flex align-items-start" data-filter="entrada">
+            <a
+              href="javascript:void(0)"
+              class="nav-link fw-medium px-1 mv-filter d-flex align-items-start"
+              data-filter="entrada"
+            >
               <i class="ri-arrow-down-circle-line me-1" aria-hidden="true"></i>Entradas
               <span id="mvCountIn" class="badge bg-success-subtle text-success ms-1">0</span>
             </a>
-            <a href="javascript:void(0)" class="nav-link fw-medium px-1 mv-filter d-flex align-items-start" data-filter="salida">
+            <a
+              href="javascript:void(0)"
+              class="nav-link fw-medium px-1 mv-filter d-flex align-items-start"
+              data-filter="salida"
+            >
               <i class="ri-arrow-up-circle-line me-1" aria-hidden="true"></i>Salidas
               <span id="mvCountOut" class="badge bg-danger-subtle text-danger ms-1">0</span>
             </a>
@@ -46,20 +61,42 @@ const pageHeaderProps = {
         <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
           <div class="search-wrapper">
             <i class="ri-search-2-line search-icon" aria-hidden="true"></i>
-            <input type="text" id="mvSearch" class="form-control search-input"
-              placeholder="Buscar producto o motivo..." autocomplete="off" aria-label="Buscar movimientos" />
-            <button type="button" id="mvSearchClear" class="btn-clear search-clear" style="display:none;" aria-label="Limpiar búsqueda">
+            <input
+              type="text"
+              id="mvSearch"
+              class="form-control search-input"
+              placeholder="Buscar producto o motivo..."
+              autocomplete="off"
+              aria-label="Buscar movimientos"
+            />
+            <button
+              type="button"
+              id="mvSearchClear"
+              class="btn-clear search-clear"
+              style="display:none;"
+              aria-label="Limpiar búsqueda"
+            >
               <i class="ri-close-line"></i>
             </button>
           </div>
           <div class="d-flex gap-2 flex-wrap">
-            <button class="btn btn-primary gap-1" data-bs-toggle="modal" data-bs-target="#createMovementModal">
+            <button
+              class="btn btn-primary gap-1"
+              data-bs-toggle="modal"
+              data-bs-target="#createMovementModal"
+            >
               <i class="ri-add-line me-1" aria-hidden="true"></i> Nuevo movimiento
             </button>
             <!-- Bulk Actions -->
             <div class="bulk-actions-div d-none" id="mvBulkActions">
-              <span class="selected-count me-2" aria-live="polite"><span id="mvSelectedCount">0</span> seleccionados</span>
-              <button class="btn btn-light-danger shadow-none align-items-center gap-2" id="mvBulkDeleteBtn" aria-label="Eliminar seleccionados">
+              <span class="selected-count me-2" aria-live="polite"
+                ><span id="mvSelectedCount">0</span> seleccionados</span
+              >
+              <button
+                class="btn btn-light-danger shadow-none align-items-center gap-2"
+                id="mvBulkDeleteBtn"
+                aria-label="Eliminar seleccionados"
+              >
                 <i class="ri-delete-bin-2-line me-1" aria-hidden="true"></i> Eliminar
               </button>
             </div>
@@ -69,23 +106,49 @@ const pageHeaderProps = {
         <!-- Table -->
         <div class="table-container">
           <div class="table-responsive border-0">
-            <table class="table table-hover table-row-dashed mb-0" aria-label="Movimientos de inventario">
+            <table
+              class="table table-hover table-row-dashed mb-0"
+              aria-label="Movimientos de inventario"
+            >
               <thead>
                 <tr>
                   <th class="checkbox-column fs-6" style="width: 20px;" scope="col">
                     <div class="form-check">
-                      <input class="form-check-input" type="checkbox" id="mvSelectAll" aria-label="Seleccionar todos" />
+                      <input
+                        class="form-check-input"
+                        type="checkbox"
+                        id="mvSelectAll"
+                        aria-label="Seleccionar todos"
+                      />
                     </div>
                   </th>
-                  <th scope="col" data-sortable data-sort-key="fecha"><i class="ri-calendar-line me-1" aria-hidden="true"></i>FECHA</th>
-                  <th scope="col" data-sortable data-sort-key="producto"><i class="ri-file-list-3-line me-1" aria-hidden="true"></i>DETALLE</th>
-                  <th class="text-center" scope="col" data-sortable data-sort-key="tipo"><i class="ri-exchange-line me-1" aria-hidden="true"></i>TIPO</th>
-                  <th class="text-center" scope="col" data-sortable data-sort-key="cantidad"><i class="ri-stack-line me-1" aria-hidden="true"></i>CANTIDAD</th>
-                  <th class="text-end" scope="col" data-sortable data-sort-key="precio"><i class="ri-money-dollar-circle-line me-1" aria-hidden="true"></i>P. COMPRA</th>
-                  <th class="text-end" scope="col" data-sortable data-sort-key="precioVenta"><i class="ri-price-tag-3-line me-1" aria-hidden="true"></i>P. VENTA</th>
-                  <th scope="col"><i class="ri-file-text-line me-1" aria-hidden="true"></i>MOTIVO</th>
-                  <th scope="col" data-sortable data-sort-key="usuario"><i class="ri-user-3-line me-1" aria-hidden="true"></i>USUARIO</th>
-                  <th class="text-end pe-3 no-sort" scope="col"><i class="ri-settings-3-line me-1" aria-hidden="true"></i>ACCIONES</th>
+                  <th scope="col" data-sortable data-sort-key="fecha"
+                    ><i class="ri-calendar-line me-1" aria-hidden="true"></i>FECHA</th
+                  >
+                  <th scope="col" data-sortable data-sort-key="producto"
+                    ><i class="ri-file-list-3-line me-1" aria-hidden="true"></i>DETALLE</th
+                  >
+                  <th class="text-center" scope="col" data-sortable data-sort-key="tipo"
+                    ><i class="ri-exchange-line me-1" aria-hidden="true"></i>TIPO</th
+                  >
+                  <th class="text-center" scope="col" data-sortable data-sort-key="cantidad"
+                    ><i class="ri-stack-line me-1" aria-hidden="true"></i>CANTIDAD</th
+                  >
+                  <th class="text-end" scope="col" data-sortable data-sort-key="precio"
+                    ><i class="ri-money-dollar-circle-line me-1" aria-hidden="true"></i>P. COMPRA</th
+                  >
+                  <th class="text-end" scope="col" data-sortable data-sort-key="precioVenta"
+                    ><i class="ri-price-tag-3-line me-1" aria-hidden="true"></i>P. VENTA</th
+                  >
+                  <th scope="col"
+                    ><i class="ri-file-text-line me-1" aria-hidden="true"></i>MOTIVO</th
+                  >
+                  <th scope="col" data-sortable data-sort-key="usuario"
+                    ><i class="ri-user-3-line me-1" aria-hidden="true"></i>USUARIO</th
+                  >
+                  <th class="text-end pe-3 no-sort" scope="col"
+                    ><i class="ri-settings-3-line me-1" aria-hidden="true"></i>ACCIONES</th
+                  >
                 </tr>
               </thead>
               <tbody id="mvTableBody">
@@ -98,7 +161,6 @@ const pageHeaderProps = {
             </table>
           </div>
         </div>
-
       </div>
     </div>
     <div class="card-footer border-0 p-0" id="mvFooter"></div>
@@ -112,18 +174,24 @@ const pageHeaderProps = {
       <div class="modal-content">
         <div class="modal-header border-0 pb-0">
           <h5 class="modal-title fw-bold d-flex align-items-center gap-2">
-            <span class="d-inline-flex align-items-center justify-content-center rounded-2 bg-primary bg-opacity-10 text-primary" style="width:36px;height:36px;">
+            <span
+              class="d-inline-flex align-items-center justify-content-center rounded-2 bg-primary bg-opacity-10 text-primary"
+              style="width:36px;height:36px;"
+            >
               <i class="ri-exchange-funds-line"></i>
             </span>
             Detalle del movimiento
           </h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"
+          ></button>
         </div>
         <div class="modal-body pt-2" id="mvDetailBody">
           <div class="text-center text-muted py-4"><i class="ri-loader-4-line ri-spin"></i></div>
         </div>
         <div class="modal-footer border-0 pt-0">
-          <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+          <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal"
+            >Cerrar</button
+          >
         </div>
       </div>
     </div>
@@ -131,253 +199,280 @@ const pageHeaderProps = {
 </AdminLayout>
 
 <script is:inline>
-(function () {
-  const API =
-    window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-      ? 'http://localhost:4000'
-      : ''
+  ;(function () {
+    const API =
+      window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+        ? 'http://localhost:4000'
+        : ''
 
-  const esc = (s) =>
-    String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')
-  const fmtDate = (v) =>
-    v ? new Date(v).toLocaleString('es-MX', { dateStyle: 'short', timeStyle: 'short' }) : '—'
-  const fmt = (n) => '$' + Number(n || 0).toFixed(2)
+    const esc = (s) =>
+      String(s ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+    const fmtDate = (v) =>
+      v ? new Date(v).toLocaleString('es-MX', { dateStyle: 'short', timeStyle: 'short' }) : '—'
+    const fmt = (n) => '$' + Number(n || 0).toFixed(2)
 
-  let allMovements = []
-  let currentFilter = 'all'
-  let currentPage = 1
-  let pageSize = 25
-  let sortKey = null
-  let sortDir = 'asc'
+    let allMovements = []
+    let currentFilter = 'all'
+    let currentPage = 1
+    let pageSize = 25
+    let sortKey = null
+    let sortDir = 'asc'
 
-  document.addEventListener('DOMContentLoaded', () => {
-    loadMovements()
+    document.addEventListener('DOMContentLoaded', () => {
+      loadMovements()
 
-    const searchEl = document.getElementById('mvSearch')
-    const clearEl  = document.getElementById('mvSearchClear')
-    searchEl.addEventListener('input', () => {
-      currentPage = 1
-      clearEl.style.display = searchEl.value ? '' : 'none'
-      renderTable()
-    })
-    clearEl.addEventListener('click', () => {
-      searchEl.value = ''; clearEl.style.display = 'none'; currentPage = 1; renderTable()
-    })
-
-    document.querySelectorAll('.mv-filter').forEach((btn) => {
-      btn.addEventListener('click', function () {
-        document.querySelectorAll('.mv-filter').forEach((b) => {
-          b.classList.remove('active', 'border-bottom', 'border-2', 'border-dark')
-        })
-        this.classList.add('active', 'border-bottom', 'border-2', 'border-dark')
-        currentFilter = this.dataset.filter
+      const searchEl = document.getElementById('mvSearch')
+      const clearEl = document.getElementById('mvSearchClear')
+      searchEl.addEventListener('input', () => {
+        currentPage = 1
+        clearEl.style.display = searchEl.value ? '' : 'none'
+        renderTable()
+      })
+      clearEl.addEventListener('click', () => {
+        searchEl.value = ''
+        clearEl.style.display = 'none'
         currentPage = 1
         renderTable()
       })
-    })
 
-    document.getElementById('createMovementModal')?.addEventListener('hidden.bs.modal', loadMovements)
-
-    document.getElementById('mvBulkDeleteBtn')?.addEventListener('click', bulkDeleteSelected)
-
-    // Select all checkbox
-    document.getElementById('mvSelectAll').addEventListener('change', function () {
-      const checked = this.checked
-      document.querySelectorAll('.mv-row-cb').forEach((cb) => { cb.checked = checked })
-      updateMvBulkUI()
-    })
-
-    // Sortable headers
-    document.querySelectorAll('table[aria-label="Movimientos de inventario"] thead th[data-sortable]').forEach((th) => {
-      th.style.cursor = 'pointer'
-      th.addEventListener('click', () => {
-        const key = th.dataset.sortKey
-        if (sortKey === key) {
-          sortDir = sortDir === 'asc' ? 'desc' : 'asc'
-        } else {
-          sortKey = key
-          sortDir = 'asc'
-        }
-        document.querySelectorAll('table[aria-label="Movimientos de inventario"] thead th[data-sortable]').forEach((h) => {
-          h.classList.remove('sort-asc', 'sort-desc')
+      document.querySelectorAll('.mv-filter').forEach((btn) => {
+        btn.addEventListener('click', function () {
+          document.querySelectorAll('.mv-filter').forEach((b) => {
+            b.classList.remove('active', 'border-bottom', 'border-2', 'border-dark')
+          })
+          this.classList.add('active', 'border-bottom', 'border-2', 'border-dark')
+          currentFilter = this.dataset.filter
+          currentPage = 1
+          renderTable()
         })
-        th.classList.add(sortDir === 'asc' ? 'sort-asc' : 'sort-desc')
-        currentPage = 1
-        renderTable()
       })
+
+      document
+        .getElementById('createMovementModal')
+        ?.addEventListener('hidden.bs.modal', loadMovements)
+
+      document.getElementById('mvBulkDeleteBtn')?.addEventListener('click', bulkDeleteSelected)
+
+      // Select all checkbox
+      document.getElementById('mvSelectAll').addEventListener('change', function () {
+        const checked = this.checked
+        document.querySelectorAll('.mv-row-cb').forEach((cb) => {
+          cb.checked = checked
+        })
+        updateMvBulkUI()
+      })
+
+      // Sortable headers
+      document
+        .querySelectorAll('table[aria-label="Movimientos de inventario"] thead th[data-sortable]')
+        .forEach((th) => {
+          th.style.cursor = 'pointer'
+          th.addEventListener('click', () => {
+            const key = th.dataset.sortKey
+            if (sortKey === key) {
+              sortDir = sortDir === 'asc' ? 'desc' : 'asc'
+            } else {
+              sortKey = key
+              sortDir = 'asc'
+            }
+            document
+              .querySelectorAll(
+                'table[aria-label="Movimientos de inventario"] thead th[data-sortable]'
+              )
+              .forEach((h) => {
+                h.classList.remove('sort-asc', 'sort-desc')
+              })
+            th.classList.add(sortDir === 'asc' ? 'sort-asc' : 'sort-desc')
+            currentPage = 1
+            renderTable()
+          })
+        })
     })
-  })
 
-  async function loadMovements() {
-    try {
-      const res = await fetch(API + '/api/inventory-movements')
-      if (!res.ok) throw new Error()
-      allMovements = await res.json()
-      updateCounts()
-      renderTable()
-    } catch {
-      document.getElementById('mvTableBody').innerHTML =
-        '<tr><td colspan="10" class="text-center text-danger py-4">Error al cargar movimientos</td></tr>'
-    }
-  }
-
-  function buildGroupsFromMovements(list) {
-    const byTx = new Map()
-    const singles = []
-    for (const m of list) {
-      const tid = m.transaccion_id
-      if (tid != null && String(tid).length > 0) {
-        const k = String(tid)
-        if (!byTx.has(k)) byTx.set(k, [])
-        byTx.get(k).push(m)
-      } else {
-        singles.push({ isBatch: false, transaccion_id: null, items: [m] })
+    async function loadMovements() {
+      try {
+        const res = await fetch(API + '/api/inventory-movements')
+        if (!res.ok) throw new Error()
+        allMovements = await res.json()
+        updateCounts()
+        renderTable()
+      } catch {
+        document.getElementById('mvTableBody').innerHTML =
+          '<tr><td colspan="10" class="text-center text-danger py-4">Error al cargar movimientos</td></tr>'
       }
     }
-    const batches = [...byTx.entries()].map(([k, items]) => ({
-      isBatch: true,
-      transaccion_id: k,
-      items: items.sort((a, b) => String(a._id).localeCompare(String(b._id)))
-    }))
-    const all = singles.concat(batches)
-    all.sort((a, b) => new Date(b.items[0].fecha).getTime() - new Date(a.items[0].fecha).getTime())
-    return all
-  }
 
-  function groupSortValue(g, key) {
-    const first = g.items[0]
-    if (key === 'fecha') return new Date(first.fecha).getTime()
-    if (key === 'producto') {
-      if (g.isBatch) return g.items.map((m) => m.producto_id?.nombre || '').join(' ').toLowerCase()
-      return (first.producto_id?.nombre || '').toLowerCase()
-    }
-    if (key === 'tipo') return first.tipo_movimiento || ''
-    if (key === 'cantidad') return g.items.reduce((s, m) => s + Number(m.cantidad || 0), 0)
-    if (key === 'precio') return Number(first.precio_compra || 0)
-    if (key === 'precioVenta') return Number(first.precio_venta || 0)
-    if (key === 'usuario') return (first.usuario_id?.nombre || '').toLowerCase()
-    return ''
-  }
-
-  function updateCounts() {
-    const groups = buildGroupsFromMovements(allMovements)
-    document.getElementById('mvCountAll').textContent = String(groups.length)
-    document.getElementById('mvCountIn').textContent = String(
-      groups.filter((g) => g.items[0].tipo_movimiento === 'entrada').length
-    )
-    document.getElementById('mvCountOut').textContent = String(
-      groups.filter((g) => g.items[0].tipo_movimiento === 'salida').length
-    )
-  }
-
-  function getFilteredGroups() {
-    const q = (document.getElementById('mvSearch')?.value || '').toLowerCase().trim()
-    let source = buildGroupsFromMovements(allMovements).filter((g) => {
-      const tipo0 = g.items[0].tipo_movimiento
-      if (currentFilter !== 'all' && tipo0 !== currentFilter) return false
-      if (!q) return true
-      return g.items.some(
-        (m) =>
-          (m.producto_id?.nombre || '').toLowerCase().includes(q) ||
-          (m.producto_id?.codigo || '').toLowerCase().includes(q) ||
-          (m.motivo || '').toLowerCase().includes(q)
+    function buildGroupsFromMovements(list) {
+      const byTx = new Map()
+      const singles = []
+      for (const m of list) {
+        const tid = m.transaccion_id
+        if (tid != null && String(tid).length > 0) {
+          const k = String(tid)
+          if (!byTx.has(k)) byTx.set(k, [])
+          byTx.get(k).push(m)
+        } else {
+          singles.push({ isBatch: false, transaccion_id: null, items: [m] })
+        }
+      }
+      const batches = [...byTx.entries()].map(([k, items]) => ({
+        isBatch: true,
+        transaccion_id: k,
+        items: items.sort((a, b) => String(a._id).localeCompare(String(b._id)))
+      }))
+      const all = singles.concat(batches)
+      all.sort(
+        (a, b) => new Date(b.items[0].fecha).getTime() - new Date(a.items[0].fecha).getTime()
       )
-    })
-    if (sortKey) {
-      source.sort((a, b) => {
-        const av = groupSortValue(a, sortKey)
-        const bv = groupSortValue(b, sortKey)
-        if (av < bv) return sortDir === 'asc' ? -1 : 1
-        if (av > bv) return sortDir === 'asc' ? 1 : -1
-        return 0
+      return all
+    }
+
+    function groupSortValue(g, key) {
+      const first = g.items[0]
+      if (key === 'fecha') return new Date(first.fecha).getTime()
+      if (key === 'producto') {
+        if (g.isBatch)
+          return g.items
+            .map((m) => m.producto_id?.nombre || '')
+            .join(' ')
+            .toLowerCase()
+        return (first.producto_id?.nombre || '').toLowerCase()
+      }
+      if (key === 'tipo') return first.tipo_movimiento || ''
+      if (key === 'cantidad') return g.items.reduce((s, m) => s + Number(m.cantidad || 0), 0)
+      if (key === 'precio') return Number(first.precio_compra || 0)
+      if (key === 'precioVenta') return Number(first.precio_venta || 0)
+      if (key === 'usuario') return (first.usuario_id?.nombre || '').toLowerCase()
+      return ''
+    }
+
+    function updateCounts() {
+      const groups = buildGroupsFromMovements(allMovements)
+      document.getElementById('mvCountAll').textContent = String(groups.length)
+      document.getElementById('mvCountIn').textContent = String(
+        groups.filter((g) => g.items[0].tipo_movimiento === 'entrada').length
+      )
+      document.getElementById('mvCountOut').textContent = String(
+        groups.filter((g) => g.items[0].tipo_movimiento === 'salida').length
+      )
+    }
+
+    function getFilteredGroups() {
+      const q = (document.getElementById('mvSearch')?.value || '').toLowerCase().trim()
+      let source = buildGroupsFromMovements(allMovements).filter((g) => {
+        const tipo0 = g.items[0].tipo_movimiento
+        if (currentFilter !== 'all' && tipo0 !== currentFilter) return false
+        if (!q) return true
+        return g.items.some(
+          (m) =>
+            (m.producto_id?.nombre || '').toLowerCase().includes(q) ||
+            (m.producto_id?.codigo || '').toLowerCase().includes(q) ||
+            (m.motivo || '').toLowerCase().includes(q)
+        )
       })
-    }
-    return source
-  }
-
-  const motivoLabels = {
-    compra: 'Compra',
-    reposicion: 'Reposición',
-    venta: 'Venta',
-    ajuste_manual: 'Ajuste manual',
-    consignacion_envio: 'Consignación (salida)',
-    consignacion_devolucion: 'Devolución consignación'
-  }
-
-  function renderTable() {
-    const filtered = getFilteredGroups()
-    const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize))
-    currentPage = Math.min(currentPage, totalPages)
-    const start = (currentPage - 1) * pageSize
-    const paginated = filtered.slice(start, start + pageSize)
-
-    const tbody = document.getElementById('mvTableBody')
-    if (!filtered.length) {
-      tbody.innerHTML = '<tr><td colspan="10" class="text-center text-muted py-5">Sin resultados</td></tr>'
-      renderPagination(0, 1)
-      return
+      if (sortKey) {
+        source.sort((a, b) => {
+          const av = groupSortValue(a, sortKey)
+          const bv = groupSortValue(b, sortKey)
+          if (av < bv) return sortDir === 'asc' ? -1 : 1
+          if (av > bv) return sortDir === 'asc' ? 1 : -1
+          return 0
+        })
+      }
+      return source
     }
 
-    const badgeMap = { entrada: 'success-subtle text-success', salida: 'danger-subtle text-danger' }
-    const iconMap = { entrada: 'ri-arrow-down-circle-line', salida: 'ri-arrow-up-circle-line' }
+    const motivoLabels = {
+      compra: 'Compra',
+      reposicion: 'Reposición',
+      venta: 'Venta',
+      ajuste_manual: 'Ajuste manual',
+      consignacion_envio: 'Consignación (salida)',
+      consignacion_devolucion: 'Devolución consignación'
+    }
 
-    tbody.innerHTML = paginated
-      .map((g) => {
-        const m = g.items[0]
-        const tipo = m.tipo_movimiento || 'salida'
-        const badgeClass = badgeMap[tipo] || 'secondary'
-        const icon = iconMap[tipo] || 'ri-circle-line'
-        const totalQty = g.items.reduce((s, x) => s + Number(x.cantidad || 0), 0)
+    function renderTable() {
+      const filtered = getFilteredGroups()
+      const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize))
+      currentPage = Math.min(currentPage, totalPages)
+      const start = (currentPage - 1) * pageSize
+      const paginated = filtered.slice(start, start + pageSize)
 
-        let detalleCell = ''
-        let precioCell = ''
-        let precioVentaCell = ''
-        if (g.isBatch) {
-          const preview = g.items
-            .slice(0, 2)
-            .map((x) => x.producto_id?.nombre || '—')
-            .join(' · ')
-          const more = g.items.length > 2 ? ` · +${g.items.length - 2}` : ''
-          detalleCell = `
+      const tbody = document.getElementById('mvTableBody')
+      if (!filtered.length) {
+        tbody.innerHTML =
+          '<tr><td colspan="10" class="text-center text-muted py-5">Sin resultados</td></tr>'
+        renderPagination(0, 1)
+        return
+      }
+
+      const badgeMap = {
+        entrada: 'success-subtle text-success',
+        salida: 'danger-subtle text-danger'
+      }
+      const iconMap = { entrada: 'ri-arrow-down-circle-line', salida: 'ri-arrow-up-circle-line' }
+
+      tbody.innerHTML = paginated
+        .map((g) => {
+          const m = g.items[0]
+          const tipo = m.tipo_movimiento || 'salida'
+          const badgeClass = badgeMap[tipo] || 'secondary'
+          const icon = iconMap[tipo] || 'ri-circle-line'
+          const totalQty = g.items.reduce((s, x) => s + Number(x.cantidad || 0), 0)
+
+          let detalleCell = ''
+          let precioCell = ''
+          let precioVentaCell = ''
+          if (g.isBatch) {
+            const preview = g.items
+              .slice(0, 2)
+              .map((x) => x.producto_id?.nombre || '—')
+              .join(' · ')
+            const more = g.items.length > 2 ? ` · +${g.items.length - 2}` : ''
+            detalleCell = `
             <div class="fw-semibold small">
               <span class="badge text-bg-primary me-1">Transacción</span>${g.items.length} productos
             </div>
             <div class="text-muted text-truncate" style="font-size:.72rem;max-width:280px;" title="${esc(
               g.items.map((x) => x.producto_id?.nombre).join(', ')
             )}">${esc(preview)}${esc(more)}</div>`
-          precioCell = '<span class="text-muted small">Varios</span>'
-          precioVentaCell = '<span class="text-muted small">Varios</span>'
-        } else {
-          detalleCell = `
+            precioCell = '<span class="text-muted small">Varios</span>'
+            precioVentaCell = '<span class="text-muted small">Varios</span>'
+          } else {
+            detalleCell = `
             <div class="fw-semibold small">${esc(m.producto_id?.nombre || '—')}</div>
             ${m.producto_id?.codigo ? `<div class="text-muted" style="font-size:.72rem;">${esc(m.producto_id.codigo)}</div>` : ''}`
-          precioCell =
-            tipo === 'entrada' && m.precio_compra != null
-              ? `<span class="text-success fw-semibold">${fmt(m.precio_compra)}</span>`
-              : '<span class="text-muted">—</span>'
-          precioVentaCell =
-            tipo === 'entrada' && m.precio_venta != null
-              ? `<span class="text-primary fw-semibold">${fmt(m.precio_venta)}</span>`
-              : '<span class="text-muted">—</span>'
-        }
+            precioCell =
+              tipo === 'entrada' && m.precio_compra != null
+                ? `<span class="text-success fw-semibold">${fmt(m.precio_compra)}</span>`
+                : '<span class="text-muted">—</span>'
+            precioVentaCell =
+              tipo === 'entrada' && m.precio_venta != null
+                ? `<span class="text-primary fw-semibold">${fmt(m.precio_venta)}</span>`
+                : '<span class="text-muted">—</span>'
+          }
 
-        const cbAttrs = g.isBatch
-          ? `data-tid="${esc(g.transaccion_id)}" data-batch="1"`
-          : `data-id="${m._id}"`
+          const cbAttrs = g.isBatch
+            ? `data-tid="${esc(g.transaccion_id)}" data-batch="1"`
+            : `data-id="${m._id}"`
 
-        const editBtn = g.isBatch
-          ? `<button class="btn btn-sm btn-icon edit-mv-btn" data-tid="${esc(g.transaccion_id)}" title="Editar transacción"><i class="ri-pencil-line"></i></button>`
-          : `<button class="btn btn-sm btn-icon edit-mv-btn" data-id="${m._id}" title="Editar"><i class="ri-pencil-line"></i></button>`
+          const editBtn = g.isBatch
+            ? `<button class="btn btn-sm btn-icon edit-mv-btn" data-tid="${esc(g.transaccion_id)}" title="Editar transacción"><i class="ri-pencil-line"></i></button>`
+            : `<button class="btn btn-sm btn-icon edit-mv-btn" data-id="${m._id}" title="Editar"><i class="ri-pencil-line"></i></button>`
 
-        const delAttrs = g.isBatch
-          ? `data-tid="${esc(g.transaccion_id)}" data-batch="1"`
-          : `data-id="${m._id}"`
+          const delAttrs = g.isBatch
+            ? `data-tid="${esc(g.transaccion_id)}" data-batch="1"`
+            : `data-id="${m._id}"`
 
-        const viewAttrs = g.isBatch
-          ? `data-tid="${esc(g.transaccion_id)}"`
-          : `data-line-id="${m._id}"`
+          const viewAttrs = g.isBatch
+            ? `data-tid="${esc(g.transaccion_id)}"`
+            : `data-line-id="${m._id}"`
 
-        return `
+          return `
         <tr>
           <td class="checkbox-column align-middle">
             <div class="form-check">
@@ -402,59 +497,63 @@ const pageHeaderProps = {
             <button class="btn btn-sm btn-icon text-danger delete-mv-btn" ${delAttrs} title="${g.isBatch ? 'Eliminar transacción' : 'Eliminar'}"><i class="ri-delete-bin-line"></i></button>
           </td>
         </tr>`
+        })
+        .join('')
+
+      tbody
+        .querySelectorAll('.delete-mv-btn')
+        .forEach((btn) => btn.addEventListener('click', () => deleteMovement(btn)))
+      tbody.querySelectorAll('.edit-mv-btn').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          if (btn.dataset.tid) editTransactionMovement(btn.dataset.tid)
+          else editMovement(btn.dataset.id)
+        })
       })
-      .join('')
+      tbody
+        .querySelectorAll('.view-mv-btn')
+        .forEach((btn) => btn.addEventListener('click', () => openMovementDetail(btn)))
+      tbody
+        .querySelectorAll('.mv-row-cb')
+        .forEach((cb) => cb.addEventListener('change', updateMvBulkUI))
+      document.getElementById('mvSelectAll').checked = false
+      updateMvBulkUI()
 
-    tbody.querySelectorAll('.delete-mv-btn').forEach((btn) =>
-      btn.addEventListener('click', () => deleteMovement(btn))
-    )
-    tbody.querySelectorAll('.edit-mv-btn').forEach((btn) => {
-      btn.addEventListener('click', () => {
-        if (btn.dataset.tid) editTransactionMovement(btn.dataset.tid)
-        else editMovement(btn.dataset.id)
-      })
-    })
-    tbody.querySelectorAll('.view-mv-btn').forEach((btn) =>
-      btn.addEventListener('click', () => openMovementDetail(btn))
-    )
-    tbody.querySelectorAll('.mv-row-cb').forEach((cb) =>
-      cb.addEventListener('change', updateMvBulkUI)
-    )
-    document.getElementById('mvSelectAll').checked = false
-    updateMvBulkUI()
-
-    renderPagination(filtered.length, totalPages)
-  }
-
-  function updateMvBulkUI() {
-    const checked = document.querySelectorAll('.mv-row-cb:checked')
-    const bulk = document.getElementById('mvBulkActions')
-    const countEl = document.getElementById('mvSelectedCount')
-    if (!bulk) return
-    if (checked.length > 0) {
-      bulk.classList.remove('d-none')
-      if (countEl) countEl.textContent = checked.length
-    } else {
-      bulk.classList.add('d-none')
+      renderPagination(filtered.length, totalPages)
     }
-  }
 
-  function renderPagination(total, totalPages) {
-    const footer = document.getElementById('mvFooter')
-    if (total === 0) { footer.innerHTML = ''; return }
+    function updateMvBulkUI() {
+      const checked = document.querySelectorAll('.mv-row-cb:checked')
+      const bulk = document.getElementById('mvBulkActions')
+      const countEl = document.getElementById('mvSelectedCount')
+      if (!bulk) return
+      if (checked.length > 0) {
+        bulk.classList.remove('d-none')
+        if (countEl) countEl.textContent = checked.length
+      } else {
+        bulk.classList.add('d-none')
+      }
+    }
 
-    const startRecord = (currentPage - 1) * pageSize + 1
-    const endRecord   = Math.min(currentPage * pageSize, total)
-    const pages = []
-    for (let p = Math.max(1, currentPage - 2); p <= Math.min(totalPages, currentPage + 2); p++) pages.push(p)
+    function renderPagination(total, totalPages) {
+      const footer = document.getElementById('mvFooter')
+      if (total === 0) {
+        footer.innerHTML = ''
+        return
+      }
 
-    footer.innerHTML = `
+      const startRecord = (currentPage - 1) * pageSize + 1
+      const endRecord = Math.min(currentPage * pageSize, total)
+      const pages = []
+      for (let p = Math.max(1, currentPage - 2); p <= Math.min(totalPages, currentPage + 2); p++)
+        pages.push(p)
+
+      footer.innerHTML = `
       <div style="padding:.5rem 1rem;">
         <div class="row">
           <div class="col-sm-12 col-md-5 d-flex align-items-center justify-content-center justify-content-md-start table-toolbar">
             <div class="dataTables_length">
               <select class="form-select form-select-sm form-select-solid" id="mvPgSize">
-                ${[5,10,25,50,100].map(n=>`<option value="${n}"${pageSize===n?' selected':''}>${n}</option>`).join('')}
+                ${[5, 10, 25, 50, 100].map((n) => `<option value="${n}"${pageSize === n ? ' selected' : ''}>${n}</option>`).join('')}
               </select>
             </div>
             <div class="dataTables_info ms-2" style="font-size:.875rem;color:var(--bs-secondary-color);">Showing ${startRecord} to ${endRecord} of ${total} records</div>
@@ -462,11 +561,11 @@ const pageHeaderProps = {
           <div class="col-sm-12 col-md-7 d-flex align-items-center justify-content-center justify-content-md-end">
             <div class="dataTables_paginate paging_simple_numbers">
               <ul class="pagination">
-                <li class="paginate_button page-item previous${currentPage===1?' disabled':''}">
+                <li class="paginate_button page-item previous${currentPage === 1 ? ' disabled' : ''}">
                   <button class="page-link" id="mvPrevPg"><i class="ri-arrow-left-line"></i></button>
                 </li>
-                ${pages.map(p=>`<li class="paginate_button page-item${p===currentPage?' active':''}"><button class="page-link mv-pg-num" data-page="${p}">${p}</button></li>`).join('')}
-                <li class="paginate_button page-item next${currentPage===totalPages?' disabled':''}">
+                ${pages.map((p) => `<li class="paginate_button page-item${p === currentPage ? ' active' : ''}"><button class="page-link mv-pg-num" data-page="${p}">${p}</button></li>`).join('')}
+                <li class="paginate_button page-item next${currentPage === totalPages ? ' disabled' : ''}">
                   <button class="page-link" id="mvNextPg"><i class="ri-arrow-right-line"></i></button>
                 </li>
               </ul>
@@ -475,38 +574,57 @@ const pageHeaderProps = {
         </div>
       </div>`
 
-    document.getElementById('mvPgSize').addEventListener('change', (e) => { pageSize = Number(e.target.value); currentPage = 1; renderTable() })
-    document.getElementById('mvPrevPg')?.addEventListener('click', () => { if (currentPage > 1) { currentPage--; renderTable() } })
-    document.getElementById('mvNextPg')?.addEventListener('click', () => { if (currentPage < totalPages) { currentPage++; renderTable() } })
-    footer.querySelectorAll('.mv-pg-num').forEach(btn => btn.addEventListener('click', () => { currentPage = Number(btn.dataset.page); renderTable() }))
-  }
+      document.getElementById('mvPgSize').addEventListener('change', (e) => {
+        pageSize = Number(e.target.value)
+        currentPage = 1
+        renderTable()
+      })
+      document.getElementById('mvPrevPg')?.addEventListener('click', () => {
+        if (currentPage > 1) {
+          currentPage--
+          renderTable()
+        }
+      })
+      document.getElementById('mvNextPg')?.addEventListener('click', () => {
+        if (currentPage < totalPages) {
+          currentPage++
+          renderTable()
+        }
+      })
+      footer.querySelectorAll('.mv-pg-num').forEach((btn) =>
+        btn.addEventListener('click', () => {
+          currentPage = Number(btn.dataset.page)
+          renderTable()
+        })
+      )
+    }
 
-  function renderDetailHtml(lines) {
-    const first = lines[0]
-    const tipo = first.tipo_movimiento || 'salida'
-    const badgeClass = tipo === 'entrada' ? 'success' : 'danger'
-    const totalQty = lines.reduce((s, m) => s + Number(m.cantidad || 0), 0)
-    const isMulti = lines.length > 1
-    const rows = lines
-      .map((m) => {
-        const pc =
-          tipo === 'entrada' && m.precio_compra != null
-            ? `<span class="text-success">${fmt(m.precio_compra)}</span>`
-            : '—'
-        const pv =
-          tipo === 'entrada' && m.precio_venta != null
-            ? `<span class="text-primary">${fmt(m.precio_venta)}</span>`
-            : '—'
-        return `<tr>
+    function renderDetailHtml(lines) {
+      const first = lines[0]
+      const tipo = first.tipo_movimiento || 'salida'
+      const badgeClass = tipo === 'entrada' ? 'success' : 'danger'
+      const totalQty = lines.reduce((s, m) => s + Number(m.cantidad || 0), 0)
+      const isMulti = lines.length > 1
+      const rows = lines
+        .map((m) => {
+          const pc =
+            tipo === 'entrada' && m.precio_compra != null
+              ? `<span class="text-success">${fmt(m.precio_compra)}</span>`
+              : '—'
+          const pv =
+            tipo === 'entrada' && m.precio_venta != null
+              ? `<span class="text-primary">${fmt(m.precio_venta)}</span>`
+              : '—'
+          return `<tr>
           <td class="small fw-medium">${esc(m.producto_id?.nombre || '—')}</td>
           <td class="small text-muted">${esc(m.producto_id?.codigo || '—')}</td>
           <td class="text-center fw-semibold">${esc(m.cantidad ?? '—')}</td>
           <td class="text-end small">${pc}</td>
           <td class="text-end small">${pv}</td>
         </tr>`
-      })
-      .join('')
-    return `
+        })
+        .join('')
+      return `
       <div class="d-flex flex-wrap gap-3 mb-3 pb-3 border-bottom border-secondary border-opacity-25">
         <div class="small"><span class="text-muted">Fecha</span><div class="fw-semibold">${esc(fmtDate(first.fecha))}</div></div>
         <div class="small"><span class="text-muted">Tipo</span><div><span class="badge bg-${badgeClass}-subtle text-${badgeClass}">${esc(tipo)}</span></div></div>
@@ -515,11 +633,7 @@ const pageHeaderProps = {
         <div class="small"><span class="text-muted">Ítems / unidades</span><div class="fw-semibold">${lines.length} · ${totalQty} u.</div></div>
       </div>
       ${first.observacion ? `<p class="small text-muted mb-3"><strong>Observación:</strong> ${esc(first.observacion)}</p>` : ''}
-      ${
-        isMulti
-          ? `<p class="small text-muted mb-2">Productos en esta transacción:</p>`
-          : ''
-      }
+      ${isMulti ? `<p class="small text-muted mb-2">Productos en esta transacción:</p>` : ''}
       <div class="table-responsive rounded border border-secondary border-opacity-25">
         <table class="table table-sm table-striped mb-0 align-middle">
           <thead class="table-light"><tr>
@@ -532,148 +646,158 @@ const pageHeaderProps = {
           <tbody>${rows}</tbody>
         </table>
       </div>`
-  }
+    }
 
-  async function openMovementDetail(btn) {
-    const tid = btn.dataset.tid
-    const lineId = btn.dataset.lineId
-    const modalEl = document.getElementById('mvDetailModal')
-    const body = document.getElementById('mvDetailBody')
-    if (!modalEl || !body) return
-    body.innerHTML = '<div class="text-center text-muted py-4"><i class="ri-loader-4-line ri-spin"></i></div>'
-    const modal = bootstrap.Modal.getOrCreateInstance(modalEl)
-    modal.show()
-    try {
-      let lines = []
-      if (tid) {
-        const res = await fetch(`${API}/api/inventory-movements/transaccion/${encodeURIComponent(tid)}`)
+    async function openMovementDetail(btn) {
+      const tid = btn.dataset.tid
+      const lineId = btn.dataset.lineId
+      const modalEl = document.getElementById('mvDetailModal')
+      const body = document.getElementById('mvDetailBody')
+      if (!modalEl || !body) return
+      body.innerHTML =
+        '<div class="text-center text-muted py-4"><i class="ri-loader-4-line ri-spin"></i></div>'
+      const modal = bootstrap.Modal.getOrCreateInstance(modalEl)
+      modal.show()
+      try {
+        let lines = []
+        if (tid) {
+          const res = await fetch(
+            `${API}/api/inventory-movements/transaccion/${encodeURIComponent(tid)}`
+          )
+          const data = await res.json()
+          if (!res.ok) throw new Error(data.message || 'Error al cargar')
+          lines = data.lines || []
+        } else if (lineId) {
+          const m = allMovements.find((x) => String(x._id) === String(lineId))
+          if (m) lines = [m]
+          else {
+            const res = await fetch(`${API}/api/inventory-movements/${encodeURIComponent(lineId)}`)
+            const movement = await res.json()
+            if (!res.ok) throw new Error(movement.message || 'Error')
+            lines = [movement]
+          }
+        }
+        if (!lines.length) throw new Error('Sin datos')
+        body.innerHTML = renderDetailHtml(lines)
+      } catch (e) {
+        body.innerHTML = `<div class="alert alert-danger mb-0">${esc(e.message || 'No se pudo cargar el detalle')}</div>`
+      }
+    }
+
+    async function deleteMovement(btnOrId) {
+      const isEl = btnOrId && typeof btnOrId === 'object' && btnOrId.dataset
+      const isBatch = isEl && btnOrId.dataset.batch === '1'
+      const tid = isEl ? btnOrId.dataset.tid : null
+      const id = isEl ? btnOrId.dataset.id : String(btnOrId)
+
+      const ok = await window.showConfirm({
+        title: isBatch ? 'Eliminar transacción' : 'Eliminar movimiento',
+        message: isBatch
+          ? '¿Eliminar toda esta transacción (todos los productos del lote)? No revierte el stock automáticamente.'
+          : '¿Estás seguro de eliminar este movimiento? No revierte el stock automáticamente.',
+        confirmText: 'Sí, eliminar',
+        type: 'danger'
+      })
+      if (!ok) return
+      try {
+        const url = isBatch
+          ? `${API}/api/inventory-movements/transaccion/${encodeURIComponent(tid)}`
+          : `${API}/api/inventory-movements/${encodeURIComponent(id)}`
+        const res = await fetch(url, { method: 'DELETE' })
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}))
+          throw new Error(err.message || 'Error')
+        }
+        await loadMovements()
+      } catch (e) {
+        alert(e.message || 'Error al eliminar')
+      }
+    }
+
+    async function bulkDeleteSelected() {
+      const checked = [...document.querySelectorAll('.mv-row-cb:checked')]
+      if (!checked.length) return
+      const tids = new Set()
+      const ids = new Set()
+      for (const cb of checked) {
+        if (cb.dataset.batch === '1' && cb.dataset.tid) tids.add(cb.dataset.tid)
+        else if (cb.dataset.id) ids.add(cb.dataset.id)
+      }
+      const ok = await window.showConfirm({
+        title: 'Eliminar seleccionados',
+        message: `Se eliminarán ${tids.size + ids.size} registro(s) de la lista (transacciones completas o movimientos sueltos). El stock no se revierte automáticamente.`,
+        confirmText: 'Sí, eliminar',
+        type: 'danger'
+      })
+      if (!ok) return
+      try {
+        for (const tid of tids) {
+          const res = await fetch(
+            `${API}/api/inventory-movements/transaccion/${encodeURIComponent(tid)}`,
+            {
+              method: 'DELETE'
+            }
+          )
+          if (!res.ok) throw new Error('Error al eliminar una transacción')
+        }
+        for (const id of ids) {
+          const res = await fetch(`${API}/api/inventory-movements/${encodeURIComponent(id)}`, {
+            method: 'DELETE'
+          })
+          if (!res.ok) throw new Error('Error al eliminar un movimiento')
+        }
+        await loadMovements()
+      } catch {
+        alert('Error al eliminar la selección')
+      }
+    }
+
+    async function editTransactionMovement(tid) {
+      try {
+        const res = await fetch(
+          `${API}/api/inventory-movements/transaccion/${encodeURIComponent(tid)}`
+        )
         const data = await res.json()
         if (!res.ok) throw new Error(data.message || 'Error al cargar')
-        lines = data.lines || []
-      } else if (lineId) {
-        const m = allMovements.find((x) => String(x._id) === String(lineId))
-        if (m) lines = [m]
-        else {
-          const res = await fetch(`${API}/api/inventory-movements/${encodeURIComponent(lineId)}`)
-          const movement = await res.json()
-          if (!res.ok) throw new Error(movement.message || 'Error')
-          lines = [movement]
+        const lines = data.lines || []
+        const modalEl = document.getElementById('createMovementModal')
+        if (!modalEl) return
+        bootstrap.Modal.getOrCreateInstance(modalEl).show()
+        await new Promise((r) => setTimeout(r, 80))
+        if (typeof window.movementModalLoadTransactionEdit === 'function') {
+          window.movementModalLoadTransactionEdit(lines, tid)
+        } else {
+          alert('El editor de transacción no está disponible.')
         }
+      } catch (e) {
+        alert(e.message || 'Error al cargar la transacción')
       }
-      if (!lines.length) throw new Error('Sin datos')
-      body.innerHTML = renderDetailHtml(lines)
-    } catch (e) {
-      body.innerHTML = `<div class="alert alert-danger mb-0">${esc(e.message || 'No se pudo cargar el detalle')}</div>`
     }
-  }
 
-  async function deleteMovement(btnOrId) {
-    const isEl = btnOrId && typeof btnOrId === 'object' && btnOrId.dataset
-    const isBatch = isEl && btnOrId.dataset.batch === '1'
-    const tid = isEl ? btnOrId.dataset.tid : null
-    const id = isEl ? btnOrId.dataset.id : String(btnOrId)
+    async function editMovement(id) {
+      try {
+        const res = await fetch(`${API}/api/inventory-movements/${id}`)
+        const movement = await res.json()
+        const modalEl = document.getElementById('createMovementModal')
+        if (!modalEl) return
 
-    const ok = await window.showConfirm({
-      title: isBatch ? 'Eliminar transacción' : 'Eliminar movimiento',
-      message: isBatch
-        ? '¿Eliminar toda esta transacción (todos los productos del lote)? No revierte el stock automáticamente.'
-        : '¿Estás seguro de eliminar este movimiento? No revierte el stock automáticamente.',
-      confirmText: 'Sí, eliminar',
-      type: 'danger'
-    })
-    if (!ok) return
-    try {
-      const url = isBatch
-        ? `${API}/api/inventory-movements/transaccion/${encodeURIComponent(tid)}`
-        : `${API}/api/inventory-movements/${encodeURIComponent(id)}`
-      const res = await fetch(url, { method: 'DELETE' })
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}))
-        throw new Error(err.message || 'Error')
+        // Open modal first so the picker is initialized
+        new bootstrap.Modal(modalEl).show()
+
+        // Wait a tick for DOMContentLoaded scripts inside the modal to be ready
+        await new Promise((r) => setTimeout(r, 80))
+
+        const form = document.getElementById('createMovementForm')
+        const authUser = window.__authUser
+        const usuarioInput = form.querySelector('#moveUsuario')
+        if (usuarioInput && authUser) usuarioInput.value = authUser.id || ''
+
+        if (typeof window.movementModalLoadEdit === 'function') {
+          window.movementModalLoadEdit(movement)
+        }
+      } catch {
+        alert('Error al cargar el movimiento')
       }
-      await loadMovements()
-    } catch (e) {
-      alert(e.message || 'Error al eliminar')
     }
-  }
-
-  async function bulkDeleteSelected() {
-    const checked = [...document.querySelectorAll('.mv-row-cb:checked')]
-    if (!checked.length) return
-    const tids = new Set()
-    const ids = new Set()
-    for (const cb of checked) {
-      if (cb.dataset.batch === '1' && cb.dataset.tid) tids.add(cb.dataset.tid)
-      else if (cb.dataset.id) ids.add(cb.dataset.id)
-    }
-    const ok = await window.showConfirm({
-      title: 'Eliminar seleccionados',
-      message: `Se eliminarán ${tids.size + ids.size} registro(s) de la lista (transacciones completas o movimientos sueltos). El stock no se revierte automáticamente.`,
-      confirmText: 'Sí, eliminar',
-      type: 'danger'
-    })
-    if (!ok) return
-    try {
-      for (const tid of tids) {
-        const res = await fetch(`${API}/api/inventory-movements/transaccion/${encodeURIComponent(tid)}`, {
-          method: 'DELETE'
-        })
-        if (!res.ok) throw new Error('Error al eliminar una transacción')
-      }
-      for (const id of ids) {
-        const res = await fetch(`${API}/api/inventory-movements/${encodeURIComponent(id)}`, { method: 'DELETE' })
-        if (!res.ok) throw new Error('Error al eliminar un movimiento')
-      }
-      await loadMovements()
-    } catch {
-      alert('Error al eliminar la selección')
-    }
-  }
-
-  async function editTransactionMovement(tid) {
-    try {
-      const res = await fetch(`${API}/api/inventory-movements/transaccion/${encodeURIComponent(tid)}`)
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.message || 'Error al cargar')
-      const lines = data.lines || []
-      const modalEl = document.getElementById('createMovementModal')
-      if (!modalEl) return
-      bootstrap.Modal.getOrCreateInstance(modalEl).show()
-      await new Promise((r) => setTimeout(r, 80))
-      if (typeof window.movementModalLoadTransactionEdit === 'function') {
-        window.movementModalLoadTransactionEdit(lines, tid)
-      } else {
-        alert('El editor de transacción no está disponible.')
-      }
-    } catch (e) {
-      alert(e.message || 'Error al cargar la transacción')
-    }
-  }
-
-  async function editMovement(id) {
-    try {
-      const res = await fetch(`${API}/api/inventory-movements/${id}`)
-      const movement = await res.json()
-      const modalEl = document.getElementById('createMovementModal')
-      if (!modalEl) return
-
-      // Open modal first so the picker is initialized
-      new bootstrap.Modal(modalEl).show()
-
-      // Wait a tick for DOMContentLoaded scripts inside the modal to be ready
-      await new Promise(r => setTimeout(r, 80))
-
-      const form = document.getElementById('createMovementForm')
-      const authUser = window.__authUser
-      const usuarioInput = form.querySelector('#moveUsuario')
-      if (usuarioInput && authUser) usuarioInput.value = authUser.id || ''
-
-      if (typeof window.movementModalLoadEdit === 'function') {
-        window.movementModalLoadEdit(movement)
-      }
-    } catch {
-      alert('Error al cargar el movimiento')
-    }
-  }
-})()
+  })()
 </script>
