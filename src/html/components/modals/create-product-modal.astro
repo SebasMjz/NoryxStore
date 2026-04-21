@@ -24,8 +24,9 @@
             </select>
           </div>
           <div class="mb-3">
-            <label for="productCodigo" class="form-label">Código</label>
-            <input type="text" class="form-control" id="productCodigo" name="codigo" required />
+            <label for="productCodigo" class="form-label">Código (automático)</label>
+            <input type="text" class="form-control" id="productCodigo" name="codigo" placeholder="Se genera automáticamente" readonly autocomplete="off" />
+            <div class="form-text">Se asigna automáticamente al guardar el producto.</div>
           </div>
           <div class="mb-3">
             <label for="productNombre" class="form-label">Nombre</label>
@@ -82,89 +83,83 @@
     </div>
   </div>
 </div>
-<script>
-  document.addEventListener('DOMContentLoaded', () => {
+<script is:inline>
+  document.addEventListener('DOMContentLoaded', function() {
     const form = document.getElementById('createProductForm')
-    if (!(form instanceof HTMLFormElement)) return
+    if (!form) return
 
     // Load categories into selector
     const apiBase =
       window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
         ? 'http://localhost:4000'
         : ''
+    
     fetch(apiBase + '/api/categories')
-      .then((r) => r.json())
-      .then((cats) => {
+      .then(function(r) { return r.json() })
+      .then(function(cats) {
         const sel = document.getElementById('productCategoria')
         if (!sel) return
-        cats.filter((c) => c.activo).forEach((c) => {
+        
+        // Limpiamos todo excepto la opción por defecto
+        sel.innerHTML = '<option value="">— Sin categoría —</option>'
+        
+        cats.filter(function(c) { return c.activo; }).forEach(function(c) {
           const opt = document.createElement('option')
           opt.value = c._id
           opt.textContent = c.nombre
           sel.appendChild(opt)
         })
       })
-      .catch(() => { /* no-op */ })
+      .catch(function(err) { 
+        console.error('Error fetching categories:', err) 
+      })
 
-    form.addEventListener('submit', async (e) => {
+    form.addEventListener('submit', async function(e) {
       e.preventDefault()
 
       const formData = new FormData(form)
+      const productId = form.dataset.editId
       const payload = {
-        categoria_id: String(formData.get('categoria_id') || '') || null,
-        codigo: String(formData.get('codigo') || ''),
-        nombre: String(formData.get('nombre') || ''),
-        descripcion: String(formData.get('descripcion') || ''),
-        precio_venta: Number(formData.get('precio_venta') || 0),
-        stock_minimo: Math.max(0, Number(formData.get('stock_minimo') ?? 10)),
-        activo: formData.has('activo')
+        categoria_id: formData.get('categoria_id') || null,
+        nombre: formData.get('nombre') || '',
+        descripcion: formData.get('descripcion') || '',
+        precio_venta: Number(formData.get('precio_venta')) || 0,
+        stock_minimo: Math.max(0, Number(formData.get('stock_minimo') || 10)),
+        activo: document.getElementById('productActivo').checked
+      }
+      
+      if (productId) {
+        payload.codigo = formData.get('codigo') || ''
       }
 
-      const apiBase =
-        window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-          ? 'http://localhost:4000'
-          : ''
-
-      const productId = form.dataset.editId
       const url = productId ? `${apiBase}/api/products/${productId}` : `${apiBase}/api/products`
       const method = productId ? 'PUT' : 'POST'
 
       try {
         const response = await fetch(url, {
           method: method,
-          headers: {
-            'Content-Type': 'application/json'
-          },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
         })
 
-        if (!response.ok) throw new Error('Error al crear el producto')
+        if (!response.ok) throw new Error('Error al crear/editar el producto')
 
-        // Close modal and reset form
         const modalEl = document.getElementById('createProductModal')
-        const bootstrapApi = window['bootstrap']
-        if (bootstrapApi && modalEl) {
-          const modal = bootstrapApi.Modal.getInstance(modalEl)
+        if (window.bootstrap && modalEl) {
+          const modal = window.bootstrap.Modal.getInstance(modalEl)
           if (modal) modal.hide()
         }
         form.reset()
 
-        // Reload the table using our custom datatable handler
-        if (window['ProductsDatatable']) {
-          // A bit hacky but we reload the page or trigger the reset
-          window.location.reload()
-        } else {
-          window.location.reload()
-        }
+        window.location.reload()
       } catch (error) {
-        alert(error.message)
+        alert(error instanceof Error ? error.message : 'Error al guardar el producto')
       }
     })
 
-    // Reset modal state on close
     const modalEl = document.getElementById('createProductModal')
     if (modalEl) {
-      modalEl.addEventListener('hidden.bs.modal', () => {
+      modalEl.addEventListener('hidden.bs.modal', function() {
         form.reset()
         const sm = document.getElementById('productStockMinimo')
         if (sm) sm.value = '10'

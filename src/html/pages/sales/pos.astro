@@ -17,34 +17,54 @@ const receiptLogoUrl = getAssetPrefix('/assets/img/noryx/NoryxStoreLogo.jpeg')
 <style is:global>
   .pos-product-card {
     cursor: pointer;
-    transition: transform .15s, box-shadow .15s, border-color .15s;
-    border: 1.5px solid rgba(255,255,255,.07);
-    border-radius: .6rem;
+    transition:
+      transform 0.15s,
+      box-shadow 0.15s,
+      border-color 0.15s;
+    border: 1.5px solid rgba(255, 255, 255, 0.07);
+    border-radius: 0.6rem;
     user-select: none;
   }
   .pos-product-card:hover {
     transform: translateY(-3px);
-    box-shadow: 0 8px 24px rgba(0,0,0,.4);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
     border-color: var(--bs-primary);
   }
-  .pos-product-card.out-of-stock { opacity:.42; cursor:not-allowed; pointer-events:none; }
-  .qty-btn { width:26px; height:26px; padding:0; line-height:1; font-size:.85rem; }
-  .cart-row-warn td { background: rgba(255,193,7,.06) !important; }
-  .pos-card-accent { height:3px; border-radius:4px 4px 0 0; margin:-1rem -1rem .75rem; }
+  .pos-product-card.out-of-stock {
+    opacity: 0.42;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+  .qty-btn {
+    width: 26px;
+    height: 26px;
+    padding: 0;
+    line-height: 1;
+    font-size: 0.85rem;
+  }
+  .cart-row-warn td {
+    background: rgba(255, 193, 7, 0.06) !important;
+  }
+  .pos-card-accent {
+    height: 3px;
+    border-radius: 4px 4px 0 0;
+    margin: -1rem -1rem 0.75rem;
+  }
 
   /* Category filter pills */
   .cat-pill {
     border-radius: 2rem;
-    padding: .25rem .85rem;
-    font-size: .78rem;
+    padding: 0.25rem 0.85rem;
+    font-size: 0.78rem;
     font-weight: 500;
-    border: 1.5px solid rgba(255,255,255,.12);
+    border: 1.5px solid rgba(255, 255, 255, 0.12);
     cursor: pointer;
-    transition: all .15s;
+    transition: all 0.15s;
     background: transparent;
     color: inherit;
   }
-  .cat-pill:hover, .cat-pill.active {
+  .cat-pill:hover,
+  .cat-pill.active {
     background: var(--bs-primary);
     border-color: var(--bs-primary);
     color: #fff;
@@ -52,22 +72,28 @@ const receiptLogoUrl = getAssetPrefix('/assets/img/noryx/NoryxStoreLogo.jpeg')
 
   /* Client dropdown */
   #clientDropdown {
-    position:absolute; z-index:9999; width:100%; max-height:200px; overflow-y:auto;
-    border:1px solid rgba(255,255,255,.12); border-radius:.4rem;
-    background:var(--bs-body-bg,#212529); box-shadow:0 8px 24px rgba(0,0,0,.4);
+    position: absolute;
+    z-index: 9999;
+    width: 100%;
+    max-height: 200px;
+    overflow-y: auto;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 0.4rem;
+    background: var(--bs-body-bg, #212529);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
   }
   #clientDropdown .client-option {
-    padding:.45rem .75rem; cursor:pointer; font-size:.84rem;
-    border-bottom:1px solid rgba(255,255,255,.05);
+    padding: 0.45rem 0.75rem;
+    cursor: pointer;
+    font-size: 0.84rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
   }
-  #clientDropdown .client-option:hover { background:rgba(111,66,193,.2); }
+  #clientDropdown .client-option:hover {
+    background: rgba(111, 66, 193, 0.2);
+  }
 </style>
 
-<AdminLayout
-  title="Nueva Venta — POS"
-  description="Punto de venta"
-  currentPath="sales/pos"
->
+<AdminLayout title="Nueva Venta — POS" description="Punto de venta" currentPath="sales/pos">
   <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
     <PageHeader {...pageHeaderProps} />
     <a href={getPathPrefix('/sales')} class="btn btn-outline-secondary btn-sm">
@@ -76,19 +102,22 @@ const receiptLogoUrl = getAssetPrefix('/assets/img/noryx/NoryxStoreLogo.jpeg')
   </div>
 
   <div class="row g-4" style="min-height:82vh;">
-
     <!-- LEFT: Product browser -->
     <div class="col-lg-7 d-flex flex-column">
       <div class="card flex-grow-1" style="overflow:hidden;">
-
         <!-- Search + category filter -->
         <div class="card-header border-0 pb-2">
           <div class="input-group mb-2">
             <span class="input-group-text bg-transparent border-end-0 text-muted">
               <i class="ri-search-2-line"></i>
             </span>
-            <input type="text" id="posSearch" class="form-control border-start-0 ps-1"
-              placeholder="Buscar por nombre, código o descripción..." autocomplete="off" />
+            <input
+              type="text"
+              id="posSearch"
+              class="form-control border-start-0 ps-1"
+              placeholder="Buscar por nombre, código o descripción..."
+              autocomplete="off"
+            />
           </div>
           <!-- Category pills -->
           <div id="catPills" class="d-flex flex-wrap gap-2">
@@ -119,7 +148,6 @@ const receiptLogoUrl = getAssetPrefix('/assets/img/noryx/NoryxStoreLogo.jpeg')
 
     <!-- RIGHT: Cart + Checkout -->
     <div class="col-lg-5 d-flex flex-column gap-3">
-
       <!-- Cart -->
       <div class="card flex-grow-1" style="overflow:hidden;">
         <div class="card-header border-0 d-flex align-items-center justify-content-between py-2">
@@ -133,7 +161,10 @@ const receiptLogoUrl = getAssetPrefix('/assets/img/noryx/NoryxStoreLogo.jpeg')
           </button>
         </div>
 
-        <div id="cartEmpty" class="d-flex flex-column align-items-center justify-content-center text-muted py-5">
+        <div
+          id="cartEmpty"
+          class="d-flex flex-column align-items-center justify-content-center text-muted py-5"
+        >
           <i class="ri-shopping-cart-line" style="font-size:2.8rem;opacity:.22;"></i>
           <p class="mt-2 mb-0 small">Haz clic en un producto para agregarlo</p>
         </div>
@@ -156,13 +187,36 @@ const receiptLogoUrl = getAssetPrefix('/assets/img/noryx/NoryxStoreLogo.jpeg')
           <div class="d-flex justify-content-between align-items-start gap-2 flex-wrap">
             <span class="text-muted small"><span id="cartItemsCount">0</span> ítem(s)</span>
             <div class="text-end small" style="min-width:140px;">
-              <div class="d-flex justify-content-between gap-3 text-muted" style="font-size:.72rem;">
+              <div
+                class="d-flex justify-content-between gap-3 text-muted"
+                style="font-size:.72rem;"
+              >
                 <span>Subtotal</span><span id="cartSubtotal" class="text-body">$0.00</span>
               </div>
-              <div id="cartDiscountRow" class="d-none d-flex justify-content-between gap-3 text-warning" style="font-size:.72rem;">
+              <div
+                id="cartDiscountRow"
+                class="d-none d-flex justify-content-between gap-3 text-warning"
+                style="font-size:.72rem;"
+              >
                 <span>Descuento</span><span id="cartDiscountAmt">-$0.00</span>
               </div>
-              <div class="text-muted mt-1" style="font-size:.68rem;letter-spacing:.06em;">TOTAL</div>
+              <div
+                id="cartPaidNowRow"
+                class="d-none d-flex justify-content-between gap-3 text-info"
+                style="font-size:.72rem;"
+              >
+                <span>Pagado ahora</span><span id="cartPaidNowAmt">$0.00</span>
+              </div>
+              <div
+                id="cartPendingRow"
+                class="d-none d-flex justify-content-between gap-3 text-warning"
+                style="font-size:.72rem;"
+              >
+                <span>Saldo pendiente</span><span id="cartPendingAmt">$0.00</span>
+              </div>
+              <div class="text-muted mt-1" style="font-size:.68rem;letter-spacing:.06em;">
+                TOTAL
+              </div>
               <div class="fs-4 fw-bold text-primary" id="cartTotal">$0.00</div>
             </div>
           </div>
@@ -181,11 +235,20 @@ const receiptLogoUrl = getAssetPrefix('/assets/img/noryx/NoryxStoreLogo.jpeg')
             <label class="form-label small text-muted">Cliente</label>
             <div class="d-flex gap-2 align-items-start">
               <div class="position-relative flex-grow-1">
-                <input type="text" id="clientSearch" class="form-control form-control-sm"
-                  placeholder="Buscar por nombre o celular..." autocomplete="off" />
+                <input
+                  type="text"
+                  id="clientSearch"
+                  class="form-control form-control-sm"
+                  placeholder="Buscar por nombre o celular..."
+                  autocomplete="off"
+                />
                 <div id="clientDropdown" class="d-none"></div>
               </div>
-              <button class="btn btn-sm btn-outline-primary flex-shrink-0" id="addClientBtn" title="Nuevo cliente">
+              <button
+                class="btn btn-sm btn-outline-primary flex-shrink-0"
+                id="addClientBtn"
+                title="Nuevo cliente"
+              >
                 <i class="ri-user-add-line"></i>
               </button>
             </div>
@@ -193,7 +256,11 @@ const receiptLogoUrl = getAssetPrefix('/assets/img/noryx/NoryxStoreLogo.jpeg')
               <span class="badge text-bg-secondary d-inline-flex align-items-center gap-1 pe-1">
                 <i class="ri-user-line"></i>
                 <span id="selectedClientName"></span>
-                <button type="button" id="clearClientBtn" class="btn-close btn-close-white ms-1" style="font-size:.5rem;"></button>
+                <button
+                  type="button"
+                  id="clearClientBtn"
+                  class="btn-close btn-close-white ms-1"
+                  style="font-size:.5rem;"></button>
               </span>
             </div>
           </div>
@@ -201,13 +268,21 @@ const receiptLogoUrl = getAssetPrefix('/assets/img/noryx/NoryxStoreLogo.jpeg')
 
           <!-- Payment method -->
           <div class="mb-3">
-            <label class="form-label small text-muted">Método de Pago <span class="text-danger">*</span></label>
+            <label class="form-label small text-muted"
+              >Método de Pago <span class="text-danger">*</span></label
+            >
             <div id="posPaymentMethods" class="d-flex flex-wrap gap-2">
               <span class="text-muted small">Cargando...</span>
             </div>
-            <div id="posMixedPayPanel" class="d-none border rounded p-2 mt-2 small" style="border-color:rgba(255,255,255,.12)!important;">
+            <div
+              id="posMixedPayPanel"
+              class="d-none border rounded p-2 mt-2 small"
+              style="border-color:rgba(255,255,255,.12)!important;"
+            >
               <div class="fw-semibold mb-2 text-body">Pago mixto — repartir el total</div>
-              <p class="text-muted mb-2" style="font-size:.68rem;">Indica montos en al menos dos medios; la suma debe coincidir con el total a pagar.</p>
+              <p class="text-muted mb-2" style="font-size:.68rem;">
+                Indica montos en al menos dos medios; la suma debe coincidir con el total a pagar.
+              </p>
               <div id="posMixedPayRows"></div>
               <div class="d-flex justify-content-between mt-2 fw-medium">
                 <span>Sumatoria</span><span id="posMixedSum">$0.00</span>
@@ -215,14 +290,19 @@ const receiptLogoUrl = getAssetPrefix('/assets/img/noryx/NoryxStoreLogo.jpeg')
               <div class="d-flex justify-content-between text-muted" style="font-size:.68rem;">
                 <span>Total venta</span><span id="posMixedTarget">$0.00</span>
               </div>
-              <div id="posMixedWarn" class="text-warning small d-none mt-1">La suma debe igualar el total (tolerancia 1 céntimo).</div>
+              <div id="posMixedWarn" class="text-warning small d-none mt-1">
+                La suma debe igualar el total (tolerancia 1 céntimo).
+              </div>
             </div>
           </div>
 
           <!-- Observations -->
           <div class="mb-3">
             <label class="form-label small text-muted">Observaciones</label>
-            <textarea class="form-control form-control-sm" id="posObservacion" rows="2"
+            <textarea
+              class="form-control form-control-sm"
+              id="posObservacion"
+              rows="2"
               placeholder="Nota opcional..."></textarea>
           </div>
 
@@ -230,21 +310,58 @@ const receiptLogoUrl = getAssetPrefix('/assets/img/noryx/NoryxStoreLogo.jpeg')
             <label class="form-label small text-muted">Descuento (monto fijo)</label>
             <div class="input-group input-group-sm">
               <span class="input-group-text">$</span>
-              <input type="number" class="form-control" id="posDescuento" min="0" step="0.01" value="0"
-                placeholder="0.00" />
+              <input
+                type="number"
+                class="form-control"
+                id="posDescuento"
+                min="0"
+                step="0.01"
+                value="0"
+                placeholder="0.00"
+              />
             </div>
-            <div class="form-text" style="font-size:.68rem;">Se resta del subtotal del carrito antes de cobrar.</div>
+            <div class="form-text" style="font-size:.68rem;">
+              Se resta del subtotal del carrito antes de cobrar.
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label small text-muted">Monto pagado ahora</label>
+            <div class="input-group input-group-sm">
+              <span class="input-group-text">$</span>
+              <input
+                type="number"
+                class="form-control"
+                id="posMontoPagado"
+                min="0"
+                step="0.01"
+                value="0"
+                placeholder="0.00"
+              />
+            </div>
+            <div class="form-text" style="font-size:.68rem;">
+              Si es menor al total, la venta queda con saldo pendiente del cliente.
+            </div>
           </div>
 
           <!-- Stock warning -->
           <div id="stockWarningBanner" class="alert alert-warning d-none py-2 small mb-3">
             <i class="ri-error-warning-line me-1"></i>
-            <strong>Atención:</strong> Uno o más productos superan el stock disponible. El stock quedará negativo.
+            <strong>Atención:</strong> Uno o más productos superan el stock disponible. El stock quedará
+            negativo.
           </div>
 
-          <div id="posReceiptBanner" class="alert alert-success py-2 px-3 small d-none mb-3" role="status">
-            <div class="d-flex flex-column flex-sm-row align-items-start align-items-sm-center gap-2 justify-content-between">
-              <span class="fw-semibold"><i class="ri-checkbox-circle-line me-1"></i>Venta registrada.</span>
+          <div
+            id="posReceiptBanner"
+            class="alert alert-success py-2 px-3 small d-none mb-3"
+            role="status"
+          >
+            <div
+              class="d-flex flex-column flex-sm-row align-items-start align-items-sm-center gap-2 justify-content-between"
+            >
+              <span class="fw-semibold"
+                ><i class="ri-checkbox-circle-line me-1"></i>Venta registrada.</span
+              >
               <div class="d-flex flex-wrap gap-2">
                 <button type="button" class="btn btn-sm btn-outline-success" id="posReceiptOpenBtn">
                   <i class="ri-external-link-line me-1"></i>Ver recibo
@@ -252,7 +369,12 @@ const receiptLogoUrl = getAssetPrefix('/assets/img/noryx/NoryxStoreLogo.jpeg')
                 <button type="button" class="btn btn-sm btn-success" id="posReceiptDownloadBtn">
                   <i class="ri-download-2-line me-1"></i>Descargar recibo
                 </button>
-                <button type="button" class="btn btn-sm btn-outline-secondary" id="posReceiptPrintBtn" title="Abre el recibo y el cuadro de impresión (puedes guardar como PDF)">
+                <button
+                  type="button"
+                  class="btn btn-sm btn-outline-secondary"
+                  id="posReceiptPrintBtn"
+                  title="Abre el recibo y el cuadro de impresión (puedes guardar como PDF)"
+                >
                   <i class="ri-printer-line me-1"></i>Imprimir / PDF
                 </button>
               </div>
@@ -264,7 +386,6 @@ const receiptLogoUrl = getAssetPrefix('/assets/img/noryx/NoryxStoreLogo.jpeg')
           </button>
         </div>
       </div>
-
     </div>
   </div>
 </AdminLayout>
@@ -290,18 +411,33 @@ const receiptLogoUrl = getAssetPrefix('/assets/img/noryx/NoryxStoreLogo.jpeg')
 </script>
 
 <!-- Confirmar venta: vista previa del recibo antes de registrar -->
-<div class="modal fade" id="posConfirmSaleModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+<div
+  class="modal fade"
+  id="posConfirmSaleModal"
+  tabindex="-1"
+  aria-hidden="true"
+  data-bs-backdrop="static"
+>
   <div class="modal-dialog modal-xl modal-dialog-scrollable">
     <div class="modal-content">
       <div class="modal-header py-2">
-        <h6 class="modal-title mb-0"><i class="ri-file-text-line me-2"></i>Vista previa del recibo</h6>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        <h6 class="modal-title mb-0">
+          <i class="ri-file-text-line me-2"></i>Vista previa del recibo
+        </h6>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"
+        ></button>
       </div>
       <div class="modal-body p-0 bg-light" style="min-height: 55vh;">
-        <iframe id="posReceiptPreviewFrame" class="w-100 border-0 d-block bg-white" style="min-height: 520px; height: 55vh;" title="Vista previa del comprobante"></iframe>
+        <iframe
+          id="posReceiptPreviewFrame"
+          class="w-100 border-0 d-block bg-white"
+          style="min-height: 520px; height: 55vh;"
+          title="Vista previa del comprobante"></iframe>
       </div>
       <div class="modal-footer py-2 flex-wrap gap-2">
-        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Volver al carrito</button>
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal"
+          >Volver al carrito</button
+        >
         <button type="button" class="btn btn-primary" id="posConfirmSaleSubmit">
           <i class="ri-check-double-line me-1"></i>Confirmar y registrar venta
         </button>
@@ -322,15 +458,32 @@ const receiptLogoUrl = getAssetPrefix('/assets/img/noryx/NoryxStoreLogo.jpeg')
         <form id="quickClientForm">
           <div class="mb-3">
             <label class="form-label small">Nombre <span class="text-danger">*</span></label>
-            <input type="text" class="form-control form-control-sm" id="qcNombre" required placeholder="Nombre completo" />
+            <input
+              type="text"
+              class="form-control form-control-sm"
+              id="qcNombre"
+              required
+              placeholder="Nombre completo"
+            />
           </div>
           <div class="mb-3">
-            <label class="form-label small">Teléfono o celular <span class="text-danger">*</span></label>
-            <input type="tel" class="form-control form-control-sm" id="qcCelular" required placeholder="Ej: 0991234567" autocomplete="tel" />
+            <label class="form-label small"
+              >Teléfono o celular <span class="text-danger">*</span></label
+            >
+            <input
+              type="tel"
+              class="form-control form-control-sm"
+              id="qcCelular"
+              required
+              placeholder="Ej: 0991234567"
+              autocomplete="tel"
+            />
             <div class="invalid-feedback">Ingresa un número de contacto.</div>
           </div>
           <div class="d-flex gap-2 justify-content-end">
-            <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+            <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal"
+              >Cancelar</button
+            >
             <button type="submit" class="btn btn-sm btn-primary" id="qcSubmit">Guardar</button>
           </div>
         </form>
@@ -341,342 +494,390 @@ const receiptLogoUrl = getAssetPrefix('/assets/img/noryx/NoryxStoreLogo.jpeg')
 
 <!-- Toast -->
 <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index:9999;">
-  <div id="posToast" class="toast align-items-center border-0 text-bg-success" role="alert" aria-live="assertive">
+  <div
+    id="posToast"
+    class="toast align-items-center border-0 text-bg-success"
+    role="alert"
+    aria-live="assertive"
+  >
     <div class="d-flex">
       <div class="toast-body fw-semibold" id="posToastMsg">Venta completada.</div>
-      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"
+      ></button>
     </div>
   </div>
 </div>
 
 <script is:inline>
-(function () {
-  const API =
-    window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-      ? 'http://localhost:4000'
-      : ''
+  ;(function () {
+    const API =
+      window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+        ? 'http://localhost:4000'
+        : ''
 
-  let cart = []
-  let allProducts = []
-  let allClients = []
-  let allCategories = []
-  let currentCat = ''
-  let posStockFilter = ''
-  let payMode = 'single'
-  let paymentMethodsList = []
-  let selectedPayment = ''
-  let selectedClientId = ''
-  let pendingSalePayload = null
-  let previewBlobUrl = null
-  let lastRegisteredReceipt = null
+    let cart = []
+    let allProducts = []
+    let allClients = []
+    let allCategories = []
+    let currentCat = ''
+    let posStockFilter = ''
+    let payMode = 'single'
+    let paymentMethodsList = []
+    let selectedPayment = ''
+    let selectedClientId = ''
+    let pendingSalePayload = null
+    let previewBlobUrl = null
+    let lastRegisteredReceipt = null
 
-  const fmt = (n) => '$' + Number(n || 0).toFixed(2)
-  const esc = (s) =>
-    String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')
+    const fmt = (n) => '$' + Number(n || 0).toFixed(2)
+    const esc = (s) =>
+      String(s ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
 
-  function getCartMoneyTotals() {
-    const subtotal = cart.reduce((s, c) => s + c.precio_unitario * c.cantidad, 0)
-    const discRaw = Math.max(0, Number(document.getElementById('posDescuento').value) || 0)
-    const descuento = Math.min(discRaw, subtotal)
-    const total = Math.max(0, subtotal - descuento)
-    return { subtotal, descuento, total }
-  }
+    function getCartMoneyTotals() {
+      const subtotal = cart.reduce((s, c) => s + c.precio_unitario * c.cantidad, 0)
+      const discRaw = Math.max(0, Number(document.getElementById('posDescuento').value) || 0)
+      const descuento = Math.min(discRaw, subtotal)
+      const total = Math.max(0, subtotal - descuento)
+      return { subtotal, descuento, total }
+    }
 
-  function buildMixedPayRows() {
-    const rows = document.getElementById('posMixedPayRows')
-    if (!rows) return
-    rows.innerHTML = paymentMethodsList
-      .map(
-        (m) =>
-          `<div class="d-flex align-items-center gap-2 mb-1 flex-wrap">
+    function getPaidNowAmount(total) {
+      const raw = Math.max(0, Number(document.getElementById('posMontoPagado')?.value) || 0)
+      return Math.min(raw, total)
+    }
+
+    function buildMixedPayRows() {
+      const rows = document.getElementById('posMixedPayRows')
+      if (!rows) return
+      rows.innerHTML = paymentMethodsList
+        .map(
+          (m) =>
+            `<div class="d-flex align-items-center gap-2 mb-1 flex-wrap">
             <span class="flex-grow-1 text-truncate" style="min-width:100px;max-width:160px;">${esc(m)}</span>
             <div class="input-group input-group-sm" style="width:128px;">
               <span class="input-group-text">$</span>
               <input type="number" class="form-control pos-mix-amt" min="0" step="0.01" data-method="${esc(m)}" placeholder="0" />
             </div>
           </div>`
+        )
+        .join('')
+      rows.querySelectorAll('.pos-mix-amt').forEach((inp) => {
+        inp.addEventListener('input', () => {
+          syncMixedPayPanel()
+          renderCart()
+        })
+      })
+    }
+
+    function syncMixedPayPanel() {
+      const panel = document.getElementById('posMixedPayPanel')
+      const sumEl = document.getElementById('posMixedSum')
+      const targetEl = document.getElementById('posMixedTarget')
+      const warn = document.getElementById('posMixedWarn')
+      if (!panel || !sumEl || !targetEl) return
+      const { total } = getCartMoneyTotals()
+      const payTarget = getPaidNowAmount(total)
+      targetEl.textContent = fmt(payTarget)
+      let s = 0
+      panel.querySelectorAll('.pos-mix-amt').forEach((inp) => {
+        s += Math.max(0, Number(inp.value) || 0)
+      })
+      sumEl.textContent = fmt(s)
+      const ok = Math.abs(s - payTarget) <= 0.02
+      const parts = Array.from(panel.querySelectorAll('.pos-mix-amt')).filter(
+        (inp) => Math.max(0, Number(inp.value) || 0) > 0
       )
-      .join('')
-    rows.querySelectorAll('.pos-mix-amt').forEach((inp) => {
-      inp.addEventListener('input', () => {
+      if (warn) warn.classList.toggle('d-none', ok || payMode !== 'mixed' || !cart.length)
+    }
+
+    function getMixedPaymentsPayload(total) {
+      const panel = document.getElementById('posMixedPayPanel')
+      if (!panel) return { error: 'Panel no disponible' }
+      const payTarget = getPaidNowAmount(total)
+      const parts = []
+      panel.querySelectorAll('.pos-mix-amt').forEach((inp) => {
+        const v = Math.max(0, Number(inp.value) || 0)
+        if (v > 0) parts.push({ metodo: inp.getAttribute('data-method') || '', monto: v })
+      })
+      if (parts.length < 2)
+        return { error: 'En pago mixto use al menos dos medios con monto mayor a cero.' }
+      const sum = parts.reduce((a, p) => a + p.monto, 0)
+      if (Math.abs(sum - payTarget) > 0.02)
+        return { error: 'La suma de los montos debe igualar el monto pagado ahora.' }
+      return { pagos_mixtos: parts }
+    }
+
+    function isPaymentSelectionValid() {
+      if (!cart.length) return false
+      const { total } = getCartMoneyTotals()
+      const paidNow = getPaidNowAmount(total)
+      if (paidNow <= 0.01) return false
+      if (payMode === 'single') return !!selectedPayment
+      const r = getMixedPaymentsPayload(total)
+      return !r.error
+    }
+
+    function selectMixedMode(container) {
+      payMode = 'mixed'
+      selectedPayment = ''
+      container.querySelectorAll('.pay-btn').forEach((b) => {
+        b.classList.remove('btn-primary', 'active')
+        b.classList.add('btn-outline-secondary')
+      })
+      const mixBtn = container.querySelector('.pay-btn-mixto')
+      if (mixBtn) {
+        mixBtn.classList.remove('btn-outline-secondary')
+        mixBtn.classList.add('btn-primary', 'active')
+      }
+      document.getElementById('posMixedPayPanel').classList.remove('d-none')
+      buildMixedPayRows()
+      syncMixedPayPanel()
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      Promise.all([loadProducts(), loadClients(), loadPaymentMethods()])
+
+      document
+        .getElementById('posSearch')
+        .addEventListener('input', (e) => renderProducts(e.target.value))
+      document.getElementById('stockPills').addEventListener('click', (e) => {
+        const btn = e.target.closest('.cat-pill')
+        if (!btn || !btn.closest('#stockPills')) return
+        document
+          .querySelectorAll('#stockPills .cat-pill')
+          .forEach((b) => b.classList.remove('active'))
+        btn.classList.add('active')
+        posStockFilter = btn.getAttribute('data-stock') || ''
+        renderProducts(document.getElementById('posSearch').value)
+      })
+      document.getElementById('clearCartBtn').addEventListener('click', clearCart)
+      document.getElementById('completeSaleBtn').addEventListener('click', completeSale)
+      document.getElementById('posDescuento').addEventListener('input', renderCart)
+      document.getElementById('posMontoPagado').addEventListener('input', () => {
         syncMixedPayPanel()
         renderCart()
       })
-    })
-  }
+      document.getElementById('addClientBtn').addEventListener('click', openQuickClient)
+      document.getElementById('clearClientBtn').addEventListener('click', clearClient)
+      document.getElementById('quickClientForm').addEventListener('submit', createQuickClient)
+      initClientSearch()
 
-  function syncMixedPayPanel() {
-    const panel = document.getElementById('posMixedPayPanel')
-    const sumEl = document.getElementById('posMixedSum')
-    const targetEl = document.getElementById('posMixedTarget')
-    const warn = document.getElementById('posMixedWarn')
-    if (!panel || !sumEl || !targetEl) return
-    const { total } = getCartMoneyTotals()
-    targetEl.textContent = fmt(total)
-    let s = 0
-    panel.querySelectorAll('.pos-mix-amt').forEach((inp) => {
-      s += Math.max(0, Number(inp.value) || 0)
+      document.getElementById('posConfirmSaleSubmit').addEventListener('click', submitConfirmedSale)
+      document
+        .getElementById('posConfirmSaleModal')
+        .addEventListener('hidden.bs.modal', onConfirmModalHidden)
+      document
+        .getElementById('posReceiptOpenBtn')
+        .addEventListener('click', () => openLastReceipt(false))
+      document
+        .getElementById('posReceiptDownloadBtn')
+        .addEventListener('click', downloadLastReceipt)
+      document
+        .getElementById('posReceiptPrintBtn')
+        .addEventListener('click', () => openLastReceipt(true))
     })
-    sumEl.textContent = fmt(s)
-    const ok = Math.abs(s - total) <= 0.02
-    const parts = Array.from(panel.querySelectorAll('.pos-mix-amt')).filter(
-      (inp) => Math.max(0, Number(inp.value) || 0) > 0
-    )
-    if (warn) warn.classList.toggle('d-none', ok || payMode !== 'mixed' || !cart.length)
-  }
 
-  function getMixedPaymentsPayload(total) {
-    const panel = document.getElementById('posMixedPayPanel')
-    if (!panel) return { error: 'Panel no disponible' }
-    const parts = []
-    panel.querySelectorAll('.pos-mix-amt').forEach((inp) => {
-      const v = Math.max(0, Number(inp.value) || 0)
-      if (v > 0) parts.push({ metodo: inp.getAttribute('data-method') || '', monto: v })
-    })
-    if (parts.length < 2) return { error: 'En pago mixto use al menos dos medios con monto mayor a cero.' }
-    const sum = parts.reduce((a, p) => a + p.monto, 0)
-    if (Math.abs(sum - total) > 0.02) return { error: 'La suma de los montos debe igualar el total a pagar.' }
-    return { pagos_mixtos: parts }
-  }
-
-  function isPaymentSelectionValid() {
-    if (!cart.length) return false
-    const { total } = getCartMoneyTotals()
-    if (payMode === 'single') return !!selectedPayment
-    const r = getMixedPaymentsPayload(total)
-    return !r.error
-  }
-
-  function selectMixedMode(container) {
-    payMode = 'mixed'
-    selectedPayment = ''
-    container.querySelectorAll('.pay-btn').forEach((b) => {
-      b.classList.remove('btn-primary', 'active')
-      b.classList.add('btn-outline-secondary')
-    })
-    const mixBtn = container.querySelector('.pay-btn-mixto')
-    if (mixBtn) {
-      mixBtn.classList.remove('btn-outline-secondary')
-      mixBtn.classList.add('btn-primary', 'active')
+    function revokePreviewBlob() {
+      if (previewBlobUrl) {
+        try {
+          URL.revokeObjectURL(previewBlobUrl)
+        } catch {
+          /* no-op */
+        }
+        previewBlobUrl = null
+      }
     }
-    document.getElementById('posMixedPayPanel').classList.remove('d-none')
-    buildMixedPayRows()
-    syncMixedPayPanel()
-  }
 
-  document.addEventListener('DOMContentLoaded', () => {
-    Promise.all([loadProducts(), loadClients(), loadPaymentMethods()])
+    function onConfirmModalHidden() {
+      revokePreviewBlob()
+      const frame = document.getElementById('posReceiptPreviewFrame')
+      if (frame) frame.src = 'about:blank'
+      pendingSalePayload = null
+    }
 
-    document.getElementById('posSearch').addEventListener('input', (e) => renderProducts(e.target.value))
-    document.getElementById('stockPills').addEventListener('click', (e) => {
-      const btn = e.target.closest('.cat-pill')
-      if (!btn || !btn.closest('#stockPills')) return
-      document.querySelectorAll('#stockPills .cat-pill').forEach((b) => b.classList.remove('active'))
-      btn.classList.add('active')
-      posStockFilter = btn.getAttribute('data-stock') || ''
-      renderProducts(document.getElementById('posSearch').value)
-    })
-    document.getElementById('clearCartBtn').addEventListener('click', clearCart)
-    document.getElementById('completeSaleBtn').addEventListener('click', completeSale)
-    document.getElementById('posDescuento').addEventListener('input', renderCart)
-    document.getElementById('addClientBtn').addEventListener('click', openQuickClient)
-    document.getElementById('clearClientBtn').addEventListener('click', clearClient)
-    document.getElementById('quickClientForm').addEventListener('submit', createQuickClient)
-    initClientSearch()
+    function buildDraftSaleForPreview(subtotalPre, discSend) {
+      const user = window.__authUser || {}
+      const total = Math.max(0, subtotalPre - discSend)
+      const totalPagado = getPaidNowAmount(total)
+      const saldoPendiente = Math.max(0, total - totalPagado)
+      let cliente_id = null
+      if (selectedClientId) {
+        const c = allClients.find((x) => x._id === selectedClientId)
+        if (c) cliente_id = { nombre: c.nombre, celular: c.celular || '' }
+        else {
+          const nm = document.getElementById('selectedClientName')
+          cliente_id = { nombre: nm ? nm.textContent.trim() : 'Cliente', celular: '' }
+        }
+      }
+      let pagos_mixtos = undefined
+      let metodoPago = selectedPayment
+      if (payMode === 'mixed') {
+        const r = getMixedPaymentsPayload(total)
+        if (!r.error) {
+          pagos_mixtos = r.pagos_mixtos
+          metodoPago = 'Mixto'
+        }
+      }
 
-    document.getElementById('posConfirmSaleSubmit').addEventListener('click', submitConfirmedSale)
-    document.getElementById('posConfirmSaleModal').addEventListener('hidden.bs.modal', onConfirmModalHidden)
-    document.getElementById('posReceiptOpenBtn').addEventListener('click', () => openLastReceipt(false))
-    document.getElementById('posReceiptDownloadBtn').addEventListener('click', downloadLastReceipt)
-    document.getElementById('posReceiptPrintBtn').addEventListener('click', () => openLastReceipt(true))
-  })
+      return {
+        _id: '__draft__',
+        fecha: new Date(),
+        cliente_id,
+        vendedor_id: user.nombre ? { nombre: user.nombre } : null,
+        subtotal: subtotalPre,
+        descuento_monto: discSend,
+        total,
+        total_pagado: totalPagado,
+        saldo_pendiente: saldoPendiente,
+        estado_cobro:
+          saldoPendiente <= 0.01 ? 'pagada' : totalPagado <= 0.01 ? 'pendiente' : 'parcial',
+        metodo_pago: metodoPago,
+        pagos_mixtos,
+        observacion: document.getElementById('posObservacion').value.trim(),
+        estado: 'activa'
+      }
+    }
 
-  function revokePreviewBlob() {
-    if (previewBlobUrl) {
+    function buildDraftDetailsFromCart() {
+      return cart.map((c) => {
+        const p = allProducts.find((ap) => ap._id === c.producto_id)
+        return {
+          producto_id: {
+            nombre: p?.nombre || c.nombre || '—',
+            codigo: p?.codigo || c.codigo || '—'
+          },
+          cantidad: c.cantidad,
+          precio_unitario: c.precio_unitario,
+          subtotal: c.cantidad * c.precio_unitario
+        }
+      })
+    }
+
+    function htmlForLastReceipt() {
+      if (!lastRegisteredReceipt) return ''
+      const buildFn = window.NoryxBuildSaleReceiptHtml
+      if (typeof buildFn !== 'function') return ''
+      return buildFn(lastRegisteredReceipt.sale, lastRegisteredReceipt.details, {
+        logoUrl: window.__RECEIPT_LOGO_URL
+      })
+    }
+
+    function receiptFileBaseName() {
+      const n = lastRegisteredReceipt?.sale?.numero_comprobante
+      if (n != null && Number.isFinite(Number(n))) return `Recibo-${Number(n)}`
+      return 'Recibo-borrador'
+    }
+
+    function openLastReceipt(withAutoPrint) {
+      if (!lastRegisteredReceipt) return
+      if (withAutoPrint && typeof window.NoryxPrintSaleReceipt === 'function') {
+        window.NoryxPrintSaleReceipt(lastRegisteredReceipt.sale, lastRegisteredReceipt.details, {
+          logoUrl: window.__RECEIPT_LOGO_URL
+        })
+        return
+      }
+      const html = htmlForLastReceipt()
+      if (html && typeof window.NoryxOpenReceiptHtmlInNewTab === 'function') {
+        window.NoryxOpenReceiptHtmlInNewTab(html)
+      }
+    }
+
+    function downloadLastReceipt() {
+      const html = htmlForLastReceipt()
+      if (html && typeof window.NoryxDownloadReceiptHtml === 'function') {
+        window.NoryxDownloadReceiptHtml(html, receiptFileBaseName())
+      }
+    }
+
+    // ── Categories ──────────────────────────────────────────────────────
+    async function loadCategories() {
       try {
-        URL.revokeObjectURL(previewBlobUrl)
+        const res = await fetch(API + '/api/categories')
+        allCategories = (await res.json()).filter((c) => c.activo)
+        renderCatPills()
       } catch {
         /* no-op */
       }
-      previewBlobUrl = null
-    }
-  }
-
-  function onConfirmModalHidden() {
-    revokePreviewBlob()
-    const frame = document.getElementById('posReceiptPreviewFrame')
-    if (frame) frame.src = 'about:blank'
-    pendingSalePayload = null
-  }
-
-  function buildDraftSaleForPreview(subtotalPre, discSend) {
-    const user = window.__authUser || {}
-    const total = Math.max(0, subtotalPre - discSend)
-    let cliente_id = null
-    if (selectedClientId) {
-      const c = allClients.find((x) => x._id === selectedClientId)
-      if (c) cliente_id = { nombre: c.nombre, celular: c.celular || '' }
-      else {
-        const nm = document.getElementById('selectedClientName')
-        cliente_id = { nombre: nm ? nm.textContent.trim() : 'Cliente', celular: '' }
-      }
-    }
-    let pagos_mixtos = undefined
-    let metodoPago = selectedPayment
-    if (payMode === 'mixed') {
-      const r = getMixedPaymentsPayload(total)
-      if (!r.error) {
-        pagos_mixtos = r.pagos_mixtos
-        metodoPago = 'Mixto'
-      }
     }
 
-    return {
-      _id: '__draft__',
-      fecha: new Date(),
-      cliente_id,
-      vendedor_id: user.nombre ? { nombre: user.nombre } : null,
-      subtotal: subtotalPre,
-      descuento_monto: discSend,
-      total,
-      metodo_pago: metodoPago,
-      pagos_mixtos,
-      observacion: document.getElementById('posObservacion').value.trim(),
-      estado: 'activa'
-    }
-  }
-
-  function buildDraftDetailsFromCart() {
-    return cart.map((c) => {
-      const p = allProducts.find((ap) => ap._id === c.producto_id)
-      return {
-        producto_id: {
-          nombre: p?.nombre || c.nombre || '—',
-          codigo: p?.codigo || c.codigo || '—'
-        },
-        cantidad: c.cantidad,
-        precio_unitario: c.precio_unitario,
-        subtotal: c.cantidad * c.precio_unitario
-      }
-    })
-  }
-
-  function htmlForLastReceipt() {
-    if (!lastRegisteredReceipt) return ''
-    const buildFn = window.NoryxBuildSaleReceiptHtml
-    if (typeof buildFn !== 'function') return ''
-    return buildFn(lastRegisteredReceipt.sale, lastRegisteredReceipt.details, {
-      logoUrl: window.__RECEIPT_LOGO_URL
-    })
-  }
-
-  function receiptFileBaseName() {
-    const n = lastRegisteredReceipt?.sale?.numero_comprobante
-    if (n != null && Number.isFinite(Number(n))) return `Recibo-${Number(n)}`
-    return 'Recibo-borrador'
-  }
-
-  function openLastReceipt(withAutoPrint) {
-    if (!lastRegisteredReceipt) return
-    if (withAutoPrint && typeof window.NoryxPrintSaleReceipt === 'function') {
-      window.NoryxPrintSaleReceipt(lastRegisteredReceipt.sale, lastRegisteredReceipt.details, {
-        logoUrl: window.__RECEIPT_LOGO_URL
+    function renderCatPills() {
+      const container = document.getElementById('catPills')
+      const extra = allCategories
+        .map((c) => `<button class="cat-pill" data-cat="${c._id}">${esc(c.nombre)}</button>`)
+        .join('')
+      container.innerHTML = `<button class="cat-pill active" data-cat="">Todos</button>${extra}`
+      container.querySelectorAll('.cat-pill').forEach((btn) => {
+        btn.addEventListener('click', function () {
+          container.querySelectorAll('.cat-pill').forEach((b) => b.classList.remove('active'))
+          this.classList.add('active')
+          currentCat = this.dataset.cat
+          renderProducts(document.getElementById('posSearch').value)
+        })
       })
-      return
     }
-    const html = htmlForLastReceipt()
-    if (html && typeof window.NoryxOpenReceiptHtmlInNewTab === 'function') {
-      window.NoryxOpenReceiptHtmlInNewTab(html)
+
+    // ── Products ─────────────────────────────────────────────────────────
+    async function loadProducts() {
+      try {
+        const [prodRes] = await Promise.all([fetch(API + '/api/products'), loadCategories()])
+        allProducts = (await prodRes.json()).filter((p) => p.activo)
+        renderProducts('')
+      } catch {
+        document.getElementById('posProductGrid').innerHTML =
+          '<div class="col-12 text-center text-danger py-4"><i class="ri-error-warning-line"></i> Error al cargar productos</div>'
+      }
     }
-  }
 
-  function downloadLastReceipt() {
-    const html = htmlForLastReceipt()
-    if (html && typeof window.NoryxDownloadReceiptHtml === 'function') {
-      window.NoryxDownloadReceiptHtml(html, receiptFileBaseName())
-    }
-  }
-
-  // ── Categories ──────────────────────────────────────────────────────
-  async function loadCategories() {
-    try {
-      const res = await fetch(API + '/api/categories')
-      allCategories = (await res.json()).filter((c) => c.activo)
-      renderCatPills()
-    } catch { /* no-op */ }
-  }
-
-  function renderCatPills() {
-    const container = document.getElementById('catPills')
-    const extra = allCategories.map((c) =>
-      `<button class="cat-pill" data-cat="${c._id}">${esc(c.nombre)}</button>`
-    ).join('')
-    container.innerHTML = `<button class="cat-pill active" data-cat="">Todos</button>${extra}`
-    container.querySelectorAll('.cat-pill').forEach((btn) => {
-      btn.addEventListener('click', function () {
-        container.querySelectorAll('.cat-pill').forEach((b) => b.classList.remove('active'))
-        this.classList.add('active')
-        currentCat = this.dataset.cat
-        renderProducts(document.getElementById('posSearch').value)
+    function renderProducts(query) {
+      const q = (query || '').toLowerCase().trim()
+      const filtered = allProducts.filter((p) => {
+        const matchCat = !currentCat || (p.categoria_id?._id || p.categoria_id) === currentCat
+        if (!matchCat) return false
+        const stock = Number(p.stock || 0)
+        const minStock = Number.isFinite(Number(p.stock_minimo)) ? Number(p.stock_minimo) : 10
+        if (posStockFilter === 'in_stock' && !(stock > minStock)) return false
+        if (posStockFilter === 'low_stock' && !(stock > 0 && stock <= minStock)) return false
+        if (posStockFilter === 'out_of_stock' && stock !== 0) return false
+        const desc = (p.descripcion || '').toLowerCase()
+        const matchText =
+          !q ||
+          (p.nombre || '').toLowerCase().includes(q) ||
+          (p.codigo || '').toLowerCase().includes(q) ||
+          desc.includes(q)
+        return matchText
       })
-    })
-  }
 
-  // ── Products ─────────────────────────────────────────────────────────
-  async function loadProducts() {
-    try {
-      const [prodRes] = await Promise.all([
-        fetch(API + '/api/products'),
-        loadCategories()
-      ])
-      allProducts = (await prodRes.json()).filter((p) => p.activo)
-      renderProducts('')
-    } catch {
-      document.getElementById('posProductGrid').innerHTML =
-        '<div class="col-12 text-center text-danger py-4"><i class="ri-error-warning-line"></i> Error al cargar productos</div>'
-    }
-  }
+      const grid = document.getElementById('posProductGrid')
+      if (!filtered.length) {
+        grid.innerHTML =
+          '<div class="col-12 text-center text-muted py-5"><i class="ri-box-3-line fs-2 d-block mb-2"></i>Sin resultados</div>'
+        return
+      }
 
-  function renderProducts(query) {
-    const q = (query || '').toLowerCase().trim()
-    const filtered = allProducts.filter((p) => {
-      const matchCat = !currentCat || (p.categoria_id?._id || p.categoria_id) === currentCat
-      if (!matchCat) return false
-      const stock = Number(p.stock || 0)
-      const minStock = Number.isFinite(Number(p.stock_minimo)) ? Number(p.stock_minimo) : 10
-      if (posStockFilter === 'in_stock' && !(stock > minStock)) return false
-      if (posStockFilter === 'low_stock' && !(stock > 0 && stock <= minStock)) return false
-      if (posStockFilter === 'out_of_stock' && stock !== 0) return false
-      const desc = (p.descripcion || '').toLowerCase()
-      const matchText =
-        !q ||
-        (p.nombre || '').toLowerCase().includes(q) ||
-        (p.codigo || '').toLowerCase().includes(q) ||
-        desc.includes(q)
-      return matchText
-    })
+      grid.innerHTML = filtered
+        .map((p) => {
+          const stock = Number(p.stock || 0)
+          const minStock = Number.isFinite(Number(p.stock_minimo)) ? Number(p.stock_minimo) : 10
+          const isOut = stock === 0
+          const isLow = !isOut && stock <= minStock
+          const stockClass = isOut ? 'danger' : isLow ? 'warning' : 'success'
+          const stockLabel = isOut ? 'Sin stock' : `${stock} unid.`
+          const accentBg = isOut
+            ? '#dc3545'
+            : isLow
+              ? '#ffc107'
+              : 'linear-gradient(90deg,var(--bs-primary),#0dcaf0)'
+          const catName = p.categoria_id?.nombre || ''
 
-    const grid = document.getElementById('posProductGrid')
-    if (!filtered.length) {
-      grid.innerHTML = '<div class="col-12 text-center text-muted py-5"><i class="ri-box-3-line fs-2 d-block mb-2"></i>Sin resultados</div>'
-      return
-    }
-
-    grid.innerHTML = filtered.map((p) => {
-      const stock = Number(p.stock || 0)
-      const minStock = Number.isFinite(Number(p.stock_minimo)) ? Number(p.stock_minimo) : 10
-      const isOut = stock === 0
-      const isLow = !isOut && stock <= minStock
-      const stockClass = isOut ? 'danger' : isLow ? 'warning' : 'success'
-      const stockLabel = isOut ? 'Sin stock' : `${stock} unid.`
-      const accentBg = isOut ? '#dc3545' : isLow ? '#ffc107' : 'linear-gradient(90deg,var(--bs-primary),#0dcaf0)'
-      const catName = p.categoria_id?.nombre || ''
-
-      return `
+          return `
         <div class="col-lg-4 col-md-4 col-6">
           <div class="card card-body p-3 pos-product-card h-100 ${isOut ? 'out-of-stock' : ''}"
-            data-id="${p._id}" data-nombre="${esc(p.nombre)}" data-codigo="${esc(p.codigo||'')}"
-            data-precio="${p.precio_venta||0}" data-stock="${stock}">
+            data-id="${p._id}" data-nombre="${esc(p.nombre)}" data-codigo="${esc(p.codigo || '')}"
+            data-precio="${p.precio_venta || 0}" data-stock="${stock}">
             <div class="pos-card-accent" style="background:${accentBg};"></div>
             <div class="d-flex justify-content-between align-items-start mb-2">
               <span class="badge text-bg-${stockClass}" style="font-size:.62rem;">${stockLabel}</span>
@@ -687,98 +888,133 @@ const receiptLogoUrl = getAssetPrefix('/assets/img/noryx/NoryxStoreLogo.jpeg')
             <div class="mt-auto fw-bold text-primary">${fmt(p.precio_venta)}</div>
           </div>
         </div>`
-    }).join('')
-
-    grid.querySelectorAll('.pos-product-card:not(.out-of-stock)').forEach((card) => {
-      card.addEventListener('click', () =>
-        addToCart({
-          producto_id: card.dataset.id,
-          nombre: card.dataset.nombre,
-          codigo: card.dataset.codigo,
-          precio_unitario: Number(card.dataset.precio),
-          stockDisponible: Number(card.dataset.stock)
         })
-      )
-    })
-  }
+        .join('')
 
-  // ── Cart ─────────────────────────────────────────────────────────────
-  function addToCart(item) {
-    const existing = cart.find((c) => c.producto_id === item.producto_id)
-    if (existing) existing.cantidad += 1
-    else cart.push({ ...item, cantidad: 1 })
-    renderCart()
-  }
-
-  function removeFromCart(id) { cart = cart.filter((c) => c.producto_id !== id); renderCart() }
-
-  function updateQty(id, val) {
-    const item = cart.find((c) => c.producto_id === id)
-    if (!item) return
-    const qty = parseInt(val, 10)
-    if (isNaN(qty) || qty < 1) return
-    item.cantidad = qty
-    renderCart()
-  }
-
-  function clearCart() { cart = []; renderCart() }
-
-  function hasStockWarning() { return cart.some((c) => c.cantidad > c.stockDisponible) }
-
-  function renderCart() {
-    const empty = document.getElementById('cartEmpty')
-    const body  = document.getElementById('cartBody')
-    const footer = document.getElementById('cartFooter')
-    const tbody = document.getElementById('cartTableBody')
-    const countBadge = document.getElementById('cartCount')
-    const itemsCount = document.getElementById('cartItemsCount')
-    const totalEl = document.getElementById('cartTotal')
-    const completeBtn = document.getElementById('completeSaleBtn')
-    const warnBanner = document.getElementById('stockWarningBanner')
-
-    if (!cart.length) {
-      empty.classList.remove('d-none')
-      body.classList.add('d-none')
-      footer.classList.add('d-none')
-      countBadge.classList.add('d-none')
-      warnBanner.classList.add('d-none')
-      completeBtn.disabled = true
-      completeBtn.innerHTML = '<i class="ri-check-double-line me-2"></i>Completar Venta'
-      completeBtn.className = 'btn btn-primary w-100 py-2 fw-semibold'
-      return
+      grid.querySelectorAll('.pos-product-card:not(.out-of-stock)').forEach((card) => {
+        card.addEventListener('click', () =>
+          addToCart({
+            producto_id: card.dataset.id,
+            nombre: card.dataset.nombre,
+            codigo: card.dataset.codigo,
+            precio_unitario: Number(card.dataset.precio),
+            stockDisponible: Number(card.dataset.stock)
+          })
+        )
+      })
     }
 
-    empty.classList.add('d-none')
-    body.classList.remove('d-none')
-    footer.classList.remove('d-none')
-    countBadge.classList.remove('d-none')
-
-    const subtotal = cart.reduce((s, c) => s + c.precio_unitario * c.cantidad, 0)
-    const discRaw = Math.max(0, Number(document.getElementById('posDescuento').value) || 0)
-    const descuento = Math.min(discRaw, subtotal)
-    const total = Math.max(0, subtotal - descuento)
-    const totalItems = cart.reduce((s, c) => s + c.cantidad, 0)
-    const warn = hasStockWarning()
-
-    countBadge.textContent = String(totalItems)
-    itemsCount.textContent = String(totalItems)
-    const subEl = document.getElementById('cartSubtotal')
-    const discRow = document.getElementById('cartDiscountRow')
-    const discAmt = document.getElementById('cartDiscountAmt')
-    if (subEl) subEl.textContent = fmt(subtotal)
-    if (descuento > 0 && discRow && discAmt) {
-      discRow.classList.remove('d-none')
-      discAmt.textContent = '-' + fmt(descuento)
-    } else if (discRow) {
-      discRow.classList.add('d-none')
+    // ── Cart ─────────────────────────────────────────────────────────────
+    function addToCart(item) {
+      const existing = cart.find((c) => c.producto_id === item.producto_id)
+      if (existing) existing.cantidad += 1
+      else cart.push({ ...item, cantidad: 1 })
+      renderCart()
     }
-    totalEl.textContent = fmt(total)
-    warnBanner.classList.toggle('d-none', !warn)
 
-    tbody.innerHTML = cart.map((item) => {
-      const over = item.cantidad > item.stockDisponible
-      const warnIcon = over ? `<i class="ri-error-warning-line text-warning ms-1" title="Supera stock (${item.stockDisponible})"></i>` : ''
-      return `
+    function removeFromCart(id) {
+      cart = cart.filter((c) => c.producto_id !== id)
+      renderCart()
+    }
+
+    function updateQty(id, val) {
+      const item = cart.find((c) => c.producto_id === id)
+      if (!item) return
+      const qty = parseInt(val, 10)
+      if (isNaN(qty) || qty < 1) return
+      item.cantidad = qty
+      renderCart()
+    }
+
+    function clearCart() {
+      cart = []
+      renderCart()
+    }
+
+    function hasStockWarning() {
+      return cart.some((c) => c.cantidad > c.stockDisponible)
+    }
+
+    function renderCart() {
+      const empty = document.getElementById('cartEmpty')
+      const body = document.getElementById('cartBody')
+      const footer = document.getElementById('cartFooter')
+      const tbody = document.getElementById('cartTableBody')
+      const countBadge = document.getElementById('cartCount')
+      const itemsCount = document.getElementById('cartItemsCount')
+      const totalEl = document.getElementById('cartTotal')
+      const completeBtn = document.getElementById('completeSaleBtn')
+      const warnBanner = document.getElementById('stockWarningBanner')
+
+      if (!cart.length) {
+        empty.classList.remove('d-none')
+        body.classList.add('d-none')
+        footer.classList.add('d-none')
+        countBadge.classList.add('d-none')
+        warnBanner.classList.add('d-none')
+        completeBtn.disabled = true
+        completeBtn.innerHTML = '<i class="ri-check-double-line me-2"></i>Completar Venta'
+        completeBtn.className = 'btn btn-primary w-100 py-2 fw-semibold'
+        return
+      }
+
+      empty.classList.add('d-none')
+      body.classList.remove('d-none')
+      footer.classList.remove('d-none')
+      countBadge.classList.remove('d-none')
+
+      const subtotal = cart.reduce((s, c) => s + c.precio_unitario * c.cantidad, 0)
+      const discRaw = Math.max(0, Number(document.getElementById('posDescuento').value) || 0)
+      const descuento = Math.min(discRaw, subtotal)
+      const total = Math.max(0, subtotal - descuento)
+      const paidInput = document.getElementById('posMontoPagado')
+      let paidRaw = Math.max(0, Number(paidInput?.value) || 0)
+      if (paidRaw <= 0.01) {
+        paidRaw = total
+        if (paidInput) paidInput.value = String(total.toFixed(2))
+      } else if (paidRaw > total + 0.01) {
+        paidRaw = total
+        if (paidInput) paidInput.value = String(total.toFixed(2))
+      }
+      const totalItems = cart.reduce((s, c) => s + c.cantidad, 0)
+      const warn = hasStockWarning()
+
+      countBadge.textContent = String(totalItems)
+      itemsCount.textContent = String(totalItems)
+      const subEl = document.getElementById('cartSubtotal')
+      const discRow = document.getElementById('cartDiscountRow')
+      const discAmt = document.getElementById('cartDiscountAmt')
+      const paidNowRow = document.getElementById('cartPaidNowRow')
+      const paidNowAmt = document.getElementById('cartPaidNowAmt')
+      const pendingRow = document.getElementById('cartPendingRow')
+      const pendingAmt = document.getElementById('cartPendingAmt')
+      const paidNow = Math.min(paidRaw, total)
+      const pending = Math.max(0, total - paidNow)
+      if (subEl) subEl.textContent = fmt(subtotal)
+      if (descuento > 0 && discRow && discAmt) {
+        discRow.classList.remove('d-none')
+        discAmt.textContent = '-' + fmt(descuento)
+      } else if (discRow) {
+        discRow.classList.add('d-none')
+      }
+      totalEl.textContent = fmt(total)
+      if (paidNowRow && paidNowAmt) {
+        paidNowRow.classList.toggle('d-none', paidNow <= 0.01)
+        paidNowAmt.textContent = fmt(paidNow)
+      }
+      if (pendingRow && pendingAmt) {
+        pendingRow.classList.toggle('d-none', pending <= 0.01)
+        pendingAmt.textContent = fmt(pending)
+      }
+      warnBanner.classList.toggle('d-none', !warn)
+
+      tbody.innerHTML = cart
+        .map((item) => {
+          const over = item.cantidad > item.stockDisponible
+          const warnIcon = over
+            ? `<i class="ri-error-warning-line text-warning ms-1" title="Supera stock (${item.stockDisponible})"></i>`
+            : ''
+          return `
         <tr class="${over ? 'cart-row-warn' : ''}">
           <td class="ps-3 align-middle" style="min-width:120px;">
             <div class="fw-semibold d-flex align-items-center" style="font-size:.82rem;">${esc(item.nombre)}${warnIcon}</div>
@@ -792,311 +1028,381 @@ const receiptLogoUrl = getAssetPrefix('/assets/img/noryx/NoryxStoreLogo.jpeg')
               <button class="btn btn-outline-secondary qty-btn qty-plus" data-id="${item.producto_id}">+</button>
             </div>
           </td>
-          <td class="text-end align-middle fw-semibold ${over?'text-warning':''}" style="font-size:.82rem;">${fmt(item.precio_unitario * item.cantidad)}</td>
+          <td class="text-end align-middle fw-semibold ${over ? 'text-warning' : ''}" style="font-size:.82rem;">${fmt(item.precio_unitario * item.cantidad)}</td>
           <td class="align-middle pe-2">
             <button class="btn btn-sm btn-icon text-danger remove-item" data-id="${item.producto_id}"><i class="ri-close-line"></i></button>
           </td>
         </tr>`
-    }).join('')
+        })
+        .join('')
 
-    tbody.querySelectorAll('.qty-minus').forEach((btn) => {
-      btn.addEventListener('click', () => {
-        const item = cart.find((c) => c.producto_id === btn.dataset.id)
-        if (item) { if (item.cantidad > 1) { item.cantidad--; renderCart() } else removeFromCart(btn.dataset.id) }
+      tbody.querySelectorAll('.qty-minus').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const item = cart.find((c) => c.producto_id === btn.dataset.id)
+          if (item) {
+            if (item.cantidad > 1) {
+              item.cantidad--
+              renderCart()
+            } else removeFromCart(btn.dataset.id)
+          }
+        })
       })
-    })
-    tbody.querySelectorAll('.qty-plus').forEach((btn) => {
-      btn.addEventListener('click', () => {
-        const item = cart.find((c) => c.producto_id === btn.dataset.id)
-        if (item) { item.cantidad++; renderCart() }
+      tbody.querySelectorAll('.qty-plus').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const item = cart.find((c) => c.producto_id === btn.dataset.id)
+          if (item) {
+            item.cantidad++
+            renderCart()
+          }
+        })
       })
-    })
-    tbody.querySelectorAll('.qty-input').forEach((inp) => {
-      inp.addEventListener('change', () => updateQty(inp.dataset.id, inp.value))
-    })
-    tbody.querySelectorAll('.remove-item').forEach((btn) => {
-      btn.addEventListener('click', () => removeFromCart(btn.dataset.id))
-    })
+      tbody.querySelectorAll('.qty-input').forEach((inp) => {
+        inp.addEventListener('change', () => updateQty(inp.dataset.id, inp.value))
+      })
+      tbody.querySelectorAll('.remove-item').forEach((btn) => {
+        btn.addEventListener('click', () => removeFromCart(btn.dataset.id))
+      })
 
-    completeBtn.disabled = !isPaymentSelectionValid()
-    if (payMode === 'mixed') syncMixedPayPanel()
-    if (warn) {
-      completeBtn.innerHTML = '<i class="ri-error-warning-line me-2"></i>Completar (stock negativo)'
-      completeBtn.className = 'btn btn-warning w-100 py-2 fw-semibold'
-    } else {
-      completeBtn.innerHTML = '<i class="ri-check-double-line me-2"></i>Completar Venta'
-      completeBtn.className = 'btn btn-primary w-100 py-2 fw-semibold'
-    }
-  }
-
-  // ── Clients ──────────────────────────────────────────────────────────
-  async function loadClients() {
-    try {
-      const res = await fetch(API + '/api/clients')
-      allClients = await res.json()
-    } catch { /* no-op */ }
-  }
-
-  function initClientSearch() {
-    const input = document.getElementById('clientSearch')
-    const dropdown = document.getElementById('clientDropdown')
-
-    input.addEventListener('input', () => {
-      const q = input.value.trim().toLowerCase()
-      if (!q) { dropdown.classList.add('d-none'); return }
-      const matches = allClients.filter(
-        (c) => (c.nombre||'').toLowerCase().includes(q) || (c.celular||'').toLowerCase().includes(q)
-      ).slice(0, 8)
-
-      if (!matches.length) {
-        dropdown.innerHTML = '<div class="client-option text-muted">Sin resultados</div>'
+      completeBtn.disabled = !isPaymentSelectionValid()
+      if (payMode === 'mixed') syncMixedPayPanel()
+      if (warn) {
+        completeBtn.innerHTML =
+          '<i class="ri-error-warning-line me-2"></i>Completar (stock negativo)'
+        completeBtn.className = 'btn btn-warning w-100 py-2 fw-semibold'
       } else {
-        dropdown.innerHTML = matches.map((c) =>
-          `<div class="client-option" data-id="${c._id}" data-nombre="${esc(c.nombre)}">
+        completeBtn.innerHTML = '<i class="ri-check-double-line me-2"></i>Completar Venta'
+        completeBtn.className = 'btn btn-primary w-100 py-2 fw-semibold'
+      }
+    }
+
+    // ── Clients ──────────────────────────────────────────────────────────
+    async function loadClients() {
+      try {
+        const res = await fetch(API + '/api/clients')
+        allClients = await res.json()
+      } catch {
+        /* no-op */
+      }
+    }
+
+    function initClientSearch() {
+      const input = document.getElementById('clientSearch')
+      const dropdown = document.getElementById('clientDropdown')
+
+      input.addEventListener('input', () => {
+        const q = input.value.trim().toLowerCase()
+        if (!q) {
+          dropdown.classList.add('d-none')
+          return
+        }
+        const matches = allClients
+          .filter(
+            (c) =>
+              (c.nombre || '').toLowerCase().includes(q) ||
+              (c.celular || '').toLowerCase().includes(q)
+          )
+          .slice(0, 8)
+
+        if (!matches.length) {
+          dropdown.innerHTML = '<div class="client-option text-muted">Sin resultados</div>'
+        } else {
+          dropdown.innerHTML = matches
+            .map(
+              (c) =>
+                `<div class="client-option" data-id="${c._id}" data-nombre="${esc(c.nombre)}">
             <span class="fw-medium">${esc(c.nombre)}</span>
             ${c.celular ? `<span class="text-muted ms-2 small">${esc(c.celular)}</span>` : ''}
           </div>`
-        ).join('')
-        dropdown.querySelectorAll('.client-option[data-id]').forEach((opt) =>
-          opt.addEventListener('click', () => selectClient(opt.dataset.id, opt.dataset.nombre))
-        )
-      }
-      dropdown.classList.remove('d-none')
-    })
-
-    document.addEventListener('click', (e) => {
-      if (!input.contains(e.target) && !dropdown.contains(e.target)) dropdown.classList.add('d-none')
-    })
-  }
-
-  function selectClient(id, nombre) {
-    selectedClientId = id
-    document.getElementById('selectedClientId').value = id
-    document.getElementById('selectedClientName').textContent = nombre
-    document.getElementById('selectedClientBadge').classList.remove('d-none')
-    document.getElementById('clientSearch').value = ''
-    document.getElementById('clientDropdown').classList.add('d-none')
-  }
-
-  function clearClient() {
-    selectedClientId = ''
-    document.getElementById('selectedClientId').value = ''
-    document.getElementById('selectedClientBadge').classList.add('d-none')
-  }
-
-  function openQuickClient() {
-    document.getElementById('quickClientForm').reset()
-    document.getElementById('qcCelular').classList.remove('is-invalid')
-    new bootstrap.Modal(document.getElementById('quickClientModal')).show()
-  }
-
-  async function createQuickClient(e) {
-    e.preventDefault()
-    const nombre = document.getElementById('qcNombre').value.trim()
-    const celular = document.getElementById('qcCelular').value.trim()
-    const celInp = document.getElementById('qcCelular')
-    if (!nombre) return
-    if (!celular) {
-      celInp.classList.add('is-invalid')
-      return
-    }
-    celInp.classList.remove('is-invalid')
-    const btn = document.getElementById('qcSubmit')
-    btn.disabled = true; btn.textContent = 'Guardando...'
-    const user = window.__authUser || {}
-    try {
-      const res = await fetch(API + '/api/clients', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-user-id': user.id||'', 'x-user-name': user.nombre||'' },
-        body: JSON.stringify({ nombre, celular })
-      })
-      if (!res.ok) throw new Error()
-      const newClient = await res.json()
-      allClients.unshift(newClient)
-      selectClient(newClient._id, newClient.nombre)
-      bootstrap.Modal.getInstance(document.getElementById('quickClientModal')).hide()
-      showToast(`Cliente "${nombre}" creado.`, 'success')
-    } catch { showToast('Error al crear el cliente', 'danger') }
-    finally { btn.disabled = false; btn.textContent = 'Guardar' }
-  }
-
-  // ── Payment methods ──────────────────────────────────────────────────
-  async function loadPaymentMethods() {
-    try {
-      const res = await fetch(API + '/api/settings/payment-methods')
-      const data = await res.json()
-      renderPaymentButtons(data.methods || ['Efectivo', 'QR'])
-    } catch { renderPaymentButtons(['Efectivo', 'QR']) }
-  }
-
-  function renderPaymentButtons(methods) {
-    paymentMethodsList = Array.isArray(methods) && methods.length ? methods.slice() : ['Efectivo', 'QR']
-    const container = document.getElementById('posPaymentMethods')
-    const parts = paymentMethodsList
-      .map(
-        (m) =>
-          `<button type="button" class="btn btn-sm btn-outline-secondary pay-btn" data-method="${esc(m)}">${esc(m)}</button>`
-      )
-      .join('')
-    const mixBtn = `<button type="button" class="btn btn-sm btn-outline-secondary pay-btn pay-btn-mixto" data-method="__mixto__"><i class="ri-exchange-funds-line me-1" aria-hidden="true"></i>Pago mixto</button>`
-    container.innerHTML = parts + mixBtn
-    container.querySelectorAll('.pay-btn').forEach((btn) => {
-      btn.addEventListener('click', function () {
-        if (this.getAttribute('data-method') === '__mixto__') {
-          selectMixedMode(container)
-        } else {
-          payMode = 'single'
-          selectedPayment = this.getAttribute('data-method') || ''
-          document.getElementById('posMixedPayPanel').classList.add('d-none')
-          container.querySelectorAll('.pay-btn').forEach((b) => {
-            b.classList.remove('btn-primary', 'active')
-            b.classList.add('btn-outline-secondary')
-          })
-          this.classList.remove('btn-outline-secondary')
-          this.classList.add('btn-primary', 'active')
+            )
+            .join('')
+          dropdown
+            .querySelectorAll('.client-option[data-id]')
+            .forEach((opt) =>
+              opt.addEventListener('click', () => selectClient(opt.dataset.id, opt.dataset.nombre))
+            )
         }
-        syncMixedPayPanel()
-        renderCart()
+        dropdown.classList.remove('d-none')
       })
-    })
-  }
 
-  // ── Complete sale: vista previa del recibo, luego confirmar en modal ──
-  async function completeSale() {
-    if (!cart.length) return
-    const { subtotal: subtotalPre, total } = getCartMoneyTotals()
-    if (payMode === 'mixed') {
-      const r = getMixedPaymentsPayload(total)
-      if (r.error) {
-        showToast(r.error, 'warning')
+      document.addEventListener('click', (e) => {
+        if (!input.contains(e.target) && !dropdown.contains(e.target))
+          dropdown.classList.add('d-none')
+      })
+    }
+
+    function selectClient(id, nombre) {
+      selectedClientId = id
+      document.getElementById('selectedClientId').value = id
+      document.getElementById('selectedClientName').textContent = nombre
+      document.getElementById('selectedClientBadge').classList.remove('d-none')
+      document.getElementById('clientSearch').value = ''
+      document.getElementById('clientDropdown').classList.add('d-none')
+    }
+
+    function clearClient() {
+      selectedClientId = ''
+      document.getElementById('selectedClientId').value = ''
+      document.getElementById('selectedClientBadge').classList.add('d-none')
+    }
+
+    function openQuickClient() {
+      document.getElementById('quickClientForm').reset()
+      document.getElementById('qcCelular').classList.remove('is-invalid')
+      new bootstrap.Modal(document.getElementById('quickClientModal')).show()
+    }
+
+    async function createQuickClient(e) {
+      e.preventDefault()
+      const nombre = document.getElementById('qcNombre').value.trim()
+      const celular = document.getElementById('qcCelular').value.trim()
+      const celInp = document.getElementById('qcCelular')
+      if (!nombre) return
+      if (!celular) {
+        celInp.classList.add('is-invalid')
         return
       }
-    } else if (!selectedPayment) return
-
-    if (hasStockWarning()) {
-      const itemsHtml = cart.filter((c) => c.cantidad > c.stockDisponible)
-        .map((c) => `<li><strong>${c.nombre}</strong>: pedido ${c.cantidad}, disponible ${c.stockDisponible}</li>`)
-        .join('')
-      const ok = await window.showConfirm({
-        title: 'Stock insuficiente',
-        message: `Los siguientes productos quedarán con stock negativo:<ul class="text-start mt-2 mb-0 ps-3">${itemsHtml}</ul>`,
-        confirmText: 'Continuar de todas formas',
-        type: 'warning'
-      })
-      if (!ok) return
-    }
-
-    document.getElementById('posReceiptBanner').classList.add('d-none')
-
-    const discSend = Math.min(
-      Math.max(0, Number(document.getElementById('posDescuento').value) || 0),
-      subtotalPre
-    )
-
-    const user = window.__authUser || {}
-    pendingSalePayload = {
-      cliente_id: selectedClientId || null,
-      vendedor_id: user.id || null,
-      observacion: document.getElementById('posObservacion').value.trim(),
-      descuento_monto: discSend,
-      items: cart.map((c) => ({
-        producto_id: c.producto_id,
-        cantidad: c.cantidad,
-        precio_unitario: c.precio_unitario
-      }))
-    }
-    if (payMode === 'mixed') {
-      const r = getMixedPaymentsPayload(total)
-      pendingSalePayload.metodo_pago = 'Mixto'
-      pendingSalePayload.pagos_mixtos = r.pagos_mixtos
-    } else {
-      pendingSalePayload.metodo_pago = selectedPayment
-    }
-
-    const buildFn = window.NoryxBuildSaleReceiptHtml
-    if (typeof buildFn !== 'function') {
-      showToast('No se pudo cargar el módulo del recibo. Recargue la página.', 'danger')
-      pendingSalePayload = null
-      return
-    }
-
-    const draftSale = buildDraftSaleForPreview(subtotalPre, discSend)
-    const draftDetails = buildDraftDetailsFromCart()
-    const html = buildFn(draftSale, draftDetails, { draft: true, logoUrl: window.__RECEIPT_LOGO_URL })
-
-    revokePreviewBlob()
-    previewBlobUrl = URL.createObjectURL(new Blob([html], { type: 'text/html;charset=utf-8' }))
-    document.getElementById('posReceiptPreviewFrame').src = previewBlobUrl
-    {
-      const el = document.getElementById('posConfirmSaleModal')
-      let inst = bootstrap.Modal.getInstance(el)
-      if (!inst) inst = new bootstrap.Modal(el)
-      inst.show()
-    }
-  }
-
-  async function submitConfirmedSale() {
-    if (!pendingSalePayload) return
-    const submitBtn = document.getElementById('posConfirmSaleSubmit')
-    submitBtn.disabled = true
-    submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Guardando...'
-    const user = window.__authUser || {}
-    try {
-      const res = await fetch(API + '/api/sales', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-user-id': user.id || '', 'x-user-name': user.nombre || '' },
-        body: JSON.stringify(pendingSalePayload)
-      })
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}))
-        throw new Error(err.message || 'Error al registrar la venta')
+      celInp.classList.remove('is-invalid')
+      const btn = document.getElementById('qcSubmit')
+      btn.disabled = true
+      btn.textContent = 'Guardando...'
+      const user = window.__authUser || {}
+      try {
+        const res = await fetch(API + '/api/clients', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-user-id': user.id || '',
+            'x-user-name': user.nombre || ''
+          },
+          body: JSON.stringify({ nombre, celular })
+        })
+        if (!res.ok) throw new Error()
+        const newClient = await res.json()
+        allClients.unshift(newClient)
+        selectClient(newClient._id, newClient.nombre)
+        bootstrap.Modal.getInstance(document.getElementById('quickClientModal')).hide()
+        showToast(`Cliente "${nombre}" creado.`, 'success')
+      } catch {
+        showToast('Error al crear el cliente', 'danger')
+      } finally {
+        btn.disabled = false
+        btn.textContent = 'Guardar'
       }
-      const payload = await res.json()
-      const sale = payload.sale
-      const dRes = await fetch(`${API}/api/sales/${sale._id}/details`)
-      const dJson = await dRes.json()
-
-      lastRegisteredReceipt = { sale, details: dJson }
-      pendingSalePayload = null
-      revokePreviewBlob()
-      const frame = document.getElementById('posReceiptPreviewFrame')
-      if (frame) frame.src = 'about:blank'
-
-      bootstrap.Modal.getInstance(document.getElementById('posConfirmSaleModal')).hide()
-
-      document.getElementById('posReceiptBanner').classList.remove('d-none')
-      showToast('Venta registrada. Usa «Descargar recibo» o «Ver recibo» cuando quieras.', 'success')
-
-      clearCart()
-      clearClient()
-      payMode = 'single'
-      selectedPayment = ''
-      document.getElementById('posMixedPayPanel').classList.add('d-none')
-      document.querySelectorAll('.pos-mix-amt').forEach((inp) => {
-        inp.value = ''
-      })
-      document.querySelectorAll('.pay-btn').forEach((b) => {
-        b.classList.remove('btn-primary', 'active')
-        b.classList.add('btn-outline-secondary')
-      })
-      document.getElementById('posObservacion').value = ''
-      document.getElementById('posDescuento').value = '0'
-      await loadProducts()
-      renderCart()
-    } catch (err) {
-      showToast(err.message || 'Error', 'danger')
-    } finally {
-      submitBtn.disabled = false
-      submitBtn.innerHTML = '<i class="ri-check-double-line me-1"></i>Confirmar y registrar venta'
     }
-  }
 
-  // ── Helpers ───────────────────────────────────────────────────────────
-  function showToast(msg, type = 'success') {
-    const el = document.getElementById('posToast')
-    document.getElementById('posToastMsg').textContent = msg
-    el.className = `toast align-items-center border-0 text-bg-${type}`
-    new bootstrap.Toast(el, { delay: 3500 }).show()
-  }
-})()
+    // ── Payment methods ──────────────────────────────────────────────────
+    async function loadPaymentMethods() {
+      try {
+        const res = await fetch(API + '/api/settings/payment-methods')
+        const data = await res.json()
+        renderPaymentButtons(data.methods || ['Efectivo', 'QR'])
+      } catch {
+        renderPaymentButtons(['Efectivo', 'QR'])
+      }
+    }
+
+    function renderPaymentButtons(methods) {
+      paymentMethodsList =
+        Array.isArray(methods) && methods.length ? methods.slice() : ['Efectivo', 'QR']
+      const container = document.getElementById('posPaymentMethods')
+      const parts = paymentMethodsList
+        .map(
+          (m) =>
+            `<button type="button" class="btn btn-sm btn-outline-secondary pay-btn" data-method="${esc(m)}">${esc(m)}</button>`
+        )
+        .join('')
+      const mixBtn = `<button type="button" class="btn btn-sm btn-outline-secondary pay-btn pay-btn-mixto" data-method="__mixto__"><i class="ri-exchange-funds-line me-1" aria-hidden="true"></i>Pago mixto</button>`
+      container.innerHTML = parts + mixBtn
+      container.querySelectorAll('.pay-btn').forEach((btn) => {
+        btn.addEventListener('click', function () {
+          if (this.getAttribute('data-method') === '__mixto__') {
+            selectMixedMode(container)
+          } else {
+            payMode = 'single'
+            selectedPayment = this.getAttribute('data-method') || ''
+            document.getElementById('posMixedPayPanel').classList.add('d-none')
+            container.querySelectorAll('.pay-btn').forEach((b) => {
+              b.classList.remove('btn-primary', 'active')
+              b.classList.add('btn-outline-secondary')
+            })
+            this.classList.remove('btn-outline-secondary')
+            this.classList.add('btn-primary', 'active')
+          }
+          syncMixedPayPanel()
+          renderCart()
+        })
+      })
+    }
+
+    // ── Complete sale: vista previa del recibo, luego confirmar en modal ──
+    async function completeSale() {
+      if (!cart.length) return
+      const { subtotal: subtotalPre, total } = getCartMoneyTotals()
+      const paidNow = getPaidNowAmount(total)
+      if (paidNow <= 0.01) {
+        showToast('Ingresa un monto pagado mayor a cero.', 'warning')
+        return
+      }
+      if (paidNow < total - 0.01 && !selectedClientId) {
+        showToast('Para dejar saldo pendiente debes seleccionar un cliente.', 'warning')
+        return
+      }
+      if (payMode === 'mixed') {
+        if (paidNow < total - 0.01) {
+          showToast(
+            'Con pago mixto debes cubrir el monto pagado ahora; para deudas usa pago único o paga total.',
+            'warning'
+          )
+          return
+        }
+        const r = getMixedPaymentsPayload(total)
+        if (r.error) {
+          showToast(r.error, 'warning')
+          return
+        }
+      } else if (!selectedPayment) return
+
+      if (hasStockWarning()) {
+        const itemsHtml = cart
+          .filter((c) => c.cantidad > c.stockDisponible)
+          .map(
+            (c) =>
+              `<li><strong>${c.nombre}</strong>: pedido ${c.cantidad}, disponible ${c.stockDisponible}</li>`
+          )
+          .join('')
+        const ok = await window.showConfirm({
+          title: 'Stock insuficiente',
+          message: `Los siguientes productos quedarán con stock negativo:<ul class="text-start mt-2 mb-0 ps-3">${itemsHtml}</ul>`,
+          confirmText: 'Continuar de todas formas',
+          type: 'warning'
+        })
+        if (!ok) return
+      }
+
+      document.getElementById('posReceiptBanner').classList.add('d-none')
+
+      const discSend = Math.min(
+        Math.max(0, Number(document.getElementById('posDescuento').value) || 0),
+        subtotalPre
+      )
+
+      const user = window.__authUser || {}
+      pendingSalePayload = {
+        cliente_id: selectedClientId || null,
+        vendedor_id: user.id || null,
+        observacion: document.getElementById('posObservacion').value.trim(),
+        descuento_monto: discSend,
+        monto_pagado_inicial: paidNow,
+        items: cart.map((c) => ({
+          producto_id: c.producto_id,
+          cantidad: c.cantidad,
+          precio_unitario: c.precio_unitario
+        }))
+      }
+      if (payMode === 'mixed') {
+        const r = getMixedPaymentsPayload(total)
+        pendingSalePayload.metodo_pago = 'Mixto'
+        pendingSalePayload.pagos_mixtos = r.pagos_mixtos
+      } else {
+        pendingSalePayload.metodo_pago = selectedPayment
+      }
+
+      const buildFn = window.NoryxBuildSaleReceiptHtml
+      if (typeof buildFn !== 'function') {
+        showToast('No se pudo cargar el módulo del recibo. Recargue la página.', 'danger')
+        pendingSalePayload = null
+        return
+      }
+
+      const draftSale = buildDraftSaleForPreview(subtotalPre, discSend)
+      const draftDetails = buildDraftDetailsFromCart()
+      const html = buildFn(draftSale, draftDetails, {
+        draft: true,
+        logoUrl: window.__RECEIPT_LOGO_URL
+      })
+
+      revokePreviewBlob()
+      previewBlobUrl = URL.createObjectURL(new Blob([html], { type: 'text/html;charset=utf-8' }))
+      document.getElementById('posReceiptPreviewFrame').src = previewBlobUrl
+      {
+        const el = document.getElementById('posConfirmSaleModal')
+        let inst = bootstrap.Modal.getInstance(el)
+        if (!inst) inst = new bootstrap.Modal(el)
+        inst.show()
+      }
+    }
+
+    async function submitConfirmedSale() {
+      if (!pendingSalePayload) return
+      const submitBtn = document.getElementById('posConfirmSaleSubmit')
+      submitBtn.disabled = true
+      submitBtn.innerHTML =
+        '<span class="spinner-border spinner-border-sm me-1"></span>Guardando...'
+      const user = window.__authUser || {}
+      try {
+        const res = await fetch(API + '/api/sales', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-user-id': user.id || '',
+            'x-user-name': user.nombre || ''
+          },
+          body: JSON.stringify(pendingSalePayload)
+        })
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}))
+          throw new Error(err.message || 'Error al registrar la venta')
+        }
+        const payload = await res.json()
+        const sale = payload.sale
+        const dRes = await fetch(`${API}/api/sales/${sale._id}/details`)
+        const dJson = await dRes.json()
+
+        lastRegisteredReceipt = { sale, details: dJson }
+        pendingSalePayload = null
+        revokePreviewBlob()
+        const frame = document.getElementById('posReceiptPreviewFrame')
+        if (frame) frame.src = 'about:blank'
+
+        bootstrap.Modal.getInstance(document.getElementById('posConfirmSaleModal')).hide()
+
+        document.getElementById('posReceiptBanner').classList.remove('d-none')
+        showToast(
+          'Venta registrada. Usa «Descargar recibo» o «Ver recibo» cuando quieras.',
+          'success'
+        )
+
+        clearCart()
+        clearClient()
+        payMode = 'single'
+        selectedPayment = ''
+        document.getElementById('posMixedPayPanel').classList.add('d-none')
+        document.querySelectorAll('.pos-mix-amt').forEach((inp) => {
+          inp.value = ''
+        })
+        document.querySelectorAll('.pay-btn').forEach((b) => {
+          b.classList.remove('btn-primary', 'active')
+          b.classList.add('btn-outline-secondary')
+        })
+        document.getElementById('posObservacion').value = ''
+        document.getElementById('posDescuento').value = '0'
+        document.getElementById('posMontoPagado').value = '0'
+        await loadProducts()
+        renderCart()
+      } catch (err) {
+        showToast(err.message || 'Error', 'danger')
+      } finally {
+        submitBtn.disabled = false
+        submitBtn.innerHTML = '<i class="ri-check-double-line me-1"></i>Confirmar y registrar venta'
+      }
+    }
+
+    // ── Helpers ───────────────────────────────────────────────────────────
+    function showToast(msg, type = 'success') {
+      const el = document.getElementById('posToast')
+      document.getElementById('posToastMsg').textContent = msg
+      el.className = `toast align-items-center border-0 text-bg-${type}`
+      new bootstrap.Toast(el, { delay: 3500 }).show()
+    }
+  })()
 </script>

@@ -172,6 +172,7 @@ const pageHeaderProps = {
                   <th scope="col" data-sortable data-sort-key="nombre"><i class="ri-user-3-line me-1" aria-hidden="true"></i>NOMBRE</th>
                   <th scope="col" data-sortable data-sort-key="celular"><i class="ri-phone-line me-1" aria-hidden="true"></i>CELULAR</th>
                   <th class="text-center" scope="col" data-sortable data-sort-key="count"><i class="ri-shopping-bag-line me-1" aria-hidden="true"></i>COMPRAS</th>
+                  <th class="text-end" scope="col" data-sortable data-sort-key="deuda"><i class="ri-wallet-3-line me-1" aria-hidden="true"></i>DEUDA</th>
                   <th class="text-end" scope="col" data-sortable data-sort-key="total"><i class="ri-money-dollar-circle-line me-1" aria-hidden="true"></i>TOTAL GASTADO</th>
                   <th class="text-end pe-3 no-sort" scope="col"><i class="ri-settings-3-line me-1" aria-hidden="true"></i>ACCIONES</th>
                 </tr>
@@ -215,6 +216,52 @@ const pageHeaderProps = {
           <div class="d-flex justify-content-end gap-2">
             <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancelar</button>
             <button type="submit" class="btn btn-primary btn-sm" id="clientSubmitBtn">Crear</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Pay Debt Modal -->
+<div class="modal fade" id="payDebtModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-sm">
+    <div class="modal-content">
+      <div class="modal-header py-2 text-bg-success">
+        <h5 class="modal-title text-white"><i class="ri-money-dollar-box-line me-1"></i>Saldar Deuda</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="payDebtForm" onsubmit="window.handlePayDebtSubmit(event)">
+          <input type="hidden" id="payDebtClientId" />
+          <p class="mb-3">Abonar a cuenta para: <strong id="payDebtNombre"></strong></p>
+          
+          <div class="mb-2">
+            <label class="form-label small">Monto (Deuda máx: <span id="payDebtMontoMax"></span>)</label>
+            <div class="input-group">
+              <span class="input-group-text">$</span>
+              <input type="number" class="form-control" id="payDebtMonto" required step="0.01" min="0.01" />
+            </div>
+          </div>
+          
+          <div class="mb-2">
+            <label class="form-label small">Método de pago</label>
+            <select id="payDebtMetodo" class="form-select">
+              <option value="Efectivo">Efectivo</option>
+              <option value="QR">QR</option>
+              <option value="Transferencia">Transferencia</option>
+              <option value="Otro">Otro</option>
+            </select>
+          </div>
+          
+          <div class="mb-3">
+            <label class="form-label small">Observación</label>
+            <input type="text" class="form-control form-control-sm" id="payDebtObs" placeholder="Ej: Pago de cuota" />
+          </div>
+
+          <div class="d-flex justify-content-end gap-2 mt-2">
+            <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancelar</button>
+            <button type="submit" class="btn btn-success btn-sm" id="payDebtSubmitBtn">Abonar a cuenta</button>
           </div>
         </form>
       </div>
@@ -408,6 +455,7 @@ const pageHeaderProps = {
         let av, bv
         if (sortKey === 'count') { av = sa.count; bv = sb.count }
         else if (sortKey === 'total') { av = sa.total; bv = sb.total }
+        else if (sortKey === 'deuda') { av = sa.deuda || 0; bv = sb.deuda || 0 }
         else { av = String(a[sortKey] ?? '').toLowerCase(); bv = String(b[sortKey] ?? '').toLowerCase() }
         if (av < bv) return sortDir === 'asc' ? -1 : 1
         if (av > bv) return sortDir === 'asc' ? 1 : -1
@@ -450,8 +498,10 @@ const pageHeaderProps = {
           <td class="text-center align-middle">
             <span class="badge rounded-pill ${stats.count > 0 ? 'text-bg-primary' : 'bg-secondary bg-opacity-25 text-muted'}">${stats.count}</span>
           </td>
+          <td class="text-end align-middle fw-semibold ${stats.deuda > 0.01 ? 'text-danger' : 'text-muted'}">${fmt(stats.deuda || 0)}</td>
           <td class="text-end align-middle fw-semibold ${stats.total > 0 ? 'text-success' : 'text-muted'}">${fmt(stats.total)}</td>
           <td class="text-end pe-3 align-middle">
+            ${stats.deuda > 0.01 ? `<button class="btn btn-sm btn-icon text-success pay-btn" data-id="${c._id}" data-deuda="${stats.deuda}" data-nombre="${esc(c.nombre)}" title="Saldar deuda"><i class="ri-money-dollar-box-line"></i></button>` : ''}
             <button class="btn btn-sm btn-icon history-btn" data-id="${c._id}" data-nombre="${esc(c.nombre)}" title="Historial de compras">
               <i class="ri-file-list-3-line"></i>
             </button>
@@ -465,6 +515,9 @@ const pageHeaderProps = {
         </tr>`
     }).join('')
 
+    tbody.querySelectorAll('.pay-btn').forEach((btn) =>
+      btn.addEventListener('click', () => openPayDebt(btn.dataset.id, btn.dataset.nombre, Number(btn.dataset.deuda)))
+    )
     tbody.querySelectorAll('.history-btn').forEach((btn) =>
       btn.addEventListener('click', () => openHistory(btn.dataset.id, btn.dataset.nombre))
     )
@@ -723,6 +776,48 @@ const pageHeaderProps = {
       await loadClients()
     } catch {
       showToast('Error al eliminar', 'danger')
+    }
+  }
+
+  function openPayDebt(id, nombre, deuda) {
+    document.getElementById('payDebtClientId').value = id
+    document.getElementById('payDebtNombre').textContent = nombre
+    document.getElementById('payDebtMontoMax').textContent = fmt(deuda)
+    document.getElementById('payDebtMonto').value = deuda.toFixed(2)
+    document.getElementById('payDebtMonto').max = deuda
+    new bootstrap.Modal(document.getElementById('payDebtModal')).show()
+  }
+
+  window.handlePayDebtSubmit = async function(e) {
+    e.preventDefault()
+    const id = document.getElementById('payDebtClientId').value
+    const monto = Number(document.getElementById('payDebtMonto').value)
+    if (monto <= 0) return alert('El monto debe ser numérico y mayor a 0')
+    const metodo = document.getElementById('payDebtMetodo').value || 'Efectivo'
+    const observacion = document.getElementById('payDebtObs').value
+    
+    const btn = document.getElementById('payDebtSubmitBtn')
+    btn.disabled = true; btn.textContent = 'Procesando...'
+    const user = window.__authUser || {}
+
+    try {
+      const res = await fetch(`${API}/api/clients/${id}/settle-debt`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-id': user.id || '',
+          'x-user-name': user.nombre || ''
+        },
+        body: JSON.stringify({ monto, metodo_pago: metodo, observacion })
+      })
+      if (!res.ok) throw new Error()
+      bootstrap.Modal.getInstance(document.getElementById('payDebtModal')).hide()
+      showToast('Deuda abonada exitosamente', 'success')
+      await loadClients()
+    } catch {
+      showToast('Error al abonar la deuda', 'danger')
+    } finally {
+      btn.disabled = false; btn.textContent = 'Abonar a cuenta'
     }
   }
 

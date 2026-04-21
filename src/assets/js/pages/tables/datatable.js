@@ -653,7 +653,11 @@ var ProductsDatatable = (function () {
             const catId = product.categoria_id?._id || product.categoria_id || ''
             const catSel = form.querySelector('#productCategoria')
             if (catSel) catSel.value = catId
-            form.querySelector('#productCodigo').value = product.codigo
+            const codeInput = form.querySelector('#productCodigo')
+            if (codeInput) {
+              codeInput.value = product.codigo
+              codeInput.readOnly = true
+            }
             form.querySelector('#productNombre').value = product.nombre
             form.querySelector('#productDescripcion').value = product.descripcion || ''
             form.querySelector('#productPrecioVenta').value = product.precio_venta

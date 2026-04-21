@@ -18,6 +18,14 @@ const saleSchema = new mongoose.Schema(
     /** Descuento global sobre la venta (monto fijo) */
     descuento_monto: { type: Number, default: 0, min: 0 },
     total: { type: Number, required: true, min: 0 },
+    total_pagado: { type: Number, default: 0, min: 0 },
+    saldo_pendiente: { type: Number, default: 0, min: 0 },
+    estado_cobro: {
+      type: String,
+      enum: ['pagada', 'parcial', 'pendiente'],
+      default: 'pagada'
+    },
+    fecha_vencimiento: { type: Date, default: null },
     /** Número de comprobante visible (1, 2, 3…), único por tienda */
     numero_comprobante: { type: Number, default: null, min: 1, sparse: true, unique: true },
     estado: {
@@ -57,5 +65,7 @@ const saleSchema = new mongoose.Schema(
 saleSchema.index({ fecha: -1 })
 saleSchema.index({ cliente_id: 1, fecha: -1 })
 saleSchema.index({ estado: 1, fecha: -1 })
+saleSchema.index({ estado_cobro: 1, fecha: -1 })
+saleSchema.index({ cliente_id: 1, saldo_pendiente: -1, fecha: -1 })
 
 export const Sale = mongoose.model('Sale', saleSchema)

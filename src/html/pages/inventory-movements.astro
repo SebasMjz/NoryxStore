@@ -295,7 +295,14 @@ const pageHeaderProps = {
     return source
   }
 
-  const motivoLabels = { compra: 'Compra', reposicion: 'Reposición', venta: 'Venta', ajuste_manual: 'Ajuste manual' }
+  const motivoLabels = {
+    compra: 'Compra',
+    reposicion: 'Reposición',
+    venta: 'Venta',
+    ajuste_manual: 'Ajuste manual',
+    consignacion_envio: 'Consignación (salida)',
+    consignacion_devolucion: 'Devolución consignación'
+  }
 
   function renderTable() {
     const filtered = getFilteredGroups()

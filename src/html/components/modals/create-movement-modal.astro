@@ -20,6 +20,19 @@
   #moveLinesTable .form-control-sm {
     min-width: 4.5rem;
   }
+  .move-special-panel {
+    border: 1px solid rgba(111, 66, 193, 0.14);
+    background: linear-gradient(180deg, rgba(111, 66, 193, 0.05), rgba(111, 66, 193, 0.02));
+    border-radius: 1rem;
+    padding: 0.95rem;
+  }
+  .move-consignacion-banner {
+    border: 1px dashed rgba(111, 66, 193, 0.28);
+    background: rgba(111, 66, 193, 0.08);
+    color: var(--bs-body-color);
+    border-radius: 0.85rem;
+    padding: 0.75rem 0.9rem;
+  }
 </style>
 
 <div
@@ -33,7 +46,8 @@
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title" id="createMovementModalLabel">Nuevo movimiento</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"
+        ></button>
       </div>
       <div class="modal-body">
         <form id="createMovementForm">
@@ -43,7 +57,14 @@
               <label class="form-label fw-semibold">Tipo <span class="text-danger">*</span></label>
               <div class="d-flex gap-2">
                 <div class="form-check form-check-inline flex-grow-1 m-0">
-                  <input class="form-check-input" type="radio" name="tipo_movimiento" id="tipoEntrada" value="entrada" checked />
+                  <input
+                    class="form-check-input"
+                    type="radio"
+                    name="tipo_movimiento"
+                    id="tipoEntrada"
+                    value="entrada"
+                    checked
+                  />
                   <label class="form-check-label d-flex align-items-center gap-1" for="tipoEntrada">
                     <span class="badge bg-success-subtle text-success border border-success-subtle">
                       <i class="ri-arrow-down-circle-line me-1"></i>Entrada
@@ -51,7 +72,13 @@
                   </label>
                 </div>
                 <div class="form-check form-check-inline flex-grow-1 m-0">
-                  <input class="form-check-input" type="radio" name="tipo_movimiento" id="tipoSalida" value="salida" />
+                  <input
+                    class="form-check-input"
+                    type="radio"
+                    name="tipo_movimiento"
+                    id="tipoSalida"
+                    value="salida"
+                  />
                   <label class="form-check-label d-flex align-items-center gap-1" for="tipoSalida">
                     <span class="badge bg-danger-subtle text-danger border border-danger-subtle">
                       <i class="ri-arrow-up-circle-line me-1"></i>Salida
@@ -61,28 +88,79 @@
               </div>
             </div>
             <div class="col-md-6">
-              <label class="form-label fw-semibold">Motivo <span class="text-danger">*</span></label>
+              <label class="form-label fw-semibold">Motivo <span class="text-danger">*</span></label
+              >
               <div id="motivoEntradaGroup">
                 <div class="d-flex gap-2 flex-wrap">
                   <div class="form-check">
-                    <input class="form-check-input" type="radio" name="motivo" id="motivoCompra" value="compra" checked />
+                    <input
+                      class="form-check-input"
+                      type="radio"
+                      name="motivo"
+                      id="motivoCompra"
+                      value="compra"
+                      checked
+                    />
                     <label class="form-check-label small" for="motivoCompra">Compra</label>
                   </div>
                   <div class="form-check">
-                    <input class="form-check-input" type="radio" name="motivo" id="motivoReposicion" value="reposicion" />
+                    <input
+                      class="form-check-input"
+                      type="radio"
+                      name="motivo"
+                      id="motivoReposicion"
+                      value="reposicion"
+                    />
                     <label class="form-check-label small" for="motivoReposicion">Reposición</label>
+                  </div>
+                  <div class="form-check">
+                    <input
+                      class="form-check-input"
+                      type="radio"
+                      name="motivo"
+                      id="motivoConsignacionDev"
+                      value="consignacion_devolucion"
+                    />
+                    <label class="form-check-label small" for="motivoConsignacionDev"
+                      >Devolución consignación</label
+                    >
                   </div>
                 </div>
               </div>
               <div id="motivoSalidaGroup" style="display:none;">
                 <div class="d-flex gap-2 flex-wrap">
                   <div class="form-check">
-                    <input class="form-check-input" type="radio" name="motivo_salida" id="motivoVenta" value="venta" checked />
+                    <input
+                      class="form-check-input"
+                      type="radio"
+                      name="motivo_salida"
+                      id="motivoVenta"
+                      value="venta"
+                      checked
+                    />
                     <label class="form-check-label small" for="motivoVenta">Venta</label>
                   </div>
                   <div class="form-check">
-                    <input class="form-check-input" type="radio" name="motivo_salida" id="motivoAjuste" value="ajuste_manual" />
+                    <input
+                      class="form-check-input"
+                      type="radio"
+                      name="motivo_salida"
+                      id="motivoAjuste"
+                      value="ajuste_manual"
+                    />
                     <label class="form-check-label small" for="motivoAjuste">Ajuste manual</label>
+                  </div>
+                  <div class="form-check">
+                    <input
+                      class="form-check-input"
+                      type="radio"
+                      name="motivo_salida"
+                      id="motivoConsignacionEnvio"
+                      value="consignacion_envio"
+                    />
+                    <label class="form-check-label small" for="motivoConsignacionEnvio"
+                      >Consignación</label
+                    >
                   </div>
                 </div>
               </div>
@@ -90,14 +168,44 @@
             </div>
           </div>
 
-          <div id="moveEditNotice" class="alert alert-info py-2 small d-none mb-3" role="status"></div>
+          <div class="row g-3 mb-3">
+            <div class="col-lg-5 d-none" id="moveClienteWrap">
+              <div class="move-special-panel h-100">
+                <label class="form-label fw-semibold mb-2">Cliente <span class="text-danger">*</span></label>
+                <select id="moveCliente" class="form-select">
+                  <option value="">Selecciona un cliente...</option>
+                </select>
+                <div class="form-text mt-2">Las salidas deben quedar asociadas a un cliente.</div>
+              </div>
+            </div>
+
+            <div class="col-lg-7 d-none" id="moveConsignacionWrap">
+              <div class="move-special-panel h-100">
+                <div class="d-flex align-items-start justify-content-between gap-2 mb-2 flex-wrap">
+                  <div>
+                    <div class="fw-semibold">Consignación origen</div>
+                    <div class="small text-muted">Selecciona una salida previa para registrar su devolución o liquidación.</div>
+                  </div>
+                  <span class="badge rounded-pill text-bg-primary-subtle text-primary border border-primary-subtle">Consignación</span>
+                </div>
+                <div class="input-group">
+                  <select id="moveConsignacionOrigen" class="form-select">
+                    <option value="">Selecciona una consignación...</option>
+                  </select>
+                  <button type="button" class="btn btn-outline-primary" id="moveLoadConsignacionBtn">
+                    Cargar productos
+                  </button>
+                </div>
+                <div id="moveConsignacionBanner" class="move-consignacion-banner mt-2 small d-none"></div>
+              </div>
+            </div>
+          </div>
+
+          <div id="moveEditNotice" class="alert alert-info py-2 small d-none mb-3" role="status">
+          </div>
 
           <!-- Agregar productos al listado -->
           <div id="moveDraftSection" class="card border mb-3">
-            <div class="card-header py-2 d-flex align-items-center gap-2">
-              <i class="ri-add-circle-line text-primary"></i>
-              <span class="fw-semibold small">Agregar producto al movimiento</span>
-            </div>
             <div class="card-body py-3">
               <div class="mb-2">
                 <label class="form-label small fw-semibold mb-1">Buscar producto</label>
@@ -112,7 +220,13 @@
                       autocomplete="off"
                       aria-label="Buscar producto"
                     />
-                    <button type="button" class="btn btn-outline-secondary" id="moveProductoClear" style="display:none;" title="Limpiar">
+                    <button
+                      type="button"
+                      class="btn btn-outline-secondary"
+                      id="moveProductoClear"
+                      style="display:none;"
+                      title="Limpiar"
+                    >
                       <i class="ri-close-line"></i>
                     </button>
                   </div>
@@ -130,20 +244,40 @@
               <div class="row g-2 align-items-end">
                 <div class="col-6 col-md-2">
                   <label class="form-label small mb-0" for="moveDraftCantidad">Cantidad</label>
-                  <input type="number" class="form-control form-control-sm" id="moveDraftCantidad" min="1" value="1" />
+                  <input
+                    type="number"
+                    class="form-control form-control-sm"
+                    id="moveDraftCantidad"
+                    min="1"
+                    value="1"
+                  />
                 </div>
                 <div class="col-6 col-md-3" id="moveDraftPrecioCompraCol">
-                  <label class="form-label small mb-0" for="moveDraftPrecioCompra">P. compra</label>
+                  <label class="form-label small mb-0" for="moveDraftPrecioCompra" id="moveDraftPrecioCompraLabel">P. compra</label>
                   <div class="input-group input-group-sm">
                     <span class="input-group-text">$</span>
-                    <input type="number" class="form-control" id="moveDraftPrecioCompra" min="0" step="0.01" placeholder="0" />
+                    <input
+                      type="number"
+                      class="form-control"
+                      id="moveDraftPrecioCompra"
+                      min="0"
+                      step="0.01"
+                      placeholder="0"
+                    />
                   </div>
                 </div>
                 <div class="col-6 col-md-3" id="moveDraftPrecioVentaCol">
-                  <label class="form-label small mb-0" for="moveDraftPrecioVenta">P. venta</label>
+                  <label class="form-label small mb-0" for="moveDraftPrecioVenta" id="moveDraftPrecioVentaLabel">P. venta</label>
                   <div class="input-group input-group-sm">
                     <span class="input-group-text">$</span>
-                    <input type="number" class="form-control" id="moveDraftPrecioVenta" min="0" step="0.01" placeholder="0" />
+                    <input
+                      type="number"
+                      class="form-control"
+                      id="moveDraftPrecioVenta"
+                      min="0"
+                      step="0.01"
+                      placeholder="0"
+                    />
                   </div>
                 </div>
                 <div class="col-12 col-md-4">
@@ -153,7 +287,8 @@
                 </div>
               </div>
               <p class="form-text text-muted small mb-0 mt-2" id="moveDraftHelpEntrada">
-                En <strong>entrada</strong>, el precio de venta queda como el del producto (última mercadería registrada).
+                En <strong>entrada</strong>, el precio de venta queda como el del producto (última
+                mercadería registrada).
               </p>
               <p class="form-text text-muted small mb-0 mt-2 d-none" id="moveDraftHelpSalida">
                 En <strong>salida</strong> solo indicás cantidad por producto.
@@ -163,15 +298,17 @@
 
           <!-- Lista de líneas -->
           <div class="mb-3">
-            <label class="form-label fw-semibold">Productos en este movimiento <span class="text-danger">*</span></label>
+            <label class="form-label fw-semibold"
+              >Productos en este movimiento <span class="text-danger">*</span></label
+            >
             <div class="table-responsive border rounded">
               <table class="table table-sm table-hover mb-0" id="moveLinesTable">
                 <thead class="table-light">
                   <tr>
                     <th>Producto</th>
                     <th class="text-center" style="width:90px;">Cant.</th>
-                    <th class="text-end d-none move-col-precio" style="width:100px;">P. compra</th>
-                    <th class="text-end d-none move-col-precio" style="width:100px;">P. venta</th>
+                    <th class="text-end d-none move-col-precio-compra" style="width:100px;">P. compra</th>
+                    <th class="text-end d-none move-col-precio-venta" style="width:100px;">P. venta</th>
                     <th style="width:44px;"></th>
                   </tr>
                 </thead>
@@ -190,12 +327,20 @@
           <input type="hidden" id="moveUsuario" name="usuario_id" />
 
           <div class="mb-3">
-            <label for="moveObservacion" class="form-label fw-semibold">Observación <span class="text-muted fw-normal small">(opcional)</span></label>
-            <textarea class="form-control" id="moveObservacion" name="observacion" rows="2" placeholder="Detalles del movimiento..."></textarea>
+            <label for="moveObservacion" class="form-label fw-semibold"
+              >Observación <span class="text-muted fw-normal small">(opcional)</span></label
+            >
+            <textarea
+              class="form-control"
+              id="moveObservacion"
+              name="observacion"
+              rows="2"
+              placeholder="Detalles del movimiento..."></textarea>
           </div>
 
           <div class="d-flex justify-content-end gap-2 mt-3">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button
+            >
             <button type="submit" class="btn btn-primary" id="moveSubmitBtn">
               <i class="ri-check-line me-1"></i>Registrar movimiento
             </button>
@@ -210,7 +355,9 @@
   declare global {
     interface Window {
       __authUser: { id?: string; nombre?: string; [k: string]: any } | null
-      moveProductoPicker: { select: (p: any) => void; clear: () => void; getAll: () => any[] } | undefined
+      moveProductoPicker:
+        | { select: (p: any) => void; clear: () => void; getAll: () => any[] }
+        | undefined
       movementModalLoadEdit: ((m: any) => void) | undefined
       movementModalLoadTransactionEdit: ((lines: any[], tid: string) => void) | undefined
     }
@@ -260,27 +407,73 @@
     const draftPrecioCompra = document.getElementById('moveDraftPrecioCompra') as HTMLInputElement
     const draftPrecioVenta = document.getElementById('moveDraftPrecioVenta') as HTMLInputElement
     const addLineBtn = document.getElementById('moveAddLineBtn') as HTMLButtonElement
+    const clienteWrap = document.getElementById('moveClienteWrap') as HTMLElement
+    const clienteSelect = document.getElementById('moveCliente') as HTMLSelectElement
+    const consignacionWrap = document.getElementById('moveConsignacionWrap') as HTMLElement
+    const consignacionSelect = document.getElementById('moveConsignacionOrigen') as HTMLSelectElement
+    const loadConsignacionBtn = document.getElementById('moveLoadConsignacionBtn') as HTMLButtonElement
+    const consignacionBanner = document.getElementById('moveConsignacionBanner') as HTMLElement
+    const draftPrecioCompraLabel = document.getElementById('moveDraftPrecioCompraLabel') as HTMLElement
+    const draftPrecioVentaLabel = document.getElementById('moveDraftPrecioVentaLabel') as HTMLElement
+    const consignacionDevRadio = document.getElementById('motivoConsignacionDev') as HTMLInputElement
 
     let allProducts: any[] = []
-    let productosMap: Record<string, { precio_compra: number | null; precio_venta: number | null }> = {}
+    let allClients: any[] = []
+    let consignaciones: any[] = []
+    let consignacionDevBlocked = false
+    let productosMap: Record<
+      string,
+      { precio_compra: number | null; precio_venta: number | null }
+    > = {}
     let selectedProduct: any = null
     let lines: MoveLine[] = []
 
     function esc(s: string) {
-      return String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      return String(s ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
     }
 
     function getTipoActual() {
       return tipoSalidaRadio?.checked ? 'salida' : 'entrada'
     }
 
+    function isConsignacionDevMode() {
+      return getTipoActual() === 'entrada' && motivoHidden.value === 'consignacion_devolucion'
+    }
+
+    function setConsignacionDevState(hasConsignaciones: boolean, notice = '') {
+      consignacionDevBlocked = !hasConsignaciones
+      if (consignacionDevRadio) consignacionDevRadio.disabled = !hasConsignaciones
+      if (consignacionBanner) {
+        consignacionBanner.textContent = notice
+        consignacionBanner.classList.toggle('d-none', !notice)
+      }
+    }
+
+    function updateConsignacionAvailabilityUi() {
+      const blocked = isConsignacionDevMode() && consignacionDevBlocked
+      if (loadConsignacionBtn) loadConsignacionBtn.disabled = blocked || !consignaciones.length
+      if (consignacionSelect) consignacionSelect.disabled = blocked || !consignaciones.length
+      const enableDraft = !blocked
+      searchInput.disabled = !enableDraft
+      draftCantidad.disabled = !enableDraft
+      addLineBtn.disabled = !enableDraft
+      draftSection.classList.toggle('d-none', blocked)
+    }
+
     function updateMotivoHidden() {
       const tipo = getTipoActual()
       if (tipo === 'entrada') {
-        const checked = motivoEntradaGrp?.querySelector('input[name="motivo"]:checked') as HTMLInputElement
+        const checked = motivoEntradaGrp?.querySelector(
+          'input[name="motivo"]:checked'
+        ) as HTMLInputElement
         motivoHidden.value = checked?.value || 'compra'
       } else {
-        const checked = motivoSalidaGrp?.querySelector('input[name="motivo_salida"]:checked') as HTMLInputElement
+        const checked = motivoSalidaGrp?.querySelector(
+          'input[name="motivo_salida"]:checked'
+        ) as HTMLInputElement
         motivoHidden.value = checked?.value || 'venta'
       }
     }
@@ -288,24 +481,52 @@
     function syncTipo() {
       const tipo = getTipoActual()
       const isEntrada = tipo === 'entrada'
+      const isConsignacionDev = isEntrada && motivoHidden.value === 'consignacion_devolucion'
       motivoEntradaGrp.style.display = isEntrada ? '' : 'none'
       motivoSalidaGrp.style.display = isEntrada ? 'none' : ''
-      precioCompraCol.classList.toggle('d-none', !isEntrada)
-      precioVentaCol.classList.toggle('d-none', !isEntrada)
+      precioCompraCol.classList.toggle('d-none', isConsignacionDev)
+      precioVentaCol.classList.remove('d-none')
+      draftPrecioCompraLabel.textContent = 'P. compra'
+      draftPrecioVentaLabel.textContent = isConsignacionDev ? 'Ingreso unitario' : 'P. venta'
       helpEntrada.classList.toggle('d-none', !isEntrada)
       helpSalida.classList.toggle('d-none', isEntrada)
-      document.querySelectorAll('.move-col-precio').forEach((el) => el.classList.toggle('d-none', !isEntrada))
-      if (!isEntrada) {
-        draftPrecioCompra.value = ''
-        draftPrecioVenta.value = ''
-      } else if (selectedProduct) {
+      helpEntrada.innerHTML = isConsignacionDev
+        ? 'En <strong>devolución de consignación</strong> registra el <strong>ingreso unitario</strong> por producto. No se solicita precio de compra.'
+        : 'En <strong>entrada</strong>, el precio de venta queda como el del producto (última mercadería registrada).'
+      const requiresClient = !isEntrada || isConsignacionDev
+      clienteWrap.classList.toggle('d-none', !requiresClient)
+      consignacionWrap.classList.toggle('d-none', !isConsignacionDev)
+      clienteWrap.classList.toggle('col-lg-5', isConsignacionDev)
+      clienteWrap.classList.toggle('col-lg-12', !isConsignacionDev)
+      consignacionWrap.classList.toggle('col-lg-7', isConsignacionDev)
+      if (!requiresClient) clienteSelect.value = ''
+      document.querySelectorAll('.move-col-precio-compra').forEach((el) =>
+        el.classList.toggle('d-none', isConsignacionDev)
+      )
+      document.querySelectorAll('.move-col-precio-venta').forEach((el) =>
+        el.classList.remove('d-none')
+      )
+      
+      draftPrecioCompra.disabled = !isEntrada
+      draftPrecioVenta.disabled = !isEntrada
+
+      if (selectedProduct) {
         const m = productosMap[selectedProduct._id]
         if (m) {
-          if (m.precio_compra != null) draftPrecioCompra.value = String(m.precio_compra)
+          if (!isConsignacionDev && m.precio_compra != null) draftPrecioCompra.value = String(m.precio_compra)
           if (m.precio_venta != null) draftPrecioVenta.value = String(m.precio_venta)
         }
       }
+      if (isConsignacionDev) {
+        draftPrecioCompra.value = ''
+      }
       updateMotivoHidden()
+      if (isConsignacionDev && consignacionDevBlocked && consignacionBanner) {
+        consignacionBanner.classList.remove('d-none')
+        consignacionBanner.textContent = 'No hay consignaciones activas para devolver. Debes registrar una consignación antes de usar esta opción.'
+      }
+      updateConsignacionAvailabilityUi()
+      if (isConsignacionDev) loadConsignaciones(clienteSelect?.value || '')
       renderLinesTable()
     }
 
@@ -326,12 +547,97 @@
     }
     loadProducts()
 
+    async function loadClients() {
+      try {
+        const res = await fetch(`${apiBase}/api/clients`)
+        allClients = await res.json()
+        if (!clienteSelect) return
+        clienteSelect.innerHTML =
+          '<option value="">Selecciona un cliente...</option>' +
+          allClients
+            .map(
+              (c) =>
+                `<option value="${c._id}">${esc(c.nombre)}${c.celular ? ` - ${esc(c.celular)}` : ''}</option>`
+            )
+            .join('')
+      } catch (e) {
+        console.error('Error cargando clientes', e)
+      }
+    }
+    loadClients()
+
+    async function loadConsignaciones(clienteId = '') {
+      try {
+        const q = clienteId ? `?cliente_id=${encodeURIComponent(clienteId)}` : ''
+        const res = await fetch(`${apiBase}/api/inventory-movements/consignaciones${q}`)
+        const data = await res.json()
+        consignaciones = Array.isArray(data?.consignaciones) ? data.consignaciones : []
+        setConsignacionDevState(
+          consignaciones.length > 0,
+          consignaciones.length
+            ? ''
+            : 'No hay consignaciones activas para este cliente. Registra una consignación antes de hacer una devolución.'
+        )
+        consignacionSelect.innerHTML =
+          '<option value="">Selecciona una consignación...</option>' +
+          consignaciones
+            .map((c, idx) => {
+              const fecha = new Date(c.fecha).toLocaleDateString('es-MX')
+              const cliente = c.cliente_id?.nombre || 'Cliente'
+              return `<option value="${idx}">${fecha} · ${esc(cliente)} · ${c.total_productos} productos · ${c.total_cantidad} uds.</option>`
+            })
+            .join('')
+        updateConsignacionAvailabilityUi()
+      } catch (e) {
+        console.error('Error cargando consignaciones', e)
+        consignaciones = []
+        setConsignacionDevState(false, 'No fue posible cargar las consignaciones disponibles.')
+        consignacionSelect.innerHTML = '<option value="">No se pudieron cargar las consignaciones</option>'
+        updateConsignacionAvailabilityUi()
+      }
+    }
+
+    clienteSelect?.addEventListener('change', () => {
+      if (isConsignacionDevMode()) loadConsignaciones(clienteSelect.value || '')
+    })
+
+    loadConsignacionBtn?.addEventListener('click', () => {
+      if (!consignaciones.length) {
+        alert('No hay consignaciones activas para cargar.')
+        return
+      }
+      const idx = Number(consignacionSelect?.value)
+      if (!Number.isFinite(idx) || idx < 0 || !consignaciones[idx]) {
+        alert('Selecciona una consignación para cargar los productos.')
+        return
+      }
+      const src = consignaciones[idx]
+      if (src?.cliente_id?._id) {
+        clienteSelect.value = String(src.cliente_id._id)
+      }
+      lines = (src.items || []).map((it: any) => {
+        const pid = String(it.producto_id || '')
+        const pm = productosMap[pid] || {}
+        return {
+          producto_id: pid,
+          nombre: it.producto_nombre || '—',
+          codigo: it.codigo || '',
+          cantidad: Math.max(1, Number(it.cantidad || 1)),
+          precio_compra: null,
+          precio_venta:
+            pm.precio_venta != null && Number.isFinite(Number(pm.precio_venta))
+              ? Number(pm.precio_venta)
+              : null
+        }
+      })
+      renderLinesTable()
+    })
+
     function renderDropdown(query: string) {
       const q = query.toLowerCase().trim()
       const filtered = q
         ? allProducts.filter(
-            (p) =>
-              p.nombre.toLowerCase().includes(q) || (p.codigo || '').toLowerCase().includes(q)
+            (p) => p.nombre.toLowerCase().includes(q) || (p.codigo || '').toLowerCase().includes(q)
           )
         : allProducts
 
@@ -369,12 +675,10 @@
       searchInput.value = `${product.nombre}${product.codigo ? ` (${product.codigo})` : ''}`
       dropdown.style.display = 'none'
       clearBtn.style.display = ''
-      if (getTipoActual() === 'entrada') {
-        const m = productosMap[product._id]
-        if (m) {
-          draftPrecioCompra.value = m.precio_compra != null ? String(m.precio_compra) : ''
-          draftPrecioVenta.value = m.precio_venta != null ? String(m.precio_venta) : ''
-        }
+      const m = productosMap[product._id]
+      if (m) {
+        draftPrecioCompra.value = m.precio_compra != null ? String(m.precio_compra) : ''
+        draftPrecioVenta.value = m.precio_venta != null ? String(m.precio_venta) : ''
       }
     }
 
@@ -408,29 +712,26 @@
       }
       const cant = Math.max(1, parseInt(draftCantidad.value, 10) || 1)
       const tipo = getTipoActual()
+      const isConsignacionDev = tipo === 'entrada' && motivoHidden.value === 'consignacion_devolucion'
       let pc: number | null = null
       let pv: number | null = null
-      if (tipo === 'entrada') {
-        pc = parseMoney(draftPrecioCompra.value)
-        pv = parseMoney(draftPrecioVenta.value)
-      }
+      pc = isConsignacionDev ? null : parseMoney(draftPrecioCompra.value)
+      pv = parseMoney(draftPrecioVenta.value)
 
       const pid = selectedProduct._id
       const existing = lines.findIndex((l) => l.producto_id === pid)
       if (existing >= 0) {
         lines[existing].cantidad += cant
-        if (tipo === 'entrada') {
-          if (pc != null) lines[existing].precio_compra = pc
-          if (pv != null) lines[existing].precio_venta = pv
-        }
+        if (!isConsignacionDev && pc != null) lines[existing].precio_compra = pc
+        if (pv != null) lines[existing].precio_venta = pv
       } else {
         lines.push({
           producto_id: pid,
           nombre: selectedProduct.nombre,
           codigo: selectedProduct.codigo || '',
           cantidad: cant,
-          precio_compra: tipo === 'entrada' ? pc : null,
-          precio_venta: tipo === 'entrada' ? pv : null
+          precio_compra: isConsignacionDev ? null : pc,
+          precio_venta: pv
         })
       }
 
@@ -449,6 +750,7 @@
     function renderLinesTable() {
       const tipo = getTipoActual()
       const isEntrada = tipo === 'entrada'
+      const isConsignacionDev = isEntrada && motivoHidden.value === 'consignacion_devolucion'
       if (!lines.length) {
         linesEmpty.style.display = ''
         linesBody.querySelectorAll('tr.move-line-row').forEach((r) => r.remove())
@@ -461,10 +763,8 @@
         const tr = document.createElement('tr')
         tr.className = 'move-line-row align-middle'
         const editing = Boolean(form.dataset.editId || form.dataset.editTransaccionId)
-        const pcCell = isEntrada
-          ? `<td class="text-end"><input type="number" class="form-control form-control-sm text-end move-line-pc" data-i="${idx}" min="0" step="0.01" value="${line.precio_compra ?? ''}" /></td>
-             <td class="text-end"><input type="number" class="form-control form-control-sm text-end move-line-pv" data-i="${idx}" min="0" step="0.01" value="${line.precio_venta ?? ''}" /></td>`
-          : `<td class="text-end text-muted small">—</td><td class="text-end text-muted small">—</td>`
+          const pcCell = `<td class="text-end move-col-precio-compra ${isConsignacionDev ? 'd-none' : ''}">${isConsignacionDev ? '<span class="text-muted small">—</span>' : `<input type="number" class="form-control form-control-sm text-end move-line-pc" data-i="${idx}" min="0" step="0.01" value="${line.precio_compra ?? ''}" ${!isEntrada ? 'disabled title="Solo previsualización"' : ''} />`}</td>
+             <td class="text-end move-col-precio-venta"><input type="number" class="form-control form-control-sm text-end move-line-pv" data-i="${idx}" min="0" step="0.01" value="${line.precio_venta ?? ''}" ${!isEntrada ? 'disabled title="Solo previsualización"' : ''} /></td>`
 
         tr.innerHTML = `
           <td>
@@ -509,6 +809,11 @@
     }
 
     tipoEntradaRadio?.addEventListener('change', () => {
+      if (consignacionDevBlocked && consignacionDevRadio?.checked) {
+        consignacionDevRadio.checked = false
+        const compraRadio = motivoEntradaGrp?.querySelector('#motivoCompra') as HTMLInputElement
+        if (compraRadio) compraRadio.checked = true
+      }
       syncTipo()
     })
     tipoSalidaRadio?.addEventListener('change', () => {
@@ -523,10 +828,25 @@
       syncTipo()
     })
     motivoEntradaGrp?.querySelectorAll('input[type="radio"]').forEach((r) =>
-      r.addEventListener('change', updateMotivoHidden)
+      r.addEventListener('change', () => {
+        if (r instanceof HTMLInputElement && r.id === 'motivoConsignacionDev' && consignacionDevBlocked) {
+          r.checked = false
+          const compraRadio = motivoEntradaGrp?.querySelector('#motivoCompra') as HTMLInputElement
+          if (compraRadio) compraRadio.checked = true
+          alert('No hay consignaciones activas para devolver.')
+          updateMotivoHidden()
+          syncTipo()
+          return
+        }
+        updateMotivoHidden()
+        syncTipo()
+      })
     )
     motivoSalidaGrp?.querySelectorAll('input[type="radio"]').forEach((r) =>
-      r.addEventListener('change', updateMotivoHidden)
+      r.addEventListener('change', () => {
+        updateMotivoHidden()
+        syncTipo()
+      })
     )
     syncTipo()
 
@@ -563,7 +883,9 @@
         }
       }
 
-      ;(document.getElementById('moveObservacion') as HTMLTextAreaElement).value = movement.observacion || ''
+      ;(document.getElementById('moveObservacion') as HTMLTextAreaElement).value =
+        movement.observacion || ''
+      clienteSelect.value = String(movement.cliente_id?._id || movement.cliente_id || '')
       updateMotivoHidden()
       syncTipo()
       draftSection.classList.add('d-none')
@@ -609,8 +931,9 @@
 
       const uid = first.usuario_id?._id || first.usuario_id
       if (usuarioInput && uid) usuarioInput.value = String(uid)
-
-      ;(document.getElementById('moveObservacion') as HTMLTextAreaElement).value = first.observacion || ''
+      clienteSelect.value = String(first.cliente_id?._id || first.cliente_id || '')
+      ;(document.getElementById('moveObservacion') as HTMLTextAreaElement).value =
+        first.observacion || ''
       updateMotivoHidden()
       syncTipo()
       draftSection.classList.add('d-none')
@@ -631,10 +954,13 @@
       delete form.dataset.editId
       delete form.dataset.editTransaccionId
       lines = []
+      consignaciones = []
+      consignacionDevBlocked = false
       clearProductSelection()
       draftCantidad.value = '1'
       draftPrecioCompra.value = ''
       draftPrecioVenta.value = ''
+      clienteSelect.value = ''
       tipoEntradaRadio.checked = true
       tipoSalidaRadio.checked = false
       tipoEntradaRadio.disabled = false
@@ -642,6 +968,12 @@
       draftSection.classList.remove('d-none')
       addLineBtn.disabled = false
       editNotice.classList.add('d-none')
+      if (consignacionDevRadio) consignacionDevRadio.disabled = false
+      if (consignacionBanner) {
+        consignacionBanner.textContent = ''
+        consignacionBanner.classList.add('d-none')
+      }
+      consignacionSelect.innerHTML = '<option value="">Selecciona una consignación...</option>'
       const titleEl = document.getElementById('createMovementModal')?.querySelector('.modal-title')
       if (titleEl) titleEl.textContent = 'Nuevo movimiento'
       const btnSubmit = document.getElementById('moveSubmitBtn') as HTMLButtonElement
@@ -652,8 +984,20 @@
     form.addEventListener('submit', async (e) => {
       e.preventDefault()
       updateMotivoHidden()
+      if (isConsignacionDevMode() && consignacionDevBlocked) {
+        alert('No hay consignaciones activas para registrar una devolución.')
+        return
+      }
       if (!lines.length) {
         alert('Agregá al menos un producto a la lista.')
+        return
+      }
+
+      const tipo = getTipoActual()
+      const requiresClient = tipo === 'salida' || motivoHidden.value === 'consignacion_devolucion'
+      if (requiresClient && !clienteSelect?.value) {
+        alert('Debes seleccionar un cliente para este movimiento.')
+        clienteSelect?.focus()
         return
       }
 
@@ -664,7 +1008,6 @@
         btn.innerHTML = '<i class="ri-loader-4-line ri-spin me-1"></i>Guardando...'
       }
 
-      const tipo = getTipoActual()
       const movementId = form.dataset.editId
       const transaccionId = form.dataset.editTransaccionId
 
@@ -676,8 +1019,10 @@
           const url = `${apiBase}/api/inventory-movements/transaccion/${encodeURIComponent(transaccionId)}`
           const payload = {
             motivo: motivoHidden.value,
+            cliente_id: clienteSelect?.value || null,
             usuario_id: usuarioInput?.value || '',
-            observacion: (document.getElementById('moveObservacion') as HTMLTextAreaElement)?.value || '',
+            observacion:
+              (document.getElementById('moveObservacion') as HTMLTextAreaElement)?.value || '',
             items: lines.map((l) => ({
               movement_id: l.movementLineId,
               producto_id: l.producto_id,
@@ -693,7 +1038,9 @@
           })
           if (!response.ok) {
             const err = await response.json().catch(() => ({}))
-            throw new Error((err as { message?: string }).message || 'Error al actualizar la transacción')
+            throw new Error(
+              (err as { message?: string }).message || 'Error al actualizar la transacción'
+            )
           }
         } else if (movementId) {
           const line = lines[0]
@@ -701,13 +1048,15 @@
           const url = `${apiBase}/api/inventory-movements/${movementId}`
           const payload = {
             producto_id: line.producto_id,
+            cliente_id: clienteSelect?.value || null,
             tipo_movimiento: tipo,
             cantidad: line.cantidad,
             precio_compra: tipo === 'entrada' ? line.precio_compra : null,
             precio_venta: tipo === 'entrada' ? line.precio_venta : null,
             motivo: motivoHidden.value,
             usuario_id: usuarioInput?.value || '',
-            observacion: (document.getElementById('moveObservacion') as HTMLTextAreaElement)?.value || ''
+            observacion:
+              (document.getElementById('moveObservacion') as HTMLTextAreaElement)?.value || ''
           }
           const response = await fetch(url, {
             method: 'PUT',
@@ -725,8 +1074,10 @@
           const payload = {
             tipo_movimiento: tipo,
             motivo: motivoHidden.value,
+            cliente_id: clienteSelect?.value || null,
             usuario_id: usuarioInput?.value || '',
-            observacion: (document.getElementById('moveObservacion') as HTMLTextAreaElement)?.value || '',
+            observacion:
+              (document.getElementById('moveObservacion') as HTMLTextAreaElement)?.value || '',
             items
           }
           const response = await fetch(`${apiBase}/api/inventory-movements`, {

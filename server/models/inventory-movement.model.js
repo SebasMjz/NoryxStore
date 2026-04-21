@@ -7,6 +7,11 @@ const inventoryMovementSchema = new mongoose.Schema(
       ref: 'Product',
       required: true
     },
+    cliente_id: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Client',
+      default: null
+    },
     tipo_movimiento: {
       type: String,
       enum: ['entrada', 'salida'],
@@ -18,8 +23,16 @@ const inventoryMovementSchema = new mongoose.Schema(
     precio_venta: { type: Number, default: null },
     motivo: {
       type: String,
-      // Entradas: compra | reposicion   /   Salidas: venta | ajuste_manual
-      enum: ['compra', 'reposicion', 'venta', 'ajuste_manual'],
+      // Entradas: compra | reposicion | consignacion_devolucion
+      // Salidas: venta | ajuste_manual | consignacion_envio
+      enum: [
+        'compra',
+        'reposicion',
+        'venta',
+        'ajuste_manual',
+        'consignacion_envio',
+        'consignacion_devolucion'
+      ],
       required: true
     },
     referencia_id: { type: mongoose.Schema.Types.ObjectId },
@@ -44,6 +57,7 @@ const inventoryMovementSchema = new mongoose.Schema(
 
 inventoryMovementSchema.index({ fecha: -1 })
 inventoryMovementSchema.index({ producto_id: 1, fecha: -1 })
+inventoryMovementSchema.index({ cliente_id: 1, fecha: -1 })
 inventoryMovementSchema.index({ transaccion_id: 1, fecha: -1 })
 
 export const InventoryMovement = mongoose.model('InventoryMovement', inventoryMovementSchema)
