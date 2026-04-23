@@ -110,6 +110,34 @@ const receiptLogoUrl = getAssetPrefix('/assets/img/noryx/NoryxStoreLogo.jpeg')
     background: rgba(111, 66, 193, 0.06);
     border: 1px solid rgba(111, 66, 193, 0.12);
   }
+  .sale-preview-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    max-width: 320px;
+  }
+  .sale-preview-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.2rem 0.45rem;
+    border-radius: 999px;
+    background: rgba(111, 66, 193, 0.09);
+    color: var(--bs-body-color);
+    font-size: 0.7rem;
+    white-space: nowrap;
+  }
+  .sale-preview-chip strong {
+    font-weight: 700;
+  }
+  .sale-actions {
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.25rem;
+    white-space: nowrap;
+    flex-wrap: nowrap;
+  }
 </style>
 
 <AdminLayout title="Ventas" description="Historial y punto de venta" currentPath="sales">
@@ -329,6 +357,8 @@ const receiptLogoUrl = getAssetPrefix('/assets/img/noryx/NoryxStoreLogo.jpeg')
                   <th scope="col" data-sortable data-sort-key="vendedor"
                     ><i class="ri-user-star-line me-1" aria-hidden="true"></i>VENDEDOR</th
                   >
+                  <th scope="col"><i class="ri-stack-line me-1" aria-hidden="true"></i>PRODUCTOS</th
+                  >
                   <th class="text-end" scope="col" data-sortable data-sort-key="total"
                     ><i class="ri-money-dollar-circle-line me-1" aria-hidden="true"></i>TOTAL</th
                   >
@@ -343,7 +373,7 @@ const receiptLogoUrl = getAssetPrefix('/assets/img/noryx/NoryxStoreLogo.jpeg')
               </thead>
               <tbody id="histTableBody">
                 <tr>
-                  <td colspan="8" class="text-center text-muted py-5">
+                  <td colspan="9" class="text-center text-muted py-5">
                     <i class="ri-loader-4-line ri-spin"></i> Cargando historial...
                   </td>
                 </tr>
@@ -357,8 +387,9 @@ const receiptLogoUrl = getAssetPrefix('/assets/img/noryx/NoryxStoreLogo.jpeg')
   </div>
 </AdminLayout>
 
-<script is:inline define:vars={{ receiptLogoUrl }}>
+<script is:inline define:vars={{ receiptLogoUrl, salesPosEditUrl: getPathPrefix('/sales/pos') }}>
   window.__RECEIPT_LOGO_URL = receiptLogoUrl
+  window.__SALES_POS_EDIT_URL = salesPosEditUrl
 </script>
 <script>
   import {
@@ -397,6 +428,9 @@ const receiptLogoUrl = getAssetPrefix('/assets/img/noryx/NoryxStoreLogo.jpeg')
         <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal"
           >Cerrar</button
         >
+        <button type="button" class="btn btn-sm btn-outline-warning d-none" id="editSaleBtn">
+          <i class="ri-edit-line me-1"></i>Editar venta
+        </button>
         <button type="button" class="btn btn-sm btn-outline-primary d-none" id="downloadReceiptBtn">
           <i class="ri-download-2-line me-1"></i>Descargar recibo
         </button>
@@ -941,7 +975,7 @@ const receiptLogoUrl = getAssetPrefix('/assets/img/noryx/NoryxStoreLogo.jpeg')
       const tbody = document.getElementById('histTableBody')
       if (!filtered.length) {
         tbody.innerHTML =
-          '<tr><td colspan="8" class="text-center text-muted py-5">Sin resultados para el período seleccionado</td></tr>'
+          '<tr><td colspan="9" class="text-center text-muted py-5">Sin resultados para el período seleccionado</td></tr>'
         document.getElementById('histPgFooter').innerHTML = ''
         return
       }
@@ -950,6 +984,17 @@ const receiptLogoUrl = getAssetPrefix('/assets/img/noryx/NoryxStoreLogo.jpeg')
         .map((s) => {
           const cliente = esc(s.cliente_id?.nombre || 'Consumidor final')
           const vendedor = esc(s.vendedor_id?.nombre || '—')
+          const previewItems = Array.isArray(s.preview_items) ? s.preview_items : []
+          const previewHtml = previewItems.length
+            ? `<div class="sale-preview-list">${previewItems
+                .map(
+                  (item) =>
+                    `<span class="sale-preview-chip"><strong>${esc(item.producto_id?.nombre || '—')}</strong><span>x${Number(item.cantidad || 0)}</span></span>`
+                )
+                .join(
+                  ''
+                )}${s.items_count > 3 ? `<span class="sale-preview-chip text-primary">+${s.items_count - 3} más</span>` : ''}</div>`
+            : '<span class="text-muted small">Sin detalle</span>'
           const pagoBadge = esc(
             Array.isArray(s.pagos_mixtos) && s.pagos_mixtos.length ? 'Mixto' : s.metodo_pago || '—'
           )
@@ -975,12 +1020,16 @@ const receiptLogoUrl = getAssetPrefix('/assets/img/noryx/NoryxStoreLogo.jpeg')
           <td class="ps-3 text-muted small align-middle">${esc(fmtDate(s.fecha))}</td>
           <td class="align-middle fw-medium small">${cliente}</td>
           <td class="align-middle text-muted small">${vendedor}</td>
+          <td class="align-middle small">${previewHtml}</td>
           <td class="text-end align-middle fw-semibold">${fmt(s.total)}</td>
           <td class="align-middle"><span class="badge text-bg-secondary" title="${pagoTitle}">${pagoBadge}</span></td>
           <td class="text-center align-middle"><span class="badge text-bg-${badge}">${estado}</span></td>
-          <td class="text-end pe-3 align-middle">
-            <button class="btn btn-sm btn-icon view-sale-btn" data-id="${s._id}" title="Ver detalle"><i class="ri-eye-line"></i></button>
-            ${cancelBtn}
+          <td class="text-end pe-3 align-middle text-nowrap">
+            <div class="sale-actions">
+              <button class="btn btn-sm btn-icon view-sale-btn" data-id="${s._id}" title="Ver detalle"><i class="ri-eye-line"></i></button>
+              ${s.estado === 'activa' ? `<button class="btn btn-sm btn-icon edit-sale-btn text-primary" data-id="${s._id}" title="Editar venta"><i class="ri-edit-line"></i></button>` : ''}
+              ${cancelBtn}
+            </div>
           </td>
         </tr>`
         })
@@ -989,6 +1038,9 @@ const receiptLogoUrl = getAssetPrefix('/assets/img/noryx/NoryxStoreLogo.jpeg')
       tbody
         .querySelectorAll('.view-sale-btn')
         .forEach((btn) => btn.addEventListener('click', () => viewSaleDetail(btn.dataset.id)))
+      tbody
+        .querySelectorAll('.edit-sale-btn')
+        .forEach((btn) => btn.addEventListener('click', () => openEditSale(btn.dataset.id)))
       tbody
         .querySelectorAll('.cancel-sale-btn')
         .forEach((btn) => btn.addEventListener('click', () => openCancelModal(btn.dataset.id)))
@@ -1094,8 +1146,10 @@ const receiptLogoUrl = getAssetPrefix('/assets/img/noryx/NoryxStoreLogo.jpeg')
       const bodyEl = document.getElementById('saleDetailBody')
       const printBtn = document.getElementById('printReceiptBtn')
       const downloadBtn = document.getElementById('downloadReceiptBtn')
+      const editBtn = document.getElementById('editSaleBtn')
       if (printBtn) printBtn.classList.add('d-none')
       if (downloadBtn) downloadBtn.classList.add('d-none')
+      if (editBtn) editBtn.classList.add('d-none')
       lastReceiptPayload = null
       bodyEl.innerHTML =
         '<div class="text-center py-4 text-muted"><i class="ri-loader-4-line ri-spin"></i></div>'
@@ -1112,6 +1166,10 @@ const receiptLogoUrl = getAssetPrefix('/assets/img/noryx/NoryxStoreLogo.jpeg')
         lastReceiptPayload = { sale, details }
         if (printBtn) printBtn.classList.remove('d-none')
         if (downloadBtn) downloadBtn.classList.remove('d-none')
+        if (editBtn && sale?.estado === 'activa') {
+          editBtn.classList.remove('d-none')
+          editBtn.onclick = () => openEditSale(saleId)
+        }
 
         const numComp =
           sale?.numero_comprobante != null && Number.isFinite(Number(sale.numero_comprobante))
@@ -1213,6 +1271,11 @@ const receiptLogoUrl = getAssetPrefix('/assets/img/noryx/NoryxStoreLogo.jpeg')
         if (downloadBtn) downloadBtn.classList.add('d-none')
         lastReceiptPayload = null
       }
+    }
+
+    function openEditSale(saleId) {
+      const base = window.__SALES_POS_EDIT_URL || '/sales/pos'
+      window.location.href = `${base}?edit=${encodeURIComponent(saleId)}`
     }
 
     // ── Cancel with reason ─────────────────────────────────────

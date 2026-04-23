@@ -230,6 +230,17 @@ const receiptLogoUrl = getAssetPrefix('/assets/img/noryx/NoryxStoreLogo.jpeg')
             <i class="ri-receipt-2-line text-primary"></i>Datos de la Venta
           </h6>
 
+          <div id="editSaleBanner" class="alert alert-warning d-none py-2 small mb-3" role="status">
+            <div
+              class="d-flex flex-column flex-sm-row align-items-start align-items-sm-center justify-content-between gap-2"
+            >
+              <div><i class="ri-edit-line me-1"></i>Estás editando una venta existente.</div>
+              <a href={getPathPrefix('/sales')} class="btn btn-sm btn-outline-secondary"
+                >Salir de edición</a
+              >
+            </div>
+          </div>
+
           <!-- Client -->
           <div class="mb-3">
             <label class="form-label small text-muted">Cliente</label>
@@ -390,8 +401,9 @@ const receiptLogoUrl = getAssetPrefix('/assets/img/noryx/NoryxStoreLogo.jpeg')
   </div>
 </AdminLayout>
 
-<script is:inline define:vars={{ receiptLogoUrl }}>
+<script is:inline define:vars={{ receiptLogoUrl, salesListUrl: getPathPrefix('/sales') }}>
   window.__RECEIPT_LOGO_URL = receiptLogoUrl
+  window.__SALES_LIST_URL = salesListUrl
 </script>
 <script>
   import {
@@ -528,6 +540,8 @@ const receiptLogoUrl = getAssetPrefix('/assets/img/noryx/NoryxStoreLogo.jpeg')
     let pendingSalePayload = null
     let previewBlobUrl = null
     let lastRegisteredReceipt = null
+    let editSaleId = ''
+    let editSaleOriginal = null
 
     const fmt = (n) => 'Bs. ' + Number(n || 0).toFixed(2)
     const esc = (s) =>
@@ -640,6 +654,8 @@ const receiptLogoUrl = getAssetPrefix('/assets/img/noryx/NoryxStoreLogo.jpeg')
 
     document.addEventListener('DOMContentLoaded', () => {
       Promise.all([loadProducts(), loadClients(), loadPaymentMethods()])
+        .then(loadSaleForEditFromQuery)
+        .catch(() => {})
 
       document
         .getElementById('posSearch')
@@ -658,6 +674,7 @@ const receiptLogoUrl = getAssetPrefix('/assets/img/noryx/NoryxStoreLogo.jpeg')
       document.getElementById('completeSaleBtn').addEventListener('click', completeSale)
       document.getElementById('posDescuento').addEventListener('input', renderCart)
       document.getElementById('posMontoPagado').addEventListener('input', () => {
+        if (editSaleId) return
         syncMixedPayPanel()
         renderCart()
       })
@@ -969,10 +986,10 @@ const receiptLogoUrl = getAssetPrefix('/assets/img/noryx/NoryxStoreLogo.jpeg')
       const total = Math.max(0, subtotal - descuento)
       const paidInput = document.getElementById('posMontoPagado')
       let paidRaw = Math.max(0, Number(paidInput?.value) || 0)
-      if (paidRaw <= 0.01) {
+      if (!editSaleId && paidRaw <= 0.01) {
         paidRaw = total
         if (paidInput) paidInput.value = String(total.toFixed(2))
-      } else if (paidRaw > total + 0.01) {
+      } else if (!editSaleId && paidRaw > total + 0.01) {
         paidRaw = total
         if (paidInput) paidInput.value = String(total.toFixed(2))
       }
@@ -1234,12 +1251,92 @@ const receiptLogoUrl = getAssetPrefix('/assets/img/noryx/NoryxStoreLogo.jpeg')
       })
     }
 
+    async function loadSaleForEditFromQuery() {
+      const editId = new URLSearchParams(window.location.search).get('edit')
+      if (!editId) return
+      await loadSaleForEdit(editId)
+    }
+
+    async function loadSaleForEdit(saleId) {
+      const [saleRes, detailsRes] = await Promise.all([
+        fetch(`${API}/api/sales/${encodeURIComponent(saleId)}`),
+        fetch(`${API}/api/sales/${encodeURIComponent(saleId)}/details`)
+      ])
+
+      if (!saleRes.ok || !detailsRes.ok) {
+        showToast('No se pudo cargar la venta para editar.', 'danger')
+        return
+      }
+
+      const sale = await saleRes.json()
+      const details = await detailsRes.json()
+      if (!sale || sale.estado !== 'activa') {
+        showToast('Solo se pueden editar ventas activas.', 'warning')
+        return
+      }
+
+      editSaleId = saleId
+      editSaleOriginal = sale
+      document.getElementById('editSaleBanner').classList.remove('d-none')
+      document.getElementById('completeSaleBtn').innerHTML =
+        '<i class="ri-save-line me-2"></i>Actualizar venta'
+
+      clearCart()
+
+      details.forEach((d) => {
+        const pid = String(d.producto_id?._id || d.producto_id || '')
+        cart.push({
+          producto_id: pid,
+          nombre: d.producto_id?.nombre || '—',
+          codigo: d.producto_id?.codigo || '',
+          precio_unitario: Number(d.precio_unitario || 0),
+          stockDisponible:
+            Number(allProducts.find((p) => p._id === pid)?.stock || 0) + Number(d.cantidad || 0),
+          cantidad: Math.max(1, Number(d.cantidad || 1))
+        })
+      })
+
+      if (sale.cliente_id?._id) {
+        selectClient(sale.cliente_id._id, sale.cliente_id.nombre || 'Cliente')
+      }
+
+      document.getElementById('posObservacion').value = sale.observacion || ''
+      document.getElementById('posDescuento').value = String(
+        Number(sale.descuento_monto || 0).toFixed(2)
+      )
+      const paidInput = document.getElementById('posMontoPagado')
+      if (paidInput) {
+        paidInput.value = String(Number(sale.total_pagado || 0).toFixed(2))
+        paidInput.readOnly = true
+      }
+
+      document.querySelectorAll('.pay-btn').forEach((b) => {
+        b.disabled = true
+      })
+
+      payMode = 'single'
+      selectedPayment = sale.pagos_mixtos?.length ? 'Mixto' : sale.metodo_pago || 'Efectivo'
+      const mixedPanel = document.getElementById('posMixedPayPanel')
+      mixedPanel.classList.add('d-none')
+      document.querySelectorAll('.pay-btn').forEach((b) => {
+        b.classList.remove('btn-primary', 'active')
+        b.classList.add('btn-outline-secondary')
+        if ((b.getAttribute('data-method') || '') === selectedPayment) {
+          b.classList.remove('btn-outline-secondary')
+          b.classList.add('btn-primary', 'active')
+        }
+      })
+
+      renderCart()
+      showToast(`Venta ${sale.numero_comprobante || sale._id} cargada para edición.`, 'info')
+    }
+
     // ── Complete sale: vista previa del recibo, luego confirmar en modal ──
     async function completeSale() {
       if (!cart.length) return
       const { subtotal: subtotalPre, total } = getCartMoneyTotals()
       const paidNow = getPaidNowAmount(total)
-      if (paidNow <= 0.01) {
+      if (!editSaleId && paidNow <= 0.01) {
         showToast('Ingresa un monto pagado mayor a cero.', 'warning')
         return
       }
@@ -1247,7 +1344,7 @@ const receiptLogoUrl = getAssetPrefix('/assets/img/noryx/NoryxStoreLogo.jpeg')
         showToast('Para dejar saldo pendiente debes seleccionar un cliente.', 'warning')
         return
       }
-      if (payMode === 'mixed') {
+      if (payMode === 'mixed' && !editSaleId) {
         if (paidNow < total - 0.01) {
           showToast(
             'Con pago mixto debes cubrir el monto pagado ahora; para deudas usa pago único o paga total.',
@@ -1292,19 +1389,18 @@ const receiptLogoUrl = getAssetPrefix('/assets/img/noryx/NoryxStoreLogo.jpeg')
         vendedor_id: user.id || null,
         observacion: document.getElementById('posObservacion').value.trim(),
         descuento_monto: discSend,
-        monto_pagado_inicial: paidNow,
         items: cart.map((c) => ({
           producto_id: c.producto_id,
           cantidad: c.cantidad,
           precio_unitario: c.precio_unitario
         }))
       }
-      if (payMode === 'mixed') {
+      if (payMode === 'mixed' && !editSaleId) {
         const r = getMixedPaymentsPayload(total)
         pendingSalePayload.metodo_pago = 'Mixto'
         pendingSalePayload.pagos_mixtos = r.pagos_mixtos
       } else {
-        pendingSalePayload.metodo_pago = selectedPayment
+        pendingSalePayload.metodo_pago = selectedPayment || 'Efectivo'
       }
 
       const buildFn = window.NoryxBuildSaleReceiptHtml
@@ -1340,15 +1436,18 @@ const receiptLogoUrl = getAssetPrefix('/assets/img/noryx/NoryxStoreLogo.jpeg')
         '<span class="spinner-border spinner-border-sm me-1"></span>Guardando...'
       const user = window.__authUser || {}
       try {
-        const res = await fetch(API + '/api/sales', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'x-user-id': user.id || '',
-            'x-user-name': user.nombre || ''
-          },
-          body: JSON.stringify(pendingSalePayload)
-        })
+        const res = await fetch(
+          API + (editSaleId ? `/api/sales/${encodeURIComponent(editSaleId)}` : '/api/sales'),
+          {
+            method: editSaleId ? 'PUT' : 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'x-user-id': user.id || '',
+              'x-user-name': user.nombre || ''
+            },
+            body: JSON.stringify(pendingSalePayload)
+          }
+        )
         if (!res.ok) {
           const err = await res.json().catch(() => ({}))
           throw new Error(err.message || 'Error al registrar la venta')
@@ -1365,6 +1464,13 @@ const receiptLogoUrl = getAssetPrefix('/assets/img/noryx/NoryxStoreLogo.jpeg')
         if (frame) frame.src = 'about:blank'
 
         bootstrap.Modal.getInstance(document.getElementById('posConfirmSaleModal')).hide()
+
+        if (editSaleId) {
+          showToast('Venta actualizada correctamente.', 'success')
+          const target = window.__SALES_LIST_URL || '/sales'
+          window.location.href = target
+          return
+        }
 
         document.getElementById('posReceiptBanner').classList.remove('d-none')
         showToast(

@@ -599,12 +599,62 @@ router.get('/sales', async (_req, res, next) => {
       .populate('vendedor_id', 'nombre tipo_usuario')
       .sort({ fecha: -1 })
       .limit(100)
+      .lean()
 
-    res.json(sales)
+    const salesWithPreview = await attachSalesPreview(sales)
+    res.json(salesWithPreview)
   } catch (error) {
     next(error)
   }
 })
+
+router.get('/sales/:id', async (req, res, next) => {
+  try {
+    const sale = await Sale.findById(req.params.id)
+      .populate('cliente_id', 'nombre celular')
+      .populate('vendedor_id', 'nombre tipo_usuario')
+      .lean()
+
+    if (!sale) return res.status(404).json({ ok: false, message: 'Venta no encontrada' })
+
+    const [saleWithPreview] = await attachSalesPreview([sale])
+    res.json(saleWithPreview || sale)
+  } catch (error) {
+    next(error)
+  }
+})
+
+async function attachSalesPreview(sales) {
+  if (!Array.isArray(sales) || sales.length === 0) return []
+
+  const saleIds = sales.map((sale) => String(sale._id))
+  const details = await SaleDetail.find({ venta_id: { $in: saleIds } })
+    .populate('producto_id', 'nombre codigo')
+    .sort({ _id: 1 })
+    .lean()
+
+  const grouped = new Map()
+  for (const detail of details) {
+    const saleId = String(detail.venta_id)
+    if (!grouped.has(saleId)) grouped.set(saleId, [])
+    grouped.get(saleId).push({
+      _id: String(detail._id),
+      producto_id: detail.producto_id || null,
+      cantidad: Number(detail.cantidad || 0),
+      precio_unitario: Number(detail.precio_unitario || 0),
+      subtotal: Number(detail.subtotal || 0)
+    })
+  }
+
+  return sales.map((sale) => {
+    const items = grouped.get(String(sale._id)) || []
+    return {
+      ...sale,
+      items_count: items.length,
+      preview_items: items.slice(0, 3)
+    }
+  })
+}
 
 function normalizePagosMixtos(raw, total) {
   if (!Array.isArray(raw) || raw.length === 0) return { ok: true, pagos: undefined }
@@ -782,20 +832,99 @@ router.post('/sales', async (req, res, next) => {
 router.put('/sales/:id', async (req, res, next) => {
   try {
     const payload = req.body || {}
-    const sale = await Sale.findByIdAndUpdate(
-      req.params.id,
-      {
-        ...payload,
-        ...getUpdateAuditFields(req)
-      },
-      { new: true, runValidators: true }
-    )
 
+    const sale = await Sale.findById(req.params.id)
     if (!sale) {
       return res.status(404).json({ ok: false, message: 'Venta no encontrada' })
     }
 
-    res.json(sale)
+    const items = Array.isArray(payload.items) ? payload.items : null
+    const currentPaid = roundMoney(Number(sale.total_pagado || 0))
+
+    let subtotal = roundMoney(Number(sale.subtotal || 0))
+    let descuento_monto = roundMoney(Number(sale.descuento_monto || 0))
+    let total = roundMoney(Number(sale.total || 0))
+    let metodo_pago = String(payload.metodo_pago ?? sale.metodo_pago ?? '').trim()
+    let pagos_mixtos = Array.isArray(payload.pagos_mixtos)
+      ? payload.pagos_mixtos
+      : sale.pagos_mixtos
+
+    if (items && items.length > 0) {
+      const rawSubtotal = items.reduce((sum, item) => {
+        return sum + Number(item.precio_unitario || 0) * Number(item.cantidad || 1)
+      }, 0)
+      subtotal = roundMoney(rawSubtotal)
+      const rawDiscount = Math.max(0, Number(payload.descuento_monto ?? sale.descuento_monto ?? 0))
+      descuento_monto = Math.min(roundMoney(rawDiscount), subtotal)
+      total = roundMoney(Math.max(0, subtotal - descuento_monto))
+
+      const mixNorm = normalizePagosMixtos(payload.pagos_mixtos, total)
+      if (!mixNorm.ok) {
+        return res.status(400).json({ ok: false, message: mixNorm.message })
+      }
+      if (mixNorm.pagos) {
+        pagos_mixtos = mixNorm.pagos
+      }
+      if (Array.isArray(pagos_mixtos) && pagos_mixtos.length) {
+        metodo_pago = 'Mixto'
+      } else if (!metodo_pago) {
+        return res.status(400).json({ ok: false, message: 'Indique el método de pago' })
+      }
+
+      if (currentPaid > total + 0.01) {
+        return res.status(400).json({
+          ok: false,
+          message: 'No se puede bajar el total por debajo del monto ya pagado.'
+        })
+      }
+
+      const existingDetails = await SaleDetail.find({ venta_id: sale._id })
+      await Promise.all(
+        existingDetails.map((detail) =>
+          Product.findByIdAndUpdate(detail.producto_id, { $inc: { stock: detail.cantidad } })
+        )
+      )
+      await SaleDetail.deleteMany({ venta_id: sale._id })
+
+      await Promise.all(
+        items.map(async (item) => {
+          const cantidad = Number(item.cantidad || 1)
+          const precio = Number(item.precio_unitario || 0)
+          await SaleDetail.create({
+            venta_id: sale._id,
+            producto_id: item.producto_id,
+            cantidad,
+            precio_unitario: precio,
+            subtotal: cantidad * precio
+          })
+          await Product.findByIdAndUpdate(item.producto_id, { $inc: { stock: -cantidad } })
+        })
+      )
+    }
+
+    sale.cliente_id = payload.cliente_id ?? sale.cliente_id ?? null
+    sale.vendedor_id = payload.vendedor_id ?? sale.vendedor_id ?? null
+    sale.subtotal = subtotal
+    sale.descuento_monto = descuento_monto
+    sale.total = total
+    sale.metodo_pago = metodo_pago
+    sale.pagos_mixtos = pagos_mixtos && pagos_mixtos.length ? pagos_mixtos : undefined
+    sale.observacion = payload.observacion ?? sale.observacion ?? ''
+    sale.fecha_vencimiento = payload.fecha_vencimiento ?? sale.fecha_vencimiento ?? null
+
+    const cobro = buildEstadoCobro(total, currentPaid)
+    sale.total_pagado = cobro.total_pagado
+    sale.saldo_pendiente = cobro.saldo_pendiente
+    sale.estado_cobro = cobro.estado_cobro
+    Object.assign(sale, getUpdateAuditFields(req))
+    await sale.save()
+
+    const saleOut = await Sale.findById(sale._id)
+      .populate('cliente_id', 'nombre celular')
+      .populate('vendedor_id', 'nombre tipo_usuario')
+      .lean()
+
+    res.json({ ok: true, sale: saleOut })
   } catch (error) {
     next(error)
   }
