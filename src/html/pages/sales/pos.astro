@@ -1389,6 +1389,7 @@ const receiptLogoUrl = getAssetPrefix('/assets/img/noryx/NoryxStoreLogo.jpeg')
         vendedor_id: user.id || null,
         observacion: document.getElementById('posObservacion').value.trim(),
         descuento_monto: discSend,
+        monto_pagado_inicial: paidNow,
         items: cart.map((c) => ({
           producto_id: c.producto_id,
           cantidad: c.cantidad,
