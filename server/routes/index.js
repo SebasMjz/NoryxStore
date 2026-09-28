@@ -1,5 +1,6 @@
 import { Router } from 'express'
 import mongoose from 'mongoose'
+import ExcelJS from 'exceljs'
 import {
   Category,
   Client,
@@ -603,6 +604,123 @@ router.get('/sales', async (_req, res, next) => {
 
     const salesWithPreview = await attachSalesPreview(sales)
     res.json(salesWithPreview)
+  } catch (error) {
+    next(error)
+  }
+})
+
+router.get('/sales/export', async (req, res, next) => {
+  try {
+    const match = {}
+    if (req.query.from && req.query.to) {
+      match.fecha = { $gte: new Date(req.query.from), $lte: new Date(req.query.to) }
+    }
+    if (req.query.estado) {
+      match.estado = req.query.estado
+    }
+
+    const sales = await Sale.find(match)
+      .populate('cliente_id', 'nombre celular')
+      .populate('vendedor_id', 'nombre')
+      .sort({ fecha: -1 })
+      .lean()
+
+    const saleIds = sales.map((s) => String(s._id))
+    const details = await SaleDetail.find({ venta_id: { $in: saleIds } })
+      .populate('producto_id', 'nombre codigo')
+      .lean()
+
+    const detailsBySale = new Map()
+    for (const d of details) {
+      const key = String(d.venta_id)
+      if (!detailsBySale.has(key)) detailsBySale.set(key, [])
+      detailsBySale.get(key).push(d)
+    }
+
+    const workbook = new ExcelJS.Workbook()
+    workbook.creator = 'Noryx Store'
+    workbook.created = new Date()
+
+    const ws = workbook.addWorksheet('Ventas', {
+      views: [{ state: 'frozen', ySplit: 1 }]
+    })
+
+    ws.columns = [
+      { header: 'Fecha', key: 'fecha', width: 20 },
+      { header: 'N° Comprobante', key: 'comprobante', width: 16 },
+      { header: 'Cliente', key: 'cliente', width: 24 },
+      { header: 'Vendedor', key: 'vendedor', width: 20 },
+      { header: 'Productos', key: 'productos', width: 42 },
+      { header: 'Cant. Items', key: 'cant_items', width: 12 },
+      { header: 'Subtotal', key: 'subtotal', width: 14 },
+      { header: 'Descuento', key: 'descuento', width: 14 },
+      { header: 'Total', key: 'total', width: 14 },
+      { header: 'Método de Pago', key: 'metodo_pago', width: 20 },
+      { header: 'Pagado', key: 'pagado', width: 14 },
+      { header: 'Saldo Pendiente', key: 'saldo', width: 16 },
+      { header: 'Estado', key: 'estado', width: 12 },
+      { header: 'Cobro', key: 'cobro', width: 14 }
+    ]
+
+    const headerRow = ws.getRow(1)
+    headerRow.font = { bold: true, color: { argb: 'FFFFFFFF' } }
+    headerRow.fill = {
+      type: 'pattern',
+      pattern: 'solid',
+      fgColor: { argb: 'FF6F42C1' }
+    }
+    headerRow.alignment = { vertical: 'middle', horizontal: 'center' }
+    headerRow.height = 28
+
+    const moneyFmt = '#,##0.00'
+    const tzOff = parseInt(process.env.TZ_OFFSET_HOURS ?? '-4', 10) * 3600000
+
+    for (const sale of sales) {
+      const items = detailsBySale.get(String(sale._id)) || []
+      const productList = items.map((d) => d.producto_id?.nombre || '—').join(', ')
+      const localFecha = new Date(new Date(sale.fecha).getTime() + tzOff)
+      const fechaStr = localFecha.toISOString().slice(0, 16).replace('T', ' ')
+
+      const row = ws.addRow({
+        fecha: fechaStr,
+        comprobante: sale.numero_comprobante ?? '',
+        cliente: sale.cliente_id?.nombre || 'Consumidor final',
+        vendedor: sale.vendedor_id?.nombre || '—',
+        productos: productList || '—',
+        cant_items: items.length,
+        subtotal: Number(sale.subtotal || 0),
+        descuento: Number(sale.descuento_monto || 0),
+        total: Number(sale.total || 0),
+        metodo_pago: sale.metodo_pago || '—',
+        pagado: Number(sale.total_pagado || 0),
+        saldo: Number(sale.saldo_pendiente || 0),
+        estado: sale.estado === 'activa' ? 'Activa' : 'Anulada',
+        cobro: sale.estado_cobro || '—'
+      })
+
+      row.eachCell((cell, colNumber) => {
+        cell.alignment = { vertical: 'middle' }
+        if ([7, 8, 9, 11, 12].includes(colNumber)) {
+          cell.numFmt = moneyFmt
+        }
+      })
+
+      if (sale.estado === 'anulada') {
+        row.font = { color: { argb: 'FFDC3545' }, italic: true }
+      }
+    }
+
+    ws.autoFilter = {
+      from: { row: 1, column: 1 },
+      to: { row: 1, column: ws.columnCount }
+    }
+
+    const fileName = `ventas_${new Date().toISOString().slice(0, 10)}.xlsx`
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`)
+
+    await workbook.xlsx.write(res)
+    res.end()
   } catch (error) {
     next(error)
   }

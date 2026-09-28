@@ -3,13 +3,14 @@
   "description": "Panel de administracion e inventario para Noryx Store.",
   "version": "1.0.9",
   "license": "MIT",
+  "packageManager": "pnpm@12.6.0",
   "author": "Noryx Store",
   "type": "module",
   "scripts": {
     "dev": "node tools/dev.mjs",
     "api:dev": "node --watch server/index.js",
     "api:start": "node server/index.js",
-    "dev:full": "concurrently \"npm run api:dev\" \"npm run dev\"",
+    "dev:full": "concurrently \"pnpm run api:dev\" \"pnpm run dev\"",
     "build": "node tools/build.mjs",
     "css": "node tools/css.mjs",
     "js": "node tools/js.mjs",
@@ -93,6 +94,7 @@
     "bootstrap": "^5.3.6",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
+    "exceljs": "^4.4.0",
     "express": "^4.21.2",
     "mongoose": "^8.18.0",
     "simplebar": "^6.3.1"

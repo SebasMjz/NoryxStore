@@ -143,9 +143,14 @@ const receiptLogoUrl = getAssetPrefix('/assets/img/noryx/NoryxStoreLogo.jpeg')
 <AdminLayout title="Ventas" description="Historial y punto de venta" currentPath="sales">
   <div class="d-flex align-items-start justify-content-between flex-wrap gap-2 mb-3">
     <PageHeader {...pageHeaderProps} />
-    <a href={getPathPrefix('/sales/pos')} class="btn btn-primary align-self-start">
-      <i class="ri-shopping-cart-2-line me-1" aria-hidden="true"></i>Nueva venta
-    </a>
+    <div class="d-flex gap-2 align-self-start">
+      <button class="btn btn-outline-success" id="exportExcelBtn" title="Descargar historial en Excel">
+        <i class="ri-file-excel-2-line me-1" aria-hidden="true"></i>Exportar Excel
+      </button>
+      <a href={getPathPrefix('/sales/pos')} class="btn btn-primary">
+        <i class="ri-shopping-cart-2-line me-1" aria-hidden="true"></i>Nueva venta
+      </a>
+    </div>
   </div>
 
   <!-- ── Caja del período ──────────────────────────────────── -->
@@ -404,6 +409,44 @@ const receiptLogoUrl = getAssetPrefix('/assets/img/noryx/NoryxStoreLogo.jpeg')
   // @ts-expect-error
   window.NoryxDownloadReceiptHtml = downloadReceiptHtml
 </script>
+
+<!-- Export Excel modal -->
+<div class="modal fade" id="exportExcelModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-sm modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header py-2 border-0">
+        <h5 class="modal-title"><i class="ri-file-excel-2-line me-2 text-success"></i>Exportar a Excel</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <p class="small text-muted mb-3">¿Qué ventas deseas exportar?</p>
+        <div class="d-grid gap-2">
+          <button class="btn btn-outline-primary text-start" id="exportAllBtn">
+            <i class="ri-calendar-line me-2"></i>Todas las ventas
+          </button>
+          <button class="btn btn-outline-primary text-start" id="exportRangeBtn">
+            <i class="ri-calendar-event-line me-2"></i>Rango de fechas
+          </button>
+        </div>
+        <div id="exportRangeFields" class="mt-3" style="display:none;">
+          <div class="mb-2">
+            <label class="form-label small fw-semibold">Desde</label>
+            <input type="date" id="exportDateFrom" class="form-control form-control-sm" />
+          </div>
+          <div class="mb-3">
+            <label class="form-label small fw-semibold">Hasta</label>
+            <input type="date" id="exportDateTo" class="form-control form-control-sm" />
+          </div>
+          <div class="d-grid">
+            <button class="btn btn-success btn-sm" id="confirmExportRangeBtn">
+              <i class="ri-download-2-line me-1"></i>Descargar
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
 <!-- Sale detail modal -->
 <div class="modal fade" id="saleDetailModal" tabindex="-1" aria-hidden="true">
@@ -675,6 +718,35 @@ const receiptLogoUrl = getAssetPrefix('/assets/img/noryx/NoryxStoreLogo.jpeg')
 
       document.getElementById('refreshCaja').addEventListener('click', loadCaja)
       document.getElementById('confirmCancelBtn').addEventListener('click', doCancel)
+
+      document.getElementById('exportExcelBtn').addEventListener('click', exportExcel)
+
+      document.getElementById('exportAllBtn').addEventListener('click', () => {
+        bootstrap.Modal.getInstance(document.getElementById('exportExcelModal')).hide()
+        const params = new URLSearchParams()
+        if (currentFilter !== 'all') params.set('estado', currentFilter)
+        doExport(params)
+      })
+
+      document.getElementById('exportRangeBtn').addEventListener('click', () => {
+        const fields = document.getElementById('exportRangeFields')
+        fields.style.display = fields.style.display === 'none' ? '' : 'none'
+      })
+
+      document.getElementById('confirmExportRangeBtn').addEventListener('click', () => {
+        const from = document.getElementById('exportDateFrom').value
+        const to = document.getElementById('exportDateTo').value
+        if (!from || !to) {
+          alert('Selecciona ambas fechas')
+          return
+        }
+        bootstrap.Modal.getInstance(document.getElementById('exportExcelModal')).hide()
+        const params = new URLSearchParams()
+        params.set('from', new Date(from + 'T00:00:00').toISOString())
+        params.set('to', new Date(to + 'T23:59:59').toISOString())
+        if (currentFilter !== 'all') params.set('estado', currentFilter)
+        doExport(params)
+      })
 
       // Select all checkbox
       document.getElementById('histSelectAll').addEventListener('change', function () {
@@ -1318,6 +1390,30 @@ const receiptLogoUrl = getAssetPrefix('/assets/img/noryx/NoryxStoreLogo.jpeg')
         btn.disabled = false
         btn.innerHTML = '<i class="ri-forbid-line me-1"></i>Anular venta'
       }
+    }
+
+    // ── Export Excel ──────────────────────────────────────────
+    function exportExcel() {
+      new bootstrap.Modal(document.getElementById('exportExcelModal')).show()
+    }
+
+    function doExport(params) {
+      const btn = document.getElementById('exportExcelBtn')
+      btn.disabled = true
+      btn.innerHTML = '<i class="ri-loader-4-line ri-spin me-1"></i>Generando...'
+
+      const url = `${API}/api/sales/export${params.toString() ? '?' + params.toString() : ''}`
+      const a = document.createElement('a')
+      a.href = url
+      a.download = ''
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+
+      setTimeout(() => {
+        btn.disabled = false
+        btn.innerHTML = '<i class="ri-file-excel-2-line me-1"></i>Exportar Excel'
+      }, 2000)
     }
 
     function showToast(msg, type = 'success') {
