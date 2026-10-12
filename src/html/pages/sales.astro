@@ -690,7 +690,7 @@ const receiptLogoUrl = getAssetPrefix('/assets/img/noryx/NoryxStoreLogo.jpeg')
     let pageSize = 10
     let dateFrom = null
     let dateTo = null
-    let activePreset = 'all'
+    let activePreset = 'today'
     let pendingCancelId = null
     let sortKey = null
     let sortDir = 'asc'
@@ -753,10 +753,8 @@ const receiptLogoUrl = getAssetPrefix('/assets/img/noryx/NoryxStoreLogo.jpeg')
 
     // ── Init ───────────────────────────────────────────────────
     document.addEventListener('DOMContentLoaded', () => {
-      // Initialize with "all" preset so todas las ventas del período
-      // se ven al entrar (antes arrancaba en "today" y las primeras
-      // ventas parecían no cargarse). (skipReload=true to avoid double load)
-      applyPreset('all', true)
+      // Initialize with "today" preset (skipReload=true to avoid double load)
+      applyPreset('today', true)
       loadSales()
       loadCaja()
       bindPrintReceiptOnce()
