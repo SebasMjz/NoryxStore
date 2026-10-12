@@ -48,3 +48,10 @@ dist
 /--cache-location/
 --cache-location
 --cache-location/
+
+# Skills de subagentes (instalados localmente con `skills add`, no forman
+# parte del producto; se restauran con el lock si hace falta)
+.agents/skills/
+.claude/skills/
+agent/skills/
+skills-lock.json

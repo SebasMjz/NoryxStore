@@ -16,15 +16,15 @@ const receiptLogoUrl = getAssetPrefix('/assets/img/noryx/NoryxStoreLogo.jpeg')
 <style is:global>
   .caja-card {
     border-radius: 12px;
-    border: 1px solid rgba(111, 66, 193, 0.15);
-    background: linear-gradient(135deg, rgba(111, 66, 193, 0.07) 0%, rgba(111, 66, 193, 0.02) 100%);
+    border: 1px solid color-mix(in srgb, var(--bs-primary) 16%, transparent);
+    background: linear-gradient(135deg, color-mix(in srgb, var(--bs-primary) 7%, transparent) 0%, color-mix(in srgb, var(--bs-primary) 2%, transparent) 100%);
     transition:
       transform 0.15s,
       box-shadow 0.15s;
   }
   .caja-card:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 18px rgba(111, 66, 193, 0.12);
+    box-shadow: 0 4px 18px color-mix(in srgb, var(--bs-primary) 14%, transparent);
   }
   .caja-icon {
     width: 44px;
@@ -62,8 +62,8 @@ const receiptLogoUrl = getAssetPrefix('/assets/img/noryx/NoryxStoreLogo.jpeg')
   .sale-detail-head {
     background: linear-gradient(
       135deg,
-      rgba(111, 66, 193, 0.14) 0%,
-      rgba(111, 66, 193, 0.04) 100%
+      color-mix(in srgb, var(--bs-primary) 14%, transparent) 0%,
+      color-mix(in srgb, var(--bs-primary) 4%, transparent) 100%
     ) !important;
   }
   .sale-detail-num {
@@ -90,9 +90,9 @@ const receiptLogoUrl = getAssetPrefix('/assets/img/noryx/NoryxStoreLogo.jpeg')
     text-transform: uppercase;
     letter-spacing: 0.05em;
     font-weight: 600;
-    background: rgba(35, 38, 45, 0.98) !important;
-    color: rgba(255, 255, 255, 0.92) !important;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.14) !important;
+    background: var(--bs-tertiary-bg) !important;
+    color: var(--bs-emphasis-color) !important;
+    border-bottom: 1px solid var(--bs-border-color) !important;
     padding-top: 0.55rem;
     padding-bottom: 0.55rem;
   }
@@ -107,13 +107,14 @@ const receiptLogoUrl = getAssetPrefix('/assets/img/noryx/NoryxStoreLogo.jpeg')
   }
   .sale-detail-totals {
     border-radius: 10px;
-    background: rgba(111, 66, 193, 0.06);
-    border: 1px solid rgba(111, 66, 193, 0.12);
+    background: color-mix(in srgb, var(--bs-primary) 6%, transparent);
+    border: 1px solid color-mix(in srgb, var(--bs-primary) 14%, transparent);
   }
   .sale-preview-list {
     display: flex;
     flex-wrap: wrap;
     gap: 0.35rem;
+    min-width: 200px;
     max-width: 320px;
   }
   .sale-preview-chip {
@@ -122,13 +123,19 @@ const receiptLogoUrl = getAssetPrefix('/assets/img/noryx/NoryxStoreLogo.jpeg')
     gap: 0.3rem;
     padding: 0.2rem 0.45rem;
     border-radius: 999px;
-    background: rgba(111, 66, 193, 0.09);
+    background: color-mix(in srgb, var(--bs-primary) 9%, transparent);
+    border: 1px solid color-mix(in srgb, var(--bs-primary) 18%, transparent);
     color: var(--bs-body-color);
     font-size: 0.7rem;
     white-space: nowrap;
+    max-width: 100%;
   }
   .sale-preview-chip strong {
     font-weight: 700;
+    max-width: 190px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
   .sale-actions {
     display: inline-flex;
@@ -137,6 +144,97 @@ const receiptLogoUrl = getAssetPrefix('/assets/img/noryx/NoryxStoreLogo.jpeg')
     gap: 0.25rem;
     white-space: nowrap;
     flex-wrap: nowrap;
+  }
+  /* Column guards: money and badges never wrap under the product chips */
+  table[aria-label="Historial de ventas"] td.sale-total-cell,
+  table[aria-label="Historial de ventas"] td.sale-pago-cell {
+    white-space: nowrap;
+    vertical-align: middle;
+  }
+  table[aria-label="Historial de ventas"] td.sale-total-cell {
+    font-variant-numeric: tabular-nums;
+  }
+  table[aria-label="Historial de ventas"] td.sale-products-cell {
+    min-width: 210px;
+  }
+  .search-wrapper {
+    flex: 1 1 240px;
+    max-width: 360px;
+  }
+  /* Responsive: stacked sale cards under 768px */
+  @media (max-width: 767.98px) {
+    table[aria-label="Historial de ventas"] thead {
+      display: none;
+    }
+    table[aria-label="Historial de ventas"],
+    table[aria-label="Historial de ventas"] tbody,
+    table[aria-label="Historial de ventas"] tr,
+    table[aria-label="Historial de ventas"] td {
+      display: block;
+      width: 100%;
+    }
+    table[aria-label="Historial de ventas"] tbody tr {
+      border: 1px solid var(--bs-border-color);
+      border-radius: 12px;
+      padding: 0.75rem 0.9rem;
+      margin-bottom: 0.75rem;
+    }
+    table[aria-label="Historial de ventas"] td {
+      border: 0 !important;
+      padding: 0.2rem 0 !important;
+    }
+    table[aria-label="Historial de ventas"] td[data-label]::before {
+      content: attr(data-label);
+      display: block;
+      font-size: 0.66rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--bs-secondary-color);
+      font-weight: 600;
+    }
+    table[aria-label="Historial de ventas"] td.sale-check-cell {
+      position: absolute;
+    }
+    table[aria-label="Historial de ventas"] tbody tr {
+      position: relative;
+      padding-left: 2.4rem;
+    }
+    table[aria-label="Historial de ventas"] td.sale-check-cell {
+      left: 0.7rem;
+      top: 0.8rem;
+      width: auto;
+      padding: 0 !important;
+    }
+    table[aria-label="Historial de ventas"] td.sale-actions-cell .sale-actions {
+      justify-content: flex-start;
+    }
+    .sale-preview-list {
+      max-width: 100%;
+    }
+    .sale-preview-chip strong {
+      max-width: 140px;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .caja-card:hover {
+      transform: none;
+    }
+  }
+  /* Period presets: scroll horizontally instead of overflowing */
+  .btn-group[aria-label="Período de caja"] {
+    max-width: 100%;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+  }
+  .btn-group[aria-label="Período de caja"] .btn {
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  #dateRangeLabel {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 </style>
 
@@ -169,7 +267,7 @@ const receiptLogoUrl = getAssetPrefix('/assets/img/noryx/NoryxStoreLogo.jpeg')
         <!-- Live clock -->
         <div
           class="d-flex align-items-center gap-2 px-3 py-1 rounded-pill"
-          style="background:rgba(111,66,193,.08);border:1px solid rgba(111,66,193,.2);"
+          style="background:rgba(117,51,249,.08);border:1px solid rgba(117,51,249,.2);"
         >
           <i class="ri-time-line text-primary" style="font-size:.9rem;"></i>
           <div class="text-center" style="line-height:1.2;">
@@ -317,7 +415,8 @@ const receiptLogoUrl = getAssetPrefix('/assets/img/noryx/NoryxStoreLogo.jpeg')
           </div>
         </div>
 
-        <!-- Summary stats -->
+        <!-- Summary stats (reflejan el período + filtros actuales) -->
+        <p class="text-muted small mb-2" id="statScopeLabel">Resumen del filtro actual</p>
         <div class="row g-3 text-center mb-4 pb-3 border-bottom">
           <div class="col-6 col-md-3">
             <div class="text-muted small">Total ventas</div>
@@ -591,7 +690,7 @@ const receiptLogoUrl = getAssetPrefix('/assets/img/noryx/NoryxStoreLogo.jpeg')
     let pageSize = 10
     let dateFrom = null
     let dateTo = null
-    let activePreset = 'today'
+    let activePreset = 'all'
     let pendingCancelId = null
     let sortKey = null
     let sortDir = 'asc'
@@ -638,7 +737,8 @@ const receiptLogoUrl = getAssetPrefix('/assets/img/noryx/NoryxStoreLogo.jpeg')
         clockEl.textContent = now.toLocaleTimeString('es-BO', {
           hour: '2-digit',
           minute: '2-digit',
-          second: '2-digit'
+          second: '2-digit',
+          hour12: false
         })
       if (dateEl)
         dateEl.textContent = now.toLocaleDateString('es-BO', {
@@ -653,8 +753,10 @@ const receiptLogoUrl = getAssetPrefix('/assets/img/noryx/NoryxStoreLogo.jpeg')
 
     // ── Init ───────────────────────────────────────────────────
     document.addEventListener('DOMContentLoaded', () => {
-      // Initialize with "today" preset (skipReload=true to avoid double load)
-      applyPreset('today', true)
+      // Initialize with "all" preset so todas las ventas del período
+      // se ven al entrar (antes arrancaba en "today" y las primeras
+      // ventas parecían no cargarse). (skipReload=true to avoid double load)
+      applyPreset('all', true)
       loadSales()
       loadCaja()
       bindPrintReceiptOnce()
@@ -818,7 +920,9 @@ const receiptLogoUrl = getAssetPrefix('/assets/img/noryx/NoryxStoreLogo.jpeg')
         monday.setDate(now.getDate() - dow + (dow === 0 ? -6 : 1))
         dateFrom = new Date(monday.getFullYear(), monday.getMonth(), monday.getDate(), 0, 0, 0)
         dateTo = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59)
-        if (labelEl) labelEl.textContent = `${fmtShort(monday)} — ${fmtShort(now)}`
+        const sameDay = fmtShort(monday) === fmtShort(now)
+        if (labelEl)
+          labelEl.textContent = sameDay ? `${fmtShort(now)} (semana)` : `${fmtShort(monday)} — ${fmtShort(now)}`
         if (titleEl) titleEl.textContent = 'Esta semana'
         customWrap?.style.setProperty('display', 'none', 'important')
       } else if (preset === 'month') {
@@ -893,8 +997,8 @@ const receiptLogoUrl = getAssetPrefix('/assets/img/noryx/NoryxStoreLogo.jpeg')
           Mixto: { bg: 'rgba(253,126,20,.12)', color: '#fd7e14', icon: 'ri-exchange-funds-line' }
         }
         const defaultStyle = {
-          bg: 'rgba(111,66,193,.12)',
-          color: '#6f42c1',
+          bg: 'rgba(117,51,249,.12)',
+          color: '#7533f9',
           icon: 'ri-bank-card-line'
         }
 
@@ -918,19 +1022,21 @@ const receiptLogoUrl = getAssetPrefix('/assets/img/noryx/NoryxStoreLogo.jpeg')
               </div>`
               })
               .join('')
-          : `<div class="col-12 col-md-6">
-             <div class="caja-card p-3 text-center text-muted">
-               <i class="ri-inbox-line d-block mb-1" style="font-size:1.5rem;"></i>
-               <small>Sin ventas en este período</small>
-             </div>
-           </div>`
+          : `<div class="col-12">
+              <div class="caja-card p-4 text-center">
+                <i class="ri-inbox-line d-block mb-2 text-muted" style="font-size:1.6rem;"></i>
+                <div class="fw-semibold">Sin ventas en ${esc(periodLabel)}</div>
+                <div class="text-muted small mb-3">Prueba con otro período o revisa el historial completo.</div>
+                <button class="btn btn-sm btn-outline-primary" data-action="ver-todo">Ver todo el tiempo</button>
+              </div>
+            </div>`
 
         body.innerHTML = `
         <div class="row g-3 mb-3">
           <div class="col-6 col-md-3">
             <div class="caja-card p-3 h-100">
               <div class="d-flex align-items-center gap-2 mb-2">
-                <div class="caja-icon" style="background:rgba(111,66,193,.12);color:#6f42c1;"><i class="ri-shopping-bag-3-line"></i></div>
+                <div class="caja-icon" style="background:rgba(117,51,249,.12);color:#7533f9;"><i class="ri-shopping-bag-3-line"></i></div>
                 <div class="fw-semibold small">Ventas activas</div>
               </div>
               <div class="fw-bold fs-5 text-primary">${data.totalVentas}</div>
@@ -952,6 +1058,10 @@ const receiptLogoUrl = getAssetPrefix('/assets/img/noryx/NoryxStoreLogo.jpeg')
         <div class="text-muted" style="font-size:.72rem;">
           <i class="ri-time-line me-1"></i>${esc(data.date)} · Solo ventas activas
         </div>`
+        body.querySelector('[data-action="ver-todo"]')?.addEventListener('click', () => {
+          currentPage = 1
+          applyPreset('all')
+        })
       } catch {
         body.innerHTML =
           '<div class="text-danger small text-center py-3"><i class="ri-error-warning-line me-1"></i>No se pudo cargar la caja</div>'
@@ -1038,6 +1148,14 @@ const receiptLogoUrl = getAssetPrefix('/assets/img/noryx/NoryxStoreLogo.jpeg')
       document.getElementById('statMax').textContent = fmt(
         active.length ? Math.max(...active.map((s) => Number(s.total || 0))) : 0
       )
+      const scopeEl = document.getElementById('statScopeLabel')
+      if (scopeEl) {
+        const periodEl = document.getElementById('cajaPeriodTitle')
+        const period = periodEl?.textContent?.trim() || 'el filtro actual'
+        const q = (document.getElementById('histSearch')?.value || '').trim()
+        const estado = currentFilter === 'all' ? 'todas' : currentFilter
+        scopeEl.textContent = `Resumen: ${filtered.length} ventas (${estado}) en ${period}${q ? ` · búsqueda "${q}"` : ''}`
+      }
 
       const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize))
       currentPage = Math.min(currentPage, totalPages)
@@ -1056,16 +1174,17 @@ const receiptLogoUrl = getAssetPrefix('/assets/img/noryx/NoryxStoreLogo.jpeg')
         .map((s) => {
           const cliente = esc(s.cliente_id?.nombre || 'Consumidor final')
           const vendedor = esc(s.vendedor_id?.nombre || '—')
-          const previewItems = Array.isArray(s.preview_items) ? s.preview_items : []
+          const previewItems = Array.isArray(s.preview_items) ? s.preview_items.slice(0, 2) : []
+          const remaining = Math.max(0, Number(s.items_count || 0) - previewItems.length)
           const previewHtml = previewItems.length
             ? `<div class="sale-preview-list">${previewItems
                 .map(
                   (item) =>
-                    `<span class="sale-preview-chip"><strong>${esc(item.producto_id?.nombre || '—')}</strong><span>x${Number(item.cantidad || 0)}</span></span>`
+                    `<span class="sale-preview-chip" title="${esc(item.producto_id?.nombre || '—')} x${Number(item.cantidad || 0)}"><strong>${esc(item.producto_id?.nombre || '—')}</strong><span>x${Number(item.cantidad || 0)}</span></span>`
                 )
                 .join(
                   ''
-                )}${s.items_count > 3 ? `<span class="sale-preview-chip text-primary">+${s.items_count - 3} más</span>` : ''}</div>`
+                )}${remaining > 0 ? `<span class="sale-preview-chip text-primary">+${remaining} más</span>` : ''}</div>`
             : '<span class="text-muted small">Sin detalle</span>'
           const pagoBadge = esc(
             Array.isArray(s.pagos_mixtos) && s.pagos_mixtos.length ? 'Mixto' : s.metodo_pago || '—'
@@ -1080,26 +1199,26 @@ const receiptLogoUrl = getAssetPrefix('/assets/img/noryx/NoryxStoreLogo.jpeg')
           const estado = s.estado === 'activa' ? 'Activa' : 'Anulada'
           const cancelBtn =
             s.estado === 'activa'
-              ? `<button class="btn btn-sm btn-icon text-warning cancel-sale-btn ms-1" data-id="${s._id}" title="Anular"><i class="ri-forbid-line"></i></button>`
+              ? `<button class="btn btn-sm btn-icon text-warning cancel-sale-btn ms-1" data-id="${s._id}" title="Anular" aria-label="Anular venta"><i class="ri-forbid-line"></i></button>`
               : ''
           return `
         <tr>
-          <td class="checkbox-column align-middle">
+          <td class="checkbox-column align-middle sale-check-cell">
             <div class="form-check">
               <input class="form-check-input hist-row-cb" type="checkbox" data-id="${s._id}" aria-label="Seleccionar venta" />
             </div>
           </td>
-          <td class="ps-3 text-muted small align-middle">${esc(fmtDate(s.fecha))}</td>
-          <td class="align-middle fw-medium small">${cliente}</td>
-          <td class="align-middle text-muted small">${vendedor}</td>
-          <td class="align-middle small">${previewHtml}</td>
-          <td class="text-end align-middle fw-semibold">${fmt(s.total)}</td>
-          <td class="align-middle"><span class="badge text-bg-secondary" title="${pagoTitle}">${pagoBadge}</span></td>
-          <td class="text-center align-middle"><span class="badge text-bg-${badge}">${estado}</span></td>
-          <td class="text-end pe-3 align-middle text-nowrap">
+          <td class="ps-3 text-muted small align-middle" data-label="Fecha">${esc(fmtDate(s.fecha))}</td>
+          <td class="align-middle fw-medium small" data-label="Cliente">${cliente}</td>
+          <td class="align-middle text-muted small" data-label="Vendedor">${vendedor}</td>
+          <td class="align-middle small sale-products-cell" data-label="Productos">${previewHtml}</td>
+          <td class="text-end align-middle fw-semibold sale-total-cell" data-label="Total">${fmt(s.total)}</td>
+          <td class="align-middle sale-pago-cell" data-label="Pago"><span class="badge text-bg-secondary" title="${pagoTitle}">${pagoBadge}</span></td>
+          <td class="text-center align-middle" data-label="Estado"><span class="badge text-bg-${badge}">${estado}</span></td>
+          <td class="text-end pe-3 align-middle text-nowrap sale-actions-cell" data-label="Acciones">
             <div class="sale-actions">
-              <button class="btn btn-sm btn-icon view-sale-btn" data-id="${s._id}" title="Ver detalle"><i class="ri-eye-line"></i></button>
-              ${s.estado === 'activa' ? `<button class="btn btn-sm btn-icon edit-sale-btn text-primary" data-id="${s._id}" title="Editar venta"><i class="ri-edit-line"></i></button>` : ''}
+              <button class="btn btn-sm btn-icon view-sale-btn" data-id="${s._id}" title="Ver detalle" aria-label="Ver detalle"><i class="ri-eye-line"></i></button>
+              ${s.estado === 'activa' ? `<button class="btn btn-sm btn-icon edit-sale-btn text-primary" data-id="${s._id}" title="Editar venta" aria-label="Editar venta"><i class="ri-edit-line"></i></button>` : ''}
               ${cancelBtn}
             </div>
           </td>
@@ -1169,7 +1288,7 @@ const receiptLogoUrl = getAssetPrefix('/assets/img/noryx/NoryxStoreLogo.jpeg')
                 ${[5, 10, 25, 50, 100].map((n) => `<option value="${n}"${pageSize === n ? ' selected' : ''}>${n}</option>`).join('')}
               </select>
             </div>
-            <div class="dataTables_info ms-2">Showing ${startRecord} to ${endRecord} of ${total} records</div>
+            <div class="dataTables_info ms-2">Mostrando ${startRecord} a ${endRecord} de ${total} registros</div>
           </div>
           <div class="col-sm-12 col-md-7 d-flex align-items-center justify-content-center justify-content-md-end">
             <div class="dataTables_paginate paging_simple_numbers">

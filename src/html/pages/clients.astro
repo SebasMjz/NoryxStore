@@ -342,7 +342,7 @@ const pageHeaderProps = {
   const initials = (name) =>
     (name || '?').split(' ').slice(0, 2).map((w) => w[0]).join('').toUpperCase()
   const avatarColor = (name) => {
-    const colors = ['#6f42c1','#0d6efd','#0dcaf0','#198754','#fd7e14','#d63384']
+    const colors = ['#7533f9','#0d6efd','#0dcaf0','#198754','#fd7e14','#d63384']
     let h = 0
     for (let i = 0; i < (name || '').length; i++) h = (h * 31 + name.charCodeAt(i)) % colors.length
     return colors[Math.abs(h)]
@@ -568,7 +568,7 @@ const pageHeaderProps = {
                 ${[5,10,25,50,100].map(n=>`<option value="${n}"${pageSize===n?' selected':''}>${n}</option>`).join('')}
               </select>
             </div>
-            <div class="dataTables_info ms-2" style="font-size:.875rem;color:var(--bs-secondary-color);">Showing ${startRecord} to ${endRecord} of ${total} records</div>
+            <div class="dataTables_info ms-2" style="font-size:.875rem;color:var(--bs-secondary-color);">Mostrando ${startRecord} a ${endRecord} de ${total} registros</div>
           </div>
           <div class="col-sm-12 col-md-7 d-flex align-items-center justify-content-center justify-content-md-end">
             <div class="dataTables_paginate paging_simple_numbers">

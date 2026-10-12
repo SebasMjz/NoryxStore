@@ -225,7 +225,7 @@ const skinPath = import.meta.env.DEV
       }
 
       .form-control::placeholder {
-        color: rgba(255, 255, 255, 0.25) !important;
+        color: rgba(255, 255, 255, 0.45) !important;
       }
 
       .form-control:focus {
@@ -261,6 +261,11 @@ const skinPath = import.meta.env.DEV
       .btn-noryx:disabled {
         opacity: 0.6;
         transform: none;
+      }
+
+      .btn-noryx:focus-visible {
+        outline: 2px solid #fff;
+        outline-offset: 2px;
       }
 
       /* Link olvide contraseña */
@@ -319,6 +324,15 @@ const skinPath = import.meta.env.DEV
       @keyframes pulse-dot {
         0%, 100% { opacity: 1; }
         50% { opacity: 0.4; }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .login-footer-note .dot {
+          animation: none;
+        }
+        .btn-noryx:hover {
+          transform: none;
+        }
       }
 
       .login-feedback {

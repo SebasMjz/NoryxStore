@@ -74,7 +74,7 @@ const dashboardChartScripts = `<!-- Chart.js CDN Integration -->
   }
 
   // ---- Chart colors ----
-  const CHART_COLORS = ['#6f42c1', '#198754', '#0d6efd', '#ffc107', '#dc3545', '#0dcaf0', '#fd7e14'];
+  const CHART_COLORS = ['#7533f9', '#198754', '#0d6efd', '#ffc107', '#dc3545', '#0dcaf0', '#fd7e14'];
 
   function updatePaymentChart(methods) {
     if (!paymentChart) return;
@@ -134,7 +134,7 @@ const dashboardChartScripts = `<!-- Chart.js CDN Integration -->
           lowStockEl.innerHTML = '<div class="text-center text-muted py-4 small">Sin productos con stock bajo</div>';
         } else {
           lowStockEl.innerHTML = '<table class="table table-sm mb-0">' +
-            '<thead class="table-dark"><tr><th class="ps-3">Producto</th><th class="text-center">Stock</th></tr></thead>' +
+            '<thead><tr><th class="ps-3">Producto</th><th class="text-center">Stock</th></tr></thead>' +
             '<tbody>' +
             lowStock.map(function(p) {
               var s = Number(p.stock || 0);
@@ -162,22 +162,28 @@ const dashboardChartScripts = `<!-- Chart.js CDN Integration -->
           data: {
             labels: salesLabels,
             datasets: [{
-              label: 'Ventas (USD)',
+              label: 'Ventas (Bs.)',
               data: salesData,
-              borderColor: '#6f42c1',
-              backgroundColor: 'rgba(111,66,193,0.12)',
+              borderColor: '#7533f9',
+              backgroundColor: 'rgba(117,51,249,0.12)',
               fill: true,
               tension: 0.4,
-              pointBackgroundColor: '#6f42c1'
+              pointBackgroundColor: '#7533f9'
             }]
           },
           options: {
             responsive: true,
+            maintainAspectRatio: true,
             plugins: { legend: { display: false } },
             scales: {
+              x: {
+                ticks: { autoSkip: false, maxRotation: 0, color: '#8a93a6' },
+                grid: { color: 'rgba(138,147,166,0.12)' }
+              },
               y: {
                 beginAtZero: true,
-                ticks: { callback: (v) => '$' + v }
+                ticks: { callback: (v) => 'Bs. ' + v, color: '#8a93a6' },
+                grid: { color: 'rgba(138,147,166,0.12)' }
               }
             }
           }
@@ -206,7 +212,13 @@ const dashboardChartScripts = `<!-- Chart.js CDN Integration -->
           },
           options: {
             responsive: true,
-            plugins: { legend: { position: 'bottom' } }
+            maintainAspectRatio: true,
+            plugins: {
+              legend: {
+                position: 'bottom',
+                labels: { color: '#c2c9d6', boxWidth: 14, padding: 14, usePointStyle: true }
+              }
+            }
           }
         });
       }
@@ -237,11 +249,10 @@ const dashboardChartScripts = `<!-- Chart.js CDN Integration -->
       const max = data[0].total_comprado || 1;
       container.innerHTML = data.map((c, i) => {
         const pct = Math.round((c.total_comprado / max) * 100);
-        const medals = ['🥇','🥈','🥉'];
-        const medal = medals[i] || '';
+        const rank = '<span class="rank-badge' + (i < 3 ? ' is-top' : '') + '" aria-hidden="true">' + (i + 1) + '</span>';
         return '<div class="mb-3">' +
-          '<div class="d-flex justify-content-between align-items-center mb-1">' +
-            '<span class="fw-medium small">' + medal + ' ' + escHtml(c.nombre || 'Sin nombre') + '</span>' +
+          '<div class="d-flex justify-content-between align-items-center gap-2 mb-1">' +
+            '<span class="fw-medium small d-flex align-items-center gap-2">' + rank + ' ' + escHtml(c.nombre || 'Sin nombre') + '</span>' +
             '<div class="text-end">' +
               '<span class="fw-bold text-primary small">Bs. ' + Number(c.total_comprado||0).toFixed(2) + '</span>' +
               '<span class="text-muted ms-2" style="font-size:.72rem;">' + c.cantidad_compras + ' compra(s)</span>' +
@@ -319,7 +330,7 @@ const dashboardChartScripts = `<!-- Chart.js CDN Integration -->
           </div>
         </div>
         <div class="col-xl col-md-6">
-          <div class="small-box" style="background:#6f42c1;color:#fff;">
+          <div class="small-box text-bg-primary">
             <div class="inner">
               <h3 id="kpi-revenue-today">Bs. 0.00</h3>
               <p>Ingresos hoy</p>
@@ -327,7 +338,7 @@ const dashboardChartScripts = `<!-- Chart.js CDN Integration -->
             <div class="small-box-icon">
               <i class="ri-wallet-3-fill"></i>
             </div>
-            <a href={getPathPrefix('/sales')} class="small-box-footer" style="background:rgba(0,0,0,0.15);">
+            <a href={getPathPrefix('/sales')} class="small-box-footer">
               Ver ventas <i class="ri-arrow-right-line"></i>
             </a>
           </div>

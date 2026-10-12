@@ -593,13 +593,24 @@ router.delete('/clients/:id', async (req, res, next) => {
   }
 })
 
-router.get('/sales', async (_req, res, next) => {
+router.get('/sales', async (req, res, next) => {
   try {
-    const sales = await Sale.find()
+    const match = {}
+    if (req.query.from && req.query.to) {
+      match.fecha = { $gte: new Date(req.query.from), $lte: new Date(req.query.to) }
+    }
+    if (req.query.estado) {
+      match.estado = req.query.estado
+    }
+    // Sin .limit(100): antes solo llegaban las 100 más recientes y las
+    // primeras ventas del período nunca se cargaban en la tabla (el Excel
+    // de /sales/export no tenía límite y por eso sí las mostraba).
+    const limit = Math.min(Math.max(parseInt(req.query.limit ?? '5000', 10) || 5000, 1), 20000)
+    const sales = await Sale.find(match)
       .populate('cliente_id', 'nombre celular')
       .populate('vendedor_id', 'nombre tipo_usuario')
       .sort({ fecha: -1 })
-      .limit(100)
+      .limit(limit)
       .lean()
 
     const salesWithPreview = await attachSalesPreview(sales)
@@ -667,7 +678,7 @@ router.get('/sales/export', async (req, res, next) => {
     headerRow.fill = {
       type: 'pattern',
       pattern: 'solid',
-      fgColor: { argb: 'FF6F42C1' }
+      fgColor: { argb: 'FF7533F9' }
     }
     headerRow.alignment = { vertical: 'middle', horizontal: 'center' }
     headerRow.height = 28

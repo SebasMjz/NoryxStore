@@ -1,0 +1,192 @@
+/* ==========================================================================
+   Noryx polish layer (Redesign-Preserve, targeted evolution)
+   Reading this as: admin panel for vendedores y administradores, with a
+   neutral trust-first language, leaning toward Bootstrap 5.3 + brand accent.
+   Dials: VARIANCE 4 / MOTION 3 / DENSITY 6.
+   Levers applied: typography refresh, spacing rhythm, color recalibration,
+   restrained motion. No IA, route, nav-label or form-field changes.
+   ========================================================================== */
+
+// -- Brand lock: single accent is Bootstrap primary (#7533f9). This file only
+// adds tints derived from it, never a second purple.
+:root {
+  --noryx-radius: var(--bs-border-radius-xl);
+}
+
+// -- Tabular numbers for money and counters (cockpit density readability).
+.tnum,
+.small-box h3,
+#statTotal,
+#statRevenue,
+#statAvg,
+#statMax {
+  font-variant-numeric: tabular-nums;
+}
+
+// -- Card definition: borderless cards bleed in dark mode, so give them one
+// hairline that follows the theme instead of flipping the theme per section.
+.card {
+  border: 1px solid rgba(23, 26, 31, 0.08);
+}
+
+[data-bs-theme='dark'] .card {
+  border-color: rgba(255, 255, 255, 0.09);
+}
+
+.card-title {
+  letter-spacing: -0.01em;
+}
+
+// -- KPI small-box: keep AdminLTE shape system, add tactile feedback and a
+// visible keyboard focus ring. No radius changes (shape lock).
+.small-box {
+  overflow: hidden;
+  transition: transform 0.16s ease, box-shadow 0.16s ease;
+
+  .small-box-icon {
+    transition: transform 0.2s ease;
+  }
+
+  &:hover {
+    transform: translateY(-2px);
+  }
+
+  &:active {
+    transform: translateY(0) scale(0.99);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--bs-primary);
+    outline-offset: 2px;
+  }
+}
+
+// -- Buttons: tactile press + consistent focus, no color changes.
+.btn {
+  &:active {
+    transform: translateY(1px) scale(0.99);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--bs-primary);
+    outline-offset: 2px;
+  }
+}
+
+// -- Tables: keep border system, soften row hover so dense tables breathe.
+.table-hover > tbody > tr {
+  transition: background-color 0.12s ease;
+}
+
+// -- Rank badge for ordered lists (replaces emoji medals).
+.rank-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.6rem;
+  height: 1.6rem;
+  padding: 0 0.4rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--bs-secondary-color);
+  background-color: var(--bs-tertiary-bg);
+  border-radius: 999px;
+  font-variant-numeric: tabular-nums;
+}
+
+.rank-badge.is-top {
+  color: #fff;
+  background-color: var(--bs-primary);
+}
+
+// -- Skeleton shimmer for loading states (matches final layout shape,
+// preferable to bare spinners on slow connections).
+.noryx-skeleton {
+  position: relative;
+  overflow: hidden;
+  color: transparent !important;
+  background-color: var(--bs-tertiary-bg);
+  border-radius: 0.5rem;
+  pointer-events: none;
+  user-select: none;
+}
+
+.noryx-skeleton::after {
+  position: absolute;
+  inset: 0;
+  content: '';
+  background: linear-gradient(
+    100deg,
+    transparent 20%,
+    rgba(255, 255, 255, 0.35) 50%,
+    transparent 80%
+  );
+  animation: noryx-shimmer 1.4s ease-in-out infinite;
+}
+
+[data-bs-theme='dark'] .noryx-skeleton::after {
+  background: linear-gradient(
+    100deg,
+    transparent 20%,
+    rgba(255, 255, 255, 0.09) 50%,
+    transparent 80%
+  );
+}
+
+@keyframes noryx-shimmer {
+  from {
+    transform: translateX(-100%);
+  }
+
+  to {
+    transform: translateX(100%);
+  }
+}
+
+// -- Caja and preview tints derived from the single brand accent.
+.caja-card {
+  border: 1px solid color-mix(in srgb, var(--bs-primary) 16%, transparent);
+}
+
+.sale-preview-chip {
+  border: 1px solid color-mix(in srgb, var(--bs-primary) 18%, transparent);
+}
+
+// -- Sale detail header: theme-aware instead of a hardcoded dark block, so
+// the page keeps one theme (page theme lock).
+.sale-detail-table thead th {
+  background: var(--bs-tertiary-bg) !important;
+  color: var(--bs-emphasis-color) !important;
+  border-bottom: 1px solid var(--bs-border-color) !important;
+}
+
+// -- Responsive: charts keep height on small screens, KPI footers wrap.
+@media (max-width: 767.98px) {
+  .small-box h3 {
+    font-size: 1.6rem;
+    white-space: normal;
+  }
+
+  canvas#salesChart,
+  canvas#paymentMethodsChart {
+    max-height: 300px;
+  }
+}
+
+// -- Reduced motion: everything above MOTION 3 collapses to static.
+@media (prefers-reduced-motion: reduce) {
+  .small-box,
+  .small-box .small-box-icon,
+  .btn,
+  .table-hover > tbody > tr {
+    transition: none;
+  }
+
+  .small-box:hover {
+    transform: none;
+  }
+
+  .noryx-skeleton::after {
+    animation: none;
+  }
+}
