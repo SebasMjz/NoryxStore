@@ -780,7 +780,17 @@ async function attachSalesPreview(sales) {
     return {
       ...sale,
       items_count: items.length,
-      preview_items: items.slice(0, 3)
+      preview_items: items.slice(0, 3),
+      items_products: items.map((it) => ({
+        _id: it.producto_id?._id
+          ? String(it.producto_id._id)
+          : it.producto_id
+            ? String(it.producto_id)
+            : '',
+        nombre: it.producto_id?.nombre || '',
+        codigo: it.producto_id?.codigo || '',
+        cantidad: Number(it.cantidad || 0)
+      }))
     }
   })
 }

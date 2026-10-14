@@ -101,19 +101,33 @@ function getJS(filename: string) {
     {pageScript && <Fragment set:html={pageScript} />}
 
     <!-- Global confirm modal (same as admin-layout) -->
-    <div class="modal fade" id="globalConfirmModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+    <div
+      class="modal fade"
+      id="globalConfirmModal"
+      tabindex="-1"
+      aria-hidden="true"
+      data-bs-backdrop="static"
+    >
       <div class="modal-dialog modal-dialog-centered" style="max-width:380px;">
         <div class="modal-content border-0 shadow">
           <div class="modal-body text-center p-4">
-            <div id="gcmIconWrap" class="d-inline-flex align-items-center justify-content-center rounded-circle mb-3"
-              style="width:60px;height:60px;font-size:1.8rem;">
+            <div
+              id="gcmIconWrap"
+              class="d-inline-flex align-items-center justify-content-center rounded-circle mb-3"
+              style="width:60px;height:60px;font-size:1.8rem;"
+            >
               <i id="gcmIconEl" class="ri-delete-bin-6-line"></i>
             </div>
             <h5 id="gcmTitle" class="fw-bold mb-2"></h5>
             <p id="gcmMessage" class="text-muted mb-0" style="font-size:.9rem;line-height:1.5;"></p>
           </div>
           <div class="modal-footer border-0 justify-content-center gap-2 pt-0 pb-4">
-            <button type="button" class="btn btn-secondary px-4" id="gcmCancelBtn" data-bs-dismiss="modal">Cancelar</button>
+            <button
+              type="button"
+              class="btn btn-secondary px-4"
+              id="gcmCancelBtn"
+              data-bs-dismiss="modal">Cancelar</button
+            >
             <button type="button" class="btn px-4" id="gcmConfirmBtn">Confirmar</button>
           </div>
         </div>
@@ -123,29 +137,37 @@ function getJS(filename: string) {
     <script is:inline>
       window.showConfirm = function (opts) {
         return new Promise(function (resolve) {
-          var type    = opts.type || 'danger'
-          var icons   = { danger: 'ri-delete-bin-6-line', warning: 'ri-alert-line', info: 'ri-information-line' }
-          var colors  = { danger: '#dc3545', warning: '#fd7e14', info: '#0d6efd' }
-          var bgAlpha = { danger: 'rgba(220,53,69,.12)', warning: 'rgba(253,126,20,.12)', info: 'rgba(13,110,253,.12)' }
-          var btnCls  = { danger: 'btn-danger', warning: 'btn-warning', info: 'btn-primary' }
+          var type = opts.type || 'danger'
+          var icons = {
+            danger: 'ri-delete-bin-6-line',
+            warning: 'ri-alert-line',
+            info: 'ri-information-line'
+          }
+          var colors = { danger: '#dc3545', warning: '#fd7e14', info: '#0d6efd' }
+          var bgAlpha = {
+            danger: 'rgba(220,53,69,.12)',
+            warning: 'rgba(253,126,20,.12)',
+            info: 'rgba(13,110,253,.12)'
+          }
+          var btnCls = { danger: 'btn-danger', warning: 'btn-warning', info: 'btn-primary' }
 
-          var modalEl    = document.getElementById('globalConfirmModal')
-          var titleEl    = document.getElementById('gcmTitle')
-          var msgEl      = document.getElementById('gcmMessage')
+          var modalEl = document.getElementById('globalConfirmModal')
+          var titleEl = document.getElementById('gcmTitle')
+          var msgEl = document.getElementById('gcmMessage')
           var confirmBtn = document.getElementById('gcmConfirmBtn')
-          var iconEl     = document.getElementById('gcmIconEl')
-          var iconWrap   = document.getElementById('gcmIconWrap')
+          var iconEl = document.getElementById('gcmIconEl')
+          var iconWrap = document.getElementById('gcmIconWrap')
 
-          titleEl.textContent    = opts.title       || 'Confirmar'
-          msgEl.innerHTML        = opts.message      || '¿Estás seguro? Esta acción no se puede deshacer.'
-          confirmBtn.textContent = opts.confirmText  || 'Confirmar'
-          iconEl.className       = icons[type]   || icons.danger
+          titleEl.textContent = opts.title || 'Confirmar'
+          msgEl.innerHTML = opts.message || '¿Estás seguro? Esta acción no se puede deshacer.'
+          confirmBtn.textContent = opts.confirmText || 'Confirmar'
+          iconEl.className = icons[type] || icons.danger
           iconWrap.style.background = bgAlpha[type] || bgAlpha.danger
-          iconWrap.style.color      = colors[type]  || colors.danger
-          confirmBtn.className   = 'btn px-4 ' + (btnCls[type] || btnCls.danger)
+          iconWrap.style.color = colors[type] || colors.danger
+          confirmBtn.className = 'btn px-4 ' + (btnCls[type] || btnCls.danger)
 
           var resolved = false
-          var bsModal  = new bootstrap.Modal(modalEl)
+          var bsModal = new bootstrap.Modal(modalEl)
 
           confirmBtn.onclick = function () {
             resolved = true
@@ -153,9 +175,13 @@ function getJS(filename: string) {
             resolve(true)
           }
 
-          modalEl.addEventListener('hidden.bs.modal', function () {
-            if (!resolved) resolve(false)
-          }, { once: true })
+          modalEl.addEventListener(
+            'hidden.bs.modal',
+            function () {
+              if (!resolved) resolve(false)
+            },
+            { once: true }
+          )
 
           bsModal.show()
         })

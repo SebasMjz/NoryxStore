@@ -312,7 +312,6 @@ const dashboardChartScripts = `<!-- Chart.js CDN Integration -->
 
   <div class="row">
     <div class="col">
-
       <!-- KPI Cards -->
       <div class="row g-4 mb-4">
         <div class="col-xl col-md-6">
@@ -410,8 +409,13 @@ const dashboardChartScripts = `<!-- Chart.js CDN Integration -->
                 <p class="text-muted small mb-2">Métodos configurados</p>
                 <div id="paymentMethodsList" class="d-flex flex-wrap gap-2 mb-3"></div>
                 <form id="addPaymentMethodForm" class="d-flex gap-2">
-                  <input type="text" id="newPaymentMethodInput" class="form-control form-control-sm"
-                    placeholder="Nuevo método..." maxlength="30" />
+                  <input
+                    type="text"
+                    id="newPaymentMethodInput"
+                    class="form-control form-control-sm"
+                    placeholder="Nuevo método..."
+                    maxlength="30"
+                  />
                   <button type="submit" class="btn btn-sm btn-primary text-nowrap">
                     <i class="ri-add-line"></i> Agregar
                   </button>
@@ -426,14 +430,24 @@ const dashboardChartScripts = `<!-- Chart.js CDN Integration -->
       <div class="row g-4">
         <div class="col-lg-6">
           <div class="card h-100">
-            <div class="card-header border-0 d-flex align-items-center justify-content-between flex-wrap gap-2">
+            <div
+              class="card-header border-0 d-flex align-items-center justify-content-between flex-wrap gap-2"
+            >
               <h5 class="card-title mb-0">
                 <i class="ri-vip-crown-line me-2 text-warning"></i>Top Clientes
               </h5>
               <div class="d-flex gap-1">
-                <button class="btn btn-sm btn-outline-secondary top-clients-filter" data-period="week">Semana</button>
-                <button class="btn btn-sm btn-outline-secondary top-clients-filter" data-period="month">Mes</button>
-                <button class="btn btn-sm btn-primary top-clients-filter active" data-period="all">Todo</button>
+                <button
+                  class="btn btn-sm btn-outline-secondary top-clients-filter"
+                  data-period="week">Semana</button
+                >
+                <button
+                  class="btn btn-sm btn-outline-secondary top-clients-filter"
+                  data-period="month">Mes</button
+                >
+                <button class="btn btn-sm btn-primary top-clients-filter active" data-period="all"
+                  >Todo</button
+                >
               </div>
             </div>
             <div class="card-body" id="topClientsList">
@@ -457,17 +471,21 @@ const dashboardChartScripts = `<!-- Chart.js CDN Integration -->
               </h5>
             </div>
             <div class="card-body p-0" id="lowStockList">
-              <div class="text-center text-muted py-3"><i class="ri-loader-4-line ri-spin"></i></div>
+              <div class="text-center text-muted py-3">
+                <i class="ri-loader-4-line ri-spin"></i>
+              </div>
             </div>
             <div class="card-footer border-0 pt-0">
-              <a href={getPathPrefix('/inventory-movements')} class="btn btn-sm btn-outline-warning w-100">
+              <a
+                href={getPathPrefix('/inventory-movements')}
+                class="btn btn-sm btn-outline-warning w-100"
+              >
                 Registrar entrada de stock <i class="ri-arrow-right-line ms-1"></i>
               </a>
             </div>
           </div>
         </div>
       </div>
-
     </div>
   </div>
 </AdminLayout>

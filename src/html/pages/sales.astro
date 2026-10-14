@@ -161,6 +161,17 @@ const receiptLogoUrl = getAssetPrefix('/assets/img/noryx/NoryxStoreLogo.jpeg')
     flex: 1 1 240px;
     max-width: 360px;
   }
+  .sales-filter-row .search-wrapper {
+    max-width: none;
+  }
+  .sales-filter-row .filter-select {
+    height: 38px;
+    font-size: 0.8125rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+    cursor: pointer;
+  }
   /* Responsive: stacked sale cards under 768px */
   @media (max-width: 767.98px) {
     table[aria-label="Historial de ventas"] thead {
@@ -377,15 +388,16 @@ const receiptLogoUrl = getAssetPrefix('/assets/img/noryx/NoryxStoreLogo.jpeg')
           </div>
         </nav>
 
-        <!-- Search & Actions -->
-        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-3">
-          <div class="search-wrapper">
+        <!-- Search & Actions (1 Sola Fila) -->
+        <div class="d-flex align-items-center gap-2 mb-3 flex-nowrap overflow-x-auto pb-1 sales-filter-row">
+          <!-- Buscador -->
+          <div class="search-wrapper flex-grow-1" style="min-width: 220px;">
             <i class="ri-search-2-line search-icon" aria-hidden="true"></i>
             <input
               type="text"
               id="histSearch"
               class="form-control search-input"
-              placeholder="Buscar cliente, vendedor o método..."
+              placeholder="Buscar cliente, producto, vendedor o método..."
               aria-label="Buscar ventas"
             />
             <button
@@ -398,20 +410,57 @@ const receiptLogoUrl = getAssetPrefix('/assets/img/noryx/NoryxStoreLogo.jpeg')
               <i class="ri-close-line"></i>
             </button>
           </div>
-          <div class="d-flex gap-2 flex-wrap">
-            <!-- Bulk Actions -->
-            <div class="bulk-actions-div d-none" id="histBulkActions">
-              <span class="selected-count me-2" aria-live="polite"
-                ><span id="histSelectedCount">0</span> seleccionados</span
-              >
-              <button
-                class="btn btn-light-danger shadow-none align-items-center gap-2"
-                id="histBulkDeleteBtn"
-                aria-label="Anular seleccionados"
-              >
-                <i class="ri-forbid-line me-1" aria-hidden="true"></i> Anular selec.
-              </button>
-            </div>
+
+          <!-- Filtro Producto -->
+          <div style="width: 190px; flex: 0 0 190px;">
+            <select id="filterProduct" class="form-select filter-select" aria-label="Filtrar por producto">
+              <option value="">Todos los productos</option>
+            </select>
+          </div>
+
+          <!-- Filtro Método de pago -->
+          <div style="width: 140px; flex: 0 0 140px;">
+            <select id="filterPayment" class="form-select filter-select" aria-label="Filtrar por método de pago">
+              <option value="">Todos los pagos</option>
+              <option value="Efectivo">Efectivo</option>
+              <option value="QR">QR</option>
+              <option value="Transferencia">Transferencia</option>
+              <option value="Tarjeta">Tarjeta</option>
+              <option value="Mixto">Mixto</option>
+            </select>
+          </div>
+
+          <!-- Filtro Vendedor -->
+          <div style="width: 150px; flex: 0 0 150px;">
+            <select id="filterSeller" class="form-select filter-select" aria-label="Filtrar por vendedor">
+              <option value="">Todos los vendedores</option>
+            </select>
+          </div>
+
+          <!-- Botón Limpiar filtros -->
+          <button
+            type="button"
+            id="btnResetFilters"
+            class="btn btn-outline-danger d-none align-items-center gap-1 flex-shrink-0"
+            style="height: 38px;"
+            title="Limpiar filtros"
+          >
+            <i class="ri-filter-off-line"></i>
+            <span>Limpiar</span>
+          </button>
+
+          <!-- Bulk Actions -->
+          <div class="bulk-actions-div d-none flex-shrink-0" id="histBulkActions">
+            <span class="selected-count me-2" aria-live="polite"
+              ><span id="histSelectedCount">0</span> seleccionados</span
+            >
+            <button
+              class="btn btn-light-danger shadow-none align-items-center gap-2"
+              id="histBulkDeleteBtn"
+              aria-label="Anular seleccionados"
+            >
+              <i class="ri-forbid-line me-1" aria-hidden="true"></i> Anular
+            </button>
           </div>
         </div>
 
@@ -685,6 +734,7 @@ const receiptLogoUrl = getAssetPrefix('/assets/img/noryx/NoryxStoreLogo.jpeg')
 
     // ── State ──────────────────────────────────────────────────
     let allSales = []
+    let catalogProducts = []
     let currentFilter = 'all'
     let currentPage = 1
     let pageSize = 10
@@ -764,14 +814,25 @@ const receiptLogoUrl = getAssetPrefix('/assets/img/noryx/NoryxStoreLogo.jpeg')
       searchEl.addEventListener('input', () => {
         currentPage = 1
         clearEl.style.display = searchEl.value ? '' : 'none'
+        updateFilterUI()
         renderTable()
       })
       clearEl.addEventListener('click', () => {
         searchEl.value = ''
         clearEl.style.display = 'none'
         currentPage = 1
+        updateFilterUI()
         renderTable()
       })
+
+      ;['filterProduct', 'filterPayment', 'filterSeller'].forEach((id) => {
+        document.getElementById(id)?.addEventListener('change', () => {
+          currentPage = 1
+          updateFilterUI()
+          renderTable()
+        })
+      })
+      document.getElementById('btnResetFilters')?.addEventListener('click', resetAllFilters)
 
       document.querySelectorAll('.hist-filter').forEach((btn) => {
         btn.addEventListener('click', function () {
@@ -953,14 +1014,138 @@ const receiptLogoUrl = getAssetPrefix('/assets/img/noryx/NoryxStoreLogo.jpeg')
     // ── Load data ──────────────────────────────────────────────
     async function loadSales() {
       try {
-        const res = await fetch(API + '/api/sales')
-        allSales = await res.json()
+        const [salesRes, prodRes] = await Promise.allSettled([
+          fetch(API + '/api/sales'),
+          fetch(API + '/api/products')
+        ])
+        if (salesRes.status === 'fulfilled' && salesRes.value.ok) {
+          allSales = await salesRes.value.json()
+        } else {
+          allSales = []
+        }
+        if (prodRes.status === 'fulfilled' && prodRes.value.ok) {
+          try {
+            catalogProducts = await prodRes.value.json()
+          } catch {
+            catalogProducts = []
+          }
+        }
+        populateProductFilter()
+        populateSellerFilter()
         updateCounts()
+        updateFilterUI()
         renderTable()
       } catch {
         document.getElementById('histTableBody').innerHTML =
-          '<tr><td colspan="7" class="text-center text-danger py-4">Error al cargar el historial</td></tr>'
+          '<tr><td colspan="9" class="text-center text-danger py-4">Error al cargar el historial</td></tr>'
       }
+    }
+
+    function populateProductFilter() {
+      const select = document.getElementById('filterProduct')
+      if (!select) return
+      const currentVal = select.value
+
+      const map = new Map()
+      // Productos del catálogo
+      if (Array.isArray(catalogProducts)) {
+        catalogProducts.forEach((p) => {
+          if (p && p.nombre) {
+            const id = p._id ? String(p._id) : p.nombre
+            map.set(String(id), { id: String(id), nombre: p.nombre, codigo: p.codigo || '' })
+          }
+        })
+      }
+      // Productos en el historial de ventas
+      if (Array.isArray(allSales)) {
+        allSales.forEach((s) => {
+          const items = s.items_products || s.preview_items || []
+          items.forEach((it) => {
+            const name = it.nombre || it.producto_id?.nombre
+            const id = it._id || it.producto_id?._id || name
+            const code = it.codigo || it.producto_id?.codigo || ''
+            if (name && !map.has(String(id))) {
+              map.set(String(id), { id: String(id), nombre: name, codigo: code })
+            }
+          })
+        })
+      }
+
+      const sorted = Array.from(map.values()).sort((a, b) => a.nombre.localeCompare(b.nombre))
+      select.innerHTML =
+        '<option value="">Todos los productos</option>' +
+        sorted
+          .map(
+            (p) =>
+              `<option value="${esc(p.id)}">${esc(p.nombre)}${p.codigo ? ` (${esc(p.codigo)})` : ''}</option>`
+          )
+          .join('')
+
+      if (currentVal && map.has(currentVal)) {
+        select.value = currentVal
+      }
+    }
+
+    function populateSellerFilter() {
+      const select = document.getElementById('filterSeller')
+      if (!select) return
+      const currentVal = select.value
+      const sellers = new Map()
+      if (Array.isArray(allSales)) {
+        allSales.forEach((s) => {
+          const sid = s.vendedor_id?._id ? String(s.vendedor_id._id) : s.vendedor_id?.nombre
+          const sname = s.vendedor_id?.nombre
+          if (sid && sname && !sellers.has(String(sid))) {
+            sellers.set(String(sid), sname)
+          }
+        })
+      }
+      const sorted = Array.from(sellers.entries()).sort((a, b) => a[1].localeCompare(b[1]))
+      select.innerHTML =
+        '<option value="">Todos los vendedores</option>' +
+        sorted.map(([id, name]) => `<option value="${esc(id)}">${esc(name)}</option>`).join('')
+      if (currentVal && sellers.has(currentVal)) {
+        select.value = currentVal
+      }
+    }
+
+    function updateFilterUI() {
+      const q = (document.getElementById('histSearch')?.value || '').trim()
+      const filterProduct = document.getElementById('filterProduct')?.value || ''
+      const filterPayment = document.getElementById('filterPayment')?.value || ''
+      const filterSeller = document.getElementById('filterSeller')?.value || ''
+
+      const hasFilters = Boolean(q || filterProduct || filterPayment || filterSeller)
+      const resetBtn = document.getElementById('btnResetFilters')
+      if (resetBtn) {
+        if (hasFilters) {
+          resetBtn.classList.remove('d-none')
+          resetBtn.classList.add('d-inline-flex')
+        } else {
+          resetBtn.classList.add('d-none')
+          resetBtn.classList.remove('d-inline-flex')
+        }
+      }
+    }
+
+    function resetAllFilters() {
+      const searchEl = document.getElementById('histSearch')
+      const clearEl = document.getElementById('histSearchClear')
+      if (searchEl) searchEl.value = ''
+      if (clearEl) clearEl.style.display = 'none'
+
+      const prodEl = document.getElementById('filterProduct')
+      if (prodEl) prodEl.value = ''
+
+      const payEl = document.getElementById('filterPayment')
+      if (payEl) payEl.value = ''
+
+      const sellerEl = document.getElementById('filterSeller')
+      if (sellerEl) sellerEl.value = ''
+
+      currentPage = 1
+      updateFilterUI()
+      renderTable()
     }
 
     // ── Caja del período ───────────────────────────────────────
@@ -1080,6 +1265,10 @@ const receiptLogoUrl = getAssetPrefix('/assets/img/noryx/NoryxStoreLogo.jpeg')
     // ── Filter ─────────────────────────────────────────────────
     function getFiltered() {
       const q = (document.getElementById('histSearch')?.value || '').toLowerCase().trim()
+      const filterProductVal = document.getElementById('filterProduct')?.value || ''
+      const filterPaymentVal = document.getElementById('filterPayment')?.value || ''
+      const filterSellerVal = document.getElementById('filterSeller')?.value || ''
+
       let source = allSales.filter((s) => {
         if (currentFilter !== 'all' && s.estado !== currentFilter) return false
         if (dateFrom || dateTo) {
@@ -1087,12 +1276,55 @@ const receiptLogoUrl = getAssetPrefix('/assets/img/noryx/NoryxStoreLogo.jpeg')
           if (dateFrom && d < dateFrom) return false
           if (dateTo && d > dateTo) return false
         }
+
+        // Filtro por Producto
+        if (filterProductVal) {
+          const items = s.items_products || s.preview_items || []
+          const hasProd = items.some((it) => {
+            const id = it._id || it.producto_id?._id || it.nombre || it.producto_id?.nombre
+            const name = it.nombre || it.producto_id?.nombre || ''
+            return String(id) === filterProductVal || String(name) === filterProductVal
+          })
+          if (!hasProd) return false
+        }
+
+        // Filtro por Método de Pago
+        if (filterPaymentVal) {
+          if (filterPaymentVal === 'Mixto') {
+            const isMixto =
+              (Array.isArray(s.pagos_mixtos) && s.pagos_mixtos.length > 0) ||
+              s.metodo_pago === 'Mixto'
+            if (!isMixto) return false
+          } else {
+            const matchMethod = s.metodo_pago === filterPaymentVal
+            const matchInMixto =
+              Array.isArray(s.pagos_mixtos) &&
+              s.pagos_mixtos.some((p) => p.metodo === filterPaymentVal)
+            if (!matchMethod && !matchInMixto) return false
+          }
+        }
+
+        // Filtro por Vendedor
+        if (filterSellerVal) {
+          const sid = s.vendedor_id?._id ? String(s.vendedor_id._id) : s.vendedor_id?.nombre
+          if (String(sid) !== filterSellerVal) return false
+        }
+
+        // Buscador general (cliente, teléfono, vendedor, método, productos)
         if (q) {
+          const items = s.items_products || s.preview_items || []
+          const productTerms = items.flatMap((it) => [
+            it.nombre || it.producto_id?.nombre || '',
+            it.codigo || it.producto_id?.codigo || ''
+          ])
+
           return [
             s.cliente_id?.nombre,
+            s.cliente_id?.celular,
             s.vendedor_id?.nombre,
             s.metodo_pago,
-            formatPagoSearchString(s)
+            formatPagoSearchString(s),
+            ...productTerms
           ].some((v) =>
             String(v || '')
               .toLowerCase()
@@ -1150,9 +1382,25 @@ const receiptLogoUrl = getAssetPrefix('/assets/img/noryx/NoryxStoreLogo.jpeg')
       if (scopeEl) {
         const periodEl = document.getElementById('cajaPeriodTitle')
         const period = periodEl?.textContent?.trim() || 'el filtro actual'
-        const q = (document.getElementById('histSearch')?.value || '').trim()
         const estado = currentFilter === 'all' ? 'todas' : currentFilter
-        scopeEl.textContent = `Resumen: ${filtered.length} ventas (${estado}) en ${period}${q ? ` · búsqueda "${q}"` : ''}`
+        const q = (document.getElementById('histSearch')?.value || '').trim()
+
+        const tags = []
+        if (q) tags.push(`búsqueda "${q}"`)
+        const prodSelect = document.getElementById('filterProduct')
+        if (prodSelect?.value) {
+          const prodName = prodSelect.options[prodSelect.selectedIndex]?.text || ''
+          tags.push(`producto: ${prodName}`)
+        }
+        const paySelect = document.getElementById('filterPayment')
+        if (paySelect?.value) tags.push(`pago: ${paySelect.value}`)
+        const sellerSelect = document.getElementById('filterSeller')
+        if (sellerSelect?.value) {
+          const sellerName = sellerSelect.options[sellerSelect.selectedIndex]?.text || ''
+          tags.push(`vendedor: ${sellerName}`)
+        }
+        const tagsText = tags.length ? ` · ${tags.join(' · ')}` : ''
+        scopeEl.textContent = `Resumen: ${filtered.length} ventas (${estado}) en ${period}${tagsText}`
       }
 
       const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize))
@@ -1172,13 +1420,19 @@ const receiptLogoUrl = getAssetPrefix('/assets/img/noryx/NoryxStoreLogo.jpeg')
         .map((s) => {
           const cliente = esc(s.cliente_id?.nombre || 'Consumidor final')
           const vendedor = esc(s.vendedor_id?.nombre || '—')
-          const previewItems = Array.isArray(s.preview_items) ? s.preview_items.slice(0, 2) : []
-          const remaining = Math.max(0, Number(s.items_count || 0) - previewItems.length)
+          const allItems =
+            Array.isArray(s.items_products) && s.items_products.length
+              ? s.items_products
+              : Array.isArray(s.preview_items)
+                ? s.preview_items
+                : []
+          const previewItems = allItems.slice(0, 2)
+          const remaining = Math.max(0, Number(s.items_count || allItems.length || 0) - previewItems.length)
           const previewHtml = previewItems.length
             ? `<div class="sale-preview-list">${previewItems
                 .map(
                   (item) =>
-                    `<span class="sale-preview-chip" title="${esc(item.producto_id?.nombre || '—')} x${Number(item.cantidad || 0)}"><strong>${esc(item.producto_id?.nombre || '—')}</strong><span>x${Number(item.cantidad || 0)}</span></span>`
+                    `<span class="sale-preview-chip" title="${esc(item.nombre || item.producto_id?.nombre || '—')} x${Number(item.cantidad || 0)}"><strong>${esc(item.nombre || item.producto_id?.nombre || '—')}</strong><span>x${Number(item.cantidad || 0)}</span></span>`
                 )
                 .join(
                   ''

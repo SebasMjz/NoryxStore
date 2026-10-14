@@ -380,8 +380,7 @@
     interface Window {
       __authUser: { id?: string; nombre?: string; [k: string]: any } | null
       moveProductoPicker:
-        | { select: (p: any) => void; clear: () => void; getAll: () => any[] }
-        | undefined
+        { select: (p: any) => void; clear: () => void; getAll: () => any[] } | undefined
       movementModalLoadEdit: ((m: any) => void) | undefined
       movementModalLoadTransactionEdit: ((lines: any[], tid: string) => void) | undefined
     }

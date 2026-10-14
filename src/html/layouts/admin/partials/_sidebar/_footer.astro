@@ -12,7 +12,11 @@ import { getPathPrefix } from '../../../../../utils/path.js'
       </div>
       <div class="user-info ms-3">
         <span class="fw-semibold text-truncate" id="sidebarUserName">—</span>
-        <small class="text-muted d-block text-truncate" id="sidebarUserRole" style="margin-top: -0.25rem;">—</small>
+        <small
+          class="text-muted d-block text-truncate"
+          id="sidebarUserRole"
+          style="margin-top: -0.25rem;">—</small
+        >
       </div>
       <i class="ri-expand-up-down-line ms-auto fs-6"></i>
     </div>
@@ -42,12 +46,17 @@ import { getPathPrefix } from '../../../../../utils/path.js'
 
 <script is:inline>
   ;(function () {
-    function fillSidebar () {
+    function fillSidebar() {
       const user = window.__authUser
       if (!user) return
 
       const nombre = user.nombre || user.username || '—'
-      const rol = user.tipo_usuario === 'admin' ? 'Administrador' : user.tipo_usuario === 'vendedor' ? 'Vendedor' : user.tipo_usuario || '—'
+      const rol =
+        user.tipo_usuario === 'admin'
+          ? 'Administrador'
+          : user.tipo_usuario === 'vendedor'
+            ? 'Vendedor'
+            : user.tipo_usuario || '—'
 
       const nameEl = document.getElementById('sidebarUserName')
       const roleEl = document.getElementById('sidebarUserRole')

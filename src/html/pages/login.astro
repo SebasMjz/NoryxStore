@@ -41,7 +41,8 @@ const skinPath = import.meta.env.DEV
         --noryx-border: rgba(255, 255, 255, 0.08);
       }
 
-      html, body {
+      html,
+      body {
         height: 100%;
         margin: 0;
       }
@@ -127,7 +128,9 @@ const skinPath = import.meta.env.DEV
         line-height: 1.6;
       }
 
-      .glow-dot { display: none; }
+      .glow-dot {
+        display: none;
+      }
 
       /* ── Panel derecho (formulario) ── */
       .login-form-panel {
@@ -221,7 +224,9 @@ const skinPath = import.meta.env.DEV
         color: #f2f4f7 !important;
         border-radius: 0.6rem;
         padding: 0.65rem 0.875rem;
-        transition: border-color 0.2s, box-shadow 0.2s;
+        transition:
+          border-color 0.2s,
+          box-shadow 0.2s;
       }
 
       .form-control::placeholder {
@@ -244,7 +249,10 @@ const skinPath = import.meta.env.DEV
         padding: 0.7rem 1rem;
         letter-spacing: 0.03em;
         box-shadow: 0 4px 20px var(--noryx-purple-glow);
-        transition: transform 0.15s, box-shadow 0.15s, opacity 0.15s;
+        transition:
+          transform 0.15s,
+          box-shadow 0.15s,
+          opacity 0.15s;
       }
 
       .btn-noryx:hover {
@@ -300,7 +308,7 @@ const skinPath = import.meta.env.DEV
       /* Divider */
       .form-divider {
         height: 1px;
-        background: linear-gradient(to right, transparent, rgba(255,255,255,0.08), transparent);
+        background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.08), transparent);
         margin: 1.75rem 0;
       }
 
@@ -322,8 +330,13 @@ const skinPath = import.meta.env.DEV
       }
 
       @keyframes pulse-dot {
-        0%, 100% { opacity: 1; }
-        50% { opacity: 0.4; }
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.4;
+        }
       }
 
       @media (prefers-reduced-motion: reduce) {
@@ -349,12 +362,10 @@ const skinPath = import.meta.env.DEV
       <div class="glow-dot glow-dot-1"></div>
       <div class="glow-dot glow-dot-2"></div>
       <div class="login-visual-content">
-        <img
-          src={logoPath}
-          alt="Noryx Store"
-          class="brand-logo"
-        />
-        <h2 style="color: #f0f0ff; font-weight: 700; font-size: 1.75rem; margin: 0;">Noryx Store</h2>
+        <img src={logoPath} alt="Noryx Store" class="brand-logo" />
+        <h2 style="color: #f0f0ff; font-weight: 700; font-size: 1.75rem; margin: 0;">
+          Noryx Store
+        </h2>
         <p class="brand-tagline">Panel de administracion</p>
         <div class="brand-divider"></div>
         <p class="brand-description">
@@ -366,13 +377,8 @@ const skinPath = import.meta.env.DEV
     <!-- Panel del formulario -->
     <div class="login-form-panel">
       <div class="login-wrap">
-
         <!-- Banner para mobile -->
-        <img
-          src={bannerPath}
-          alt="Noryx Store"
-          class="login-mobile-banner"
-        />
+        <img src={bannerPath} alt="Noryx Store" class="login-mobile-banner" />
 
         <!-- Encabezado -->
         <div class="login-header">
@@ -427,7 +433,6 @@ const skinPath = import.meta.env.DEV
         </form>
 
         <div class="form-divider"></div>
-
       </div>
     </div>
 
