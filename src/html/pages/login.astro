@@ -2,8 +2,8 @@
 import { getAssetPrefix, getPathPrefix } from '../../utils/path.js'
 
 const salesPath = getPathPrefix('/sales')
-const bannerPath = getAssetPrefix('/assets/img/noryx/NoryxStoreBanner.jpeg')
-const logoPath = getAssetPrefix('/assets/img/noryx/NoryxStoreLogo.jpeg')
+const bannerPath = getAssetPrefix('/assets/img/noryx/image.png')
+const logoPath = getAssetPrefix('/assets/img/noryx/image.png')
 const cssPath = import.meta.env.DEV ? '/dist/css/style.css' : '/css/style.min.css'
 const skinPath = import.meta.env.DEV
   ? '/dist/assets/vendor/css/skin.css'
@@ -15,7 +15,7 @@ const skinPath = import.meta.env.DEV
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Login | Noryx Store</title>
+    <title>Login | Gamer en Pijama</title>
 
     <link rel="icon" href={getAssetPrefix('/favicon.ico')} sizes="32x32" />
     <link rel="icon" href={getAssetPrefix('/icon.svg')} type="image/svg+xml" />
@@ -362,9 +362,9 @@ const skinPath = import.meta.env.DEV
       <div class="glow-dot glow-dot-1"></div>
       <div class="glow-dot glow-dot-2"></div>
       <div class="login-visual-content">
-        <img src={logoPath} alt="Noryx Store" class="brand-logo" />
+        <img src={logoPath} alt="Gamer en Pijama" class="brand-logo" />
         <h2 style="color: #f0f0ff; font-weight: 700; font-size: 1.75rem; margin: 0;">
-          Noryx Store
+          Gamer en Pijama
         </h2>
         <p class="brand-tagline">Panel de administracion</p>
         <div class="brand-divider"></div>
@@ -378,13 +378,13 @@ const skinPath = import.meta.env.DEV
     <div class="login-form-panel">
       <div class="login-wrap">
         <!-- Banner para mobile -->
-        <img src={bannerPath} alt="Noryx Store" class="login-mobile-banner" />
+        <img src={bannerPath} alt="Gamer en Pijama" class="login-mobile-banner" />
 
         <!-- Encabezado -->
         <div class="login-header">
           <div class="brand-badge">
             <i class="ri-store-3-line"></i>
-            Noryx Store
+            Gamer en Pijama
           </div>
           <h1 class="login-title">Iniciar sesion</h1>
           <p class="login-subtitle">Accede como administrador o vendedor.</p>

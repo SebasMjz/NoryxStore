@@ -135,7 +135,7 @@ function absolutizeAssetUrl(u) {
 export function buildSaleReceiptHtml(sale, details, options) {
   const opts = options || {}
   const logoUrl = absolutizeAssetUrl(opts.logoUrl || (typeof window !== 'undefined' && window.__RECEIPT_LOGO_URL) || '')
-  const companyName = opts.companyName || 'Noryx Store'
+  const companyName = opts.companyName || 'Gamer en Pijama'
   const tagline = opts.tagline || 'Comprobante de venta'
   const halfThreshold = typeof opts.itemsHalfPage === 'number' ? opts.itemsHalfPage : 10
 

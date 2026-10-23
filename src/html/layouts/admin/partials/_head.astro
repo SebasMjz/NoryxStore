@@ -1,5 +1,5 @@
 ---
-import noryxLogo from '../../../../assets/img/noryx/NoryxStoreLogo.jpeg'
+import noryxLogo from '../../../../assets/img/noryx/image.png'
 
 interface Props {
   title?: string
@@ -11,15 +11,15 @@ interface Props {
 }
 
 const {
-  title = 'Noryx Store',
+  title = 'Gamer en Pijama',
   description = 'Admin dashboard for managing your application',
-  author = 'Noryx Store',
+  author = 'Gamer en Pijama',
   ogImage,
   pageCss,
   isRtl = false
 } = Astro.props
 
-const fullTitle = title ? `${title} | Noryx Store` : 'Noryx Store'
+const fullTitle = title ? `${title} | Gamer en Pijama` : 'Gamer en Pijama'
 const ogImageUrl = ogImage ?? noryxLogo.src
 
 function getCSS() {
@@ -59,11 +59,11 @@ function getRtlCSS() {
 <meta property="og:image" content={ogImageUrl} />
 <meta property="og:type" content="website" />
 
-<!-- Favicon — Noryx Store logo -->
-<link rel="icon" href={noryxLogo.src} type="image/jpeg" />
+<!-- Favicon — Gamer en Pijama logo -->
+<link rel="icon" href={noryxLogo.src} type="image/png" />
 <link rel="apple-touch-icon" href={noryxLogo.src} />
 
-<!-- Noryx Store CSS -->
+<!-- Gamer en Pijama CSS -->
 {isRtl ? <link href={getRtlCSS()} rel="stylesheet" /> : <link href={getCSS()} rel="stylesheet" />}
 <link href={getSkinCSS()} rel="stylesheet" />
 
