@@ -103,6 +103,14 @@ const pageScript = `<!-- DataTables Dependencies -->
 
           <!-- Table Actions -->
           <div class="d-flex gap-2 flex-wrap">
+            <a
+              class="btn btn-outline-success gap-1"
+              id="downloadInventory"
+              href="/api/products/export"
+              download
+            >
+              <i class="ri-file-excel-2-line me-1" aria-hidden="true"></i>Descargar inventario Excel
+            </a>
             <button
               class="btn btn-primary gap-1"
               data-bs-toggle="modal"

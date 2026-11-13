@@ -11,6 +11,8 @@ const categories_url =
     ? 'http://localhost:4000/api/categories'
     : '/api/categories'
 
+document.getElementById('downloadInventory').href = `${data_url}/export`
+
 let pageindex = 0 // Default to first page if not specified
 
 // Class definition

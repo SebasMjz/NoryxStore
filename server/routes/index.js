@@ -415,6 +415,85 @@ router.get('/products', async (_req, res, next) => {
   }
 })
 
+router.get('/products/export', async (_req, res, next) => {
+  try {
+    const products = await Product.find({ stock: { $gt: 0 } }, 'nombre stock categoria_id')
+      .populate('categoria_id', 'nombre')
+      .sort({ nombre: 1 })
+      .lean()
+    const workbook = new ExcelJS.Workbook()
+    workbook.creator = 'Noryx Store'
+    const categories = new Map()
+    for (const product of products) {
+      const id = String(product.categoria_id?._id || 'sin-categoria')
+      if (!categories.has(id)) {
+        categories.set(id, { name: product.categoria_id?.nombre || 'Sin categoría', products: [] })
+      }
+      categories.get(id).products.push(product)
+    }
+    const ws = workbook.addWorksheet('Inventario', {
+      pageSetup: {
+        paperSize: 9,
+        orientation: 'portrait',
+        fitToPage: true,
+        fitToWidth: 1,
+        fitToHeight: 0,
+        printTitlesRow: '1:1',
+        margins: { left: 0.3, right: 0.3, top: 0.5, bottom: 0.5, header: 0.2, footer: 0.2 }
+      }
+    })
+
+    ws.columns = [
+      { header: 'Nombre', key: 'nombre', width: 45 },
+      { header: 'Stock', key: 'stock', width: 9 },
+      { header: 'Coincide', key: 'coincide', width: 11 },
+      { header: 'No coincide', key: 'no_coincide', width: 15 },
+      { header: 'Comentarios', key: 'comentarios', width: 25 }
+    ]
+
+    const header = ws.getRow(1)
+    header.font = { bold: true, color: { argb: 'FFFFFFFF' } }
+    header.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF7533F9' } }
+    header.height = 28
+
+    for (const { name, products: categoryProducts } of [...categories.values()].sort((a, b) =>
+      a.name.localeCompare(b.name, 'es')
+    )) {
+      const title = ws.addRow([name])
+      ws.mergeCells(title.number, 1, title.number, ws.columnCount)
+      title.height = 24
+      title.font = { bold: true }
+      title.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE9E9E9' } }
+      title.alignment = { vertical: 'middle' }
+
+      for (const product of categoryProducts) {
+        const row = ws.addRow({ nombre: product.nombre, stock: product.stock })
+        row.height = 28
+        row.alignment = { vertical: 'middle', wrapText: true }
+      }
+    }
+
+    ws.eachRow((row) => {
+      for (let column = 1; column <= ws.columnCount; column++) {
+        row.getCell(column).border = {
+          top: { style: 'thin' },
+          left: { style: 'thin' },
+          bottom: { style: 'thin' },
+          right: { style: 'thin' }
+        }
+      }
+    })
+
+    const fileName = `inventario_${getLocalDay().label}.xlsx`
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`)
+    await workbook.xlsx.write(res)
+    res.end()
+  } catch (error) {
+    next(error)
+  }
+})
+
 router.get('/products/:id', async (req, res, next) => {
   try {
     const product = await Product.findById(req.params.id)
